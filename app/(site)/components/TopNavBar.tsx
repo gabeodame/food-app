@@ -75,7 +75,8 @@ function TopNavBar() {
   return (
     <div
       className={cn("w-full h-16  sticky top-0 z-50", {
-        "bg-slate-100": isSticky,
+        "bg-slate-100 dark:bg-muted dark:border dark:border-b-2 dark:border-gray-800 ":
+          isSticky,
       })}
     >
       <div className="w-full flex items-center justify-between container">
@@ -150,7 +151,7 @@ function TopNavBar() {
             </NavigationMenuList>
           </NavigationMenu>
         </div>
-        <div className="flex gap-4">
+        <div className="flex items-center gap-4">
           <Search />
           <div className="hidden md:block">
             <ModeToggle />

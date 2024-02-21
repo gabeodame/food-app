@@ -21,11 +21,14 @@ const nextConfig = {
         port: "",
         pathname: "/**",
       },
+      {
+        protocol: "https",
+        hostname: "plus.unsplash.com",
+        port: "",
+        pathname: "/**",
+      },
     ],
   },
-  //   images: {
-  //     domains: ["res.cloudinary.com", "images.unsplash.com", "unsplash.com"],
-  //   },
 };
 
 export default nextConfig;

@@ -3,6 +3,10 @@ export type FoodItemProps = {
   title: string;
   imageUrl: string;
   description: string;
-  category: string[] | string;
-  tag?: string[] | string;
+  category: string[]; // Updated to expect an array of strings
+  tag?: string[];
+  recipes?: {
+    ingredients: string[];
+    instructions: string[];
+  };
 };

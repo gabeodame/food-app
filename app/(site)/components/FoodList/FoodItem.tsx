@@ -28,7 +28,7 @@ function FoodItem({ item }: { item: FoodItemProps }) {
 
   return (
     <div className="relative" onClick={handleClicked}>
-      <div className="w-full h-[550px] bg-white flex flex-col items-end gap-4 rounded-xl shadow-lg p-6 overflow-hidden cursor-pointer relative ">
+      <div className="w-full h-[550px] bg-white dark:bg-gray-700 flex flex-col items-end gap-4 rounded-xl shadow-lg p-6 overflow-hidden cursor-pointer relative ">
         <motion.div
           initial="initial"
           animate="visible"
@@ -52,7 +52,7 @@ function FoodItem({ item }: { item: FoodItemProps }) {
           </div>
           <div className="w-full flex flex-col gap-2 items-center justify-center  z-10 relative">
             <h1 className="w-full font-bold text-md text-gray-900 uppercase self-start flex justify-between items-center">
-              <span>{item.title}</span>
+              <span className="dark:text-white">{item.title}</span>
               <FavoriteHeart onFavorited={handleFavorited} />
             </h1>
             <p className="text-md text-gray-400">{item.description}</p>
