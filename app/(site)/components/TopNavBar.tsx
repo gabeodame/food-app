@@ -4,6 +4,7 @@ import * as React from "react";
 import Link from "next/link";
 
 import { cn } from "@/lib/utils";
+import { SearchProvider, initialState } from "@/context/SearchContext";
 
 import {
   NavigationMenu,
@@ -19,6 +20,8 @@ import ModeToggle from "@/components/ui/ModeToggle";
 import { HamburgerMenuIcon } from "@radix-ui/react-icons";
 import { useEffect, useState } from "react";
 import Search from "@/components/Search";
+import CustomDialog from "@/components/widgets/CustomDialog";
+import CustomSearchBar from "@/components/widgets/CustomSearchBar";
 
 const components: { title: string; href: string; description: string }[] = [
   {
@@ -152,11 +155,15 @@ function TopNavBar() {
           </NavigationMenu>
         </div>
         <div className="flex items-center gap-4">
-          <Search />
+          <div className="w-full">
+            <SearchProvider searchList={initialState.searchList}>
+              <CustomSearchBar />
+            </SearchProvider>
+          </div>
           <div className="hidden md:block">
             <ModeToggle />
           </div>
-          <HamburgerMenuIcon className="md:hidden w-6 h-6 text-gray-500" />
+          <HamburgerMenuIcon className="md:hidden w-8 h-8 text-gray-500" />
         </div>
       </div>
     </div>
