@@ -66,7 +66,7 @@ function Featured() {
         initial="initial"
         animate="visible"
         variants={titleVariants}
-        className="h-full w-full absolute flex items-center justify-center flex-grow "
+        className="h-full w-full absolute flex items-center justify-center flex-grow transform"
       >
         <div className="flex w-full h-full flex-col items-center justify-center">
           <div className="w-[60%] flex flex-col items-center justify-center translate-x-32">

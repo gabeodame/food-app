@@ -4,11 +4,32 @@ import React, { useEffect, useState } from "react";
 import { FoodItemProps } from "../../models/types/types";
 import FoodItem from "./FoodItem";
 import { useSearchParams } from "next/navigation";
+import { useSearch } from "@/context/hooks/useSearch";
+import CustomButton from "@/components/ui/CustomButton";
+import { ArrowLeftIcon } from "@radix-ui/react-icons";
+import { Button } from "@/components/ui/Button";
+import { useRouter } from "next/navigation";
 
-function FoodList({ foodData }: { foodData: FoodItemProps[] }) {
+function FoodList({
+  foodData,
+  limit,
+}: {
+  foodData: FoodItemProps[];
+  limit?: number;
+}) {
   const [data, setData] = useState<FoodItemProps[]>([]);
+  const { setFilteredItems, toggleFiltered, state } = useSearch();
+  const router = useRouter();
+
+  // const [isFiltered, setIsFiltered] = useState(false);
+  // const [filteredItems, setFilteredItems] = useState([]);
   const searchParams = useSearchParams();
   const search = searchParams.get("search") as string;
+  const params = new URLSearchParams(searchParams.toString());
+  console.log(searchParams);
+
+  console.log(state.isFiltered);
+  console.log(state.filteredItems);
 
   useEffect(() => {
     if (search?.length > 0) {
@@ -33,20 +54,35 @@ function FoodList({ foodData }: { foodData: FoodItemProps[] }) {
         // Return true if the search term is found in any of the fields
         return isInTitle || isInDescription || isInCategory || isInTag;
       });
-
-      setData(items);
+      toggleFiltered();
+      setFilteredItems(items);
     } else {
       setData(foodData);
+      setFilteredItems(foodData);
+      // toggleFiltered();
     }
-  }, [foodData]);
-
-  console.log(data);
+  }, [foodData, search]);
 
   return (
-    <div className="w-full grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 auto-rows-auto gap-4">
-      {data?.map((item, index) => {
-        return <FoodItem key={index} item={item} />;
-      })}
+    <div className="flex flex-col gap-4">
+      {state.isFiltered && (
+        <Button
+          variant="link"
+          onClick={() => {
+            router.push("/foods");
+          }}
+          className="flex gap-1 items-center self-end"
+        >
+          <ArrowLeftIcon className="h-4 w-4" />
+          Back to All
+        </Button>
+      )}
+      <div className="w-full grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 auto-rows-auto gap-4">
+        {state.filteredItems?.map((item, index) => {
+          if (limit && index >= limit) return;
+          return <FoodItem key={index} item={item} />;
+        })}
+      </div>
     </div>
   );
 }

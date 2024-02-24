@@ -242,7 +242,7 @@ export const foodData: FoodItemProps[] = [
     description:
       "Juicy Angus beef burger served on a toasted bun with lettuce, tomato, and your choice of condiments.",
     category: ["Burgers", "American Cuisine", "Grilled"],
-    tag: ["Pork", "Meat", "Grilled"],
+    tag: ["Pork", "Meat", "Grilled", "Burger"],
     recipes: {
       ingredients: [
         "1 lb Angus ground beef",
@@ -336,6 +336,64 @@ export const foodData: FoodItemProps[] = [
       "A juicy, gourmet burger made with high-quality beef, topped with gourmet cheese, lettuce, tomatoes, and a secret sauce, served on a toasted brioche bun.",
     category: ["Dinner", "Fast Food Refined", "American Cuisine"],
     tag: ["Beef", "Burger"],
+    recipes: {
+      ingredients: [
+        "1 lb ground beef (80/20 blend)",
+        "Salt and pepper to taste",
+        "4 brioche buns, halved and toasted",
+        "4 slices gourmet cheese (e.g., aged cheddar, Gruyere)",
+        "Lettuce leaves",
+        "Tomato slices",
+        "Red onion slices",
+        "Secret sauce (mix of mayonnaise, ketchup, mustard, and a dash of hot sauce)",
+      ],
+      instructions: [
+        "Divide the ground beef into 4 equal portions and form into patties. Season with salt and pepper.",
+        "Heat a grill or skillet to medium-high heat. Cook the patties for about 3-4 minutes per side for medium doneness.",
+        "Place a slice of cheese on each patty during the last minute of cooking to melt.",
+        "Assemble the burgers on toasted brioche buns with lettuce, tomato, onion, and a generous spread of secret sauce.",
+        "Serve immediately with a side of fries or a salad.",
+      ],
+    },
+  },
+  {
+    id: "13",
+    title: "Korea grilled meat dish",
+    imageUrl:
+      "https://images.unsplash.com/photo-1550367363-ea12860cc124?q=80&w=3024&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+    description:
+      "A juicy, gourmet burger made with high-quality beef, topped with gourmet cheese, lettuce, tomatoes, and a secret sauce, served on a toasted brioche bun.",
+    category: ["Dinner", "Fast Food Refined", "American Cuisine"],
+    tag: ["Beef", "Steak", "East Asia"],
+    recipes: {
+      ingredients: [
+        "1 lb ground beef (80/20 blend)",
+        "Salt and pepper to taste",
+        "4 brioche buns, halved and toasted",
+        "4 slices gourmet cheese (e.g., aged cheddar, Gruyere)",
+        "Lettuce leaves",
+        "Tomato slices",
+        "Red onion slices",
+        "Secret sauce (mix of mayonnaise, ketchup, mustard, and a dash of hot sauce)",
+      ],
+      instructions: [
+        "Divide the ground beef into 4 equal portions and form into patties. Season with salt and pepper.",
+        "Heat a grill or skillet to medium-high heat. Cook the patties for about 3-4 minutes per side for medium doneness.",
+        "Place a slice of cheese on each patty during the last minute of cooking to melt.",
+        "Assemble the burgers on toasted brioche buns with lettuce, tomato, onion, and a generous spread of secret sauce.",
+        "Serve immediately with a side of fries or a salad.",
+      ],
+    },
+  },
+  {
+    id: "14",
+    title: "Hearty Breakfast",
+    imageUrl:
+      "https://images.unsplash.com/photo-1513442542250-854d436a73f2?q=80&w=3114&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+    description:
+      "A juicy, gourmet burger made with high-quality beef, topped with gourmet cheese, lettuce, tomatoes, and a secret sauce, served on a toasted brioche bun.",
+    category: ["Breakfast", "Bacon", "American Cuisine"],
+    tag: ["Bacon", "Eggs", "American"],
     recipes: {
       ingredients: [
         "1 lb ground beef (80/20 blend)",

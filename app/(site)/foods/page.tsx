@@ -1,4 +1,3 @@
-import { revalidatePath } from "next/cache";
 import FeaturedCategories from "../components/FeaturedCategories";
 import FoodList from "../components/FoodList/FoodList";
 import { FoodItemProps } from "../models/types/types";
@@ -10,11 +9,9 @@ type Props = {
 };
 
 export default async function FoodListHome({ params, searchParams }: Props) {
-  console.log(searchParams);
   const categories = searchParams.category as string;
   const tags = searchParams.tag as string;
   const search = searchParams.search as string;
-  console.log(search);
 
   // Below logic will be replaced with ORM (possibly PRISMA)
   // Function to filter food data based on categories and tags
@@ -55,7 +52,7 @@ export default async function FoodListHome({ params, searchParams }: Props) {
   return (
     <section>
       <FeaturedCategories />
-      <div className="container overflow-hidden">
+      <div className="container flex flex-col items-end overflow-hidden mt-4">
         <FoodList foodData={filteredFood} />
       </div>
     </section>

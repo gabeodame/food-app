@@ -1,20 +1,31 @@
 import { ChangeEvent, useContext } from "react";
-import { SearchContext } from "../SearchContext";
+import { SearchContext, StateType } from "../SearchContext";
 
 type UseSearchHookType = {
-  searchList: Array<string>;
+  state: StateType;
   add: (term: string) => void;
   deleteSearch: (term: string) => void;
   clearSearch: () => void;
+  setFilteredItems: (items: Array<any>) => void;
+  toggleFiltered: () => void;
 };
 
 export const useSearch = (): UseSearchHookType => {
   const {
-    state: { searchList },
+    state,
     add,
     deleteSearch,
     clearSearch,
+    setFilteredItems,
+    toggleFiltered,
   } = useContext(SearchContext);
 
-  return { searchList, add, deleteSearch, clearSearch };
+  return {
+    state,
+    add,
+    deleteSearch,
+    clearSearch,
+    setFilteredItems,
+    toggleFiltered,
+  };
 };

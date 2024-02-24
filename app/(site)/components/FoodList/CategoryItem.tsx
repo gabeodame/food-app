@@ -24,12 +24,12 @@ function CategoryItem({
       opacity: 0,
     },
     visible: {
-      y: 250,
+      y: 280,
       opacity: 1,
       transition: { duration: 0.5, ease: "easeOut" },
     },
     hover: {
-      y: 0, // Move above the image
+      y: -40, // Move above the image
       transition: { duration: 0.2, ease: "easeOut" },
     },
   };
@@ -56,7 +56,7 @@ function CategoryItem({
       opacity: 0,
     },
     hover: {
-      y: 0, // Align with the title's original position
+      y: 25, // Align with the title's original position
       opacity: 1,
       transition: { duration: 0.2, ease: "easeIn" },
     },
@@ -69,7 +69,7 @@ function CategoryItem({
         animate="visible"
         whileHover="hover"
         variants={containerVariants}
-        className="w-[280px] h-[480px] px-6 py-4 flex flex-col items-center justify-center hover:text-gray-50"
+        className="w-[280px] h-[480px] lg:w-[420px] lg:h-[620px] px-6 py-4 flex flex-col items-center justify-center hover:text-gray-50"
       >
         <motion.div
           variants={titleVariants}

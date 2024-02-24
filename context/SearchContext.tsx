@@ -1,26 +1,27 @@
+"use client";
 //search context for managing user searches
 
-import {
-  ChangeEvent,
-  ReactElement,
-  createContext,
-  useCallback,
-  useReducer,
-} from "react";
+import { ReactElement, createContext, useCallback, useReducer } from "react";
 
-type StateType = {
+export type StateType = {
   searchList: Array<string>;
+  isFiltered?: boolean;
+  filteredItems?: Array<any>;
 };
 
 //reuse
 export const initialState: StateType = {
   searchList: [],
+  isFiltered: false,
+  filteredItems: [],
 };
 
 const enum REDUCER_ACTION_TYPE {
   ADD,
   DELETE,
   CLEAR,
+  SET_FILTERED_ITEMS,
+  TOGGLE_FILTERED,
 }
 
 type ReducerAction = {
@@ -35,8 +36,10 @@ const reducer = (state: StateType, action: ReducerAction): StateType => {
       if (state.searchList.includes(action.payload!.toLowerCase())) {
         return state;
       }
+
       //add new term to list
       return { searchList: [...state.searchList, action.payload!] };
+
     case REDUCER_ACTION_TYPE.DELETE:
       //remove a specific search term from the list
       return {
@@ -47,6 +50,19 @@ const reducer = (state: StateType, action: ReducerAction): StateType => {
     case REDUCER_ACTION_TYPE.CLEAR:
       //clear entire list of searches
       return { searchList: [] };
+
+    case REDUCER_ACTION_TYPE.SET_FILTERED_ITEMS:
+      return {
+        ...state,
+        filteredItems: action.payload as any, // Assuming payload is an array of filtered items
+        isFiltered: true,
+      };
+
+    case REDUCER_ACTION_TYPE.TOGGLE_FILTERED:
+      return {
+        ...state,
+        isFiltered: !state.isFiltered,
+      };
 
     default:
       return state;
@@ -83,8 +99,35 @@ const useSearchContext = (initialState: StateType) => {
     []
   );
 
-  return { state, add, deleteSearch, clearSearch };
+  //set filteredItems
+  const setFilteredItems = useCallback(
+    (
+      items: Array<any> // Type accordingly
+    ) =>
+      dispatch({
+        type: REDUCER_ACTION_TYPE.SET_FILTERED_ITEMS,
+        payload: items as any,
+      }),
+    []
+  );
+
+  // toggle isFiltered
+  const toggleFiltered = useCallback(
+    () => dispatch({ type: REDUCER_ACTION_TYPE.TOGGLE_FILTERED }),
+    []
+  );
+
+  return {
+    state,
+    add,
+    deleteSearch,
+    clearSearch,
+    setFilteredItems,
+    toggleFiltered,
+  };
 };
+
+type UseSearchContextType = ReturnType<typeof useSearchContext>;
 
 const initContextState: UseSearchContextType = {
   state: initialState,
@@ -93,9 +136,9 @@ const initContextState: UseSearchContextType = {
   },
   deleteSearch: (term: string) => {},
   clearSearch: () => {},
+  setFilteredItems: (items: Array<any>) => {},
+  toggleFiltered: () => {},
 };
-
-type UseSearchContextType = ReturnType<typeof useSearchContext>;
 
 //create context
 export const SearchContext =

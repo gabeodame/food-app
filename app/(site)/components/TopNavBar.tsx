@@ -22,6 +22,7 @@ import { useEffect, useState } from "react";
 import Search from "@/components/Search";
 import CustomDialog from "@/components/widgets/CustomDialog";
 import CustomSearchBar from "@/components/widgets/CustomSearchBar";
+import Image from "next/image";
 
 const components: { title: string; href: string; description: string }[] = [
   {
@@ -89,25 +90,34 @@ function TopNavBar() {
             <NavigationMenuList>
               <NavigationMenuItem>
                 <NavigationMenuTrigger className="text-lg">
-                  Getting started
+                  Recipes & Menus
                 </NavigationMenuTrigger>
                 <NavigationMenuContent>
                   <ul className="grid gap-3 p-4 md:w-[400px] lg:w-[500px] lg:grid-cols-[.75fr_1fr]">
                     <li className="row-span-3">
                       <NavigationMenuLink asChild>
-                        <a
+                        <Link
                           className="flex h-full w-full select-none flex-col justify-end rounded-md bg-gradient-to-b from-muted/50 to-muted p-6 no-underline outline-none focus:shadow-md"
-                          href="/"
+                          href="/foods"
                         >
-                          {/* <Icons.logo className="h-6 w-6" /> */}
+                          <div className="h-full w-full">
+                            <Image
+                              src="https://plus.unsplash.com/premium_photo-1661369889067-c86c31362f83?q=80&w=4138&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+                              alt="Food display as icon"
+                              width="0"
+                              height="0"
+                              sizes="100vw"
+                              className="w-full h-full overflow-hidden m-0"
+                            />
+                          </div>
                           <div className="mb-2 mt-4 text-lg font-medium">
-                            shadcn/ui
+                            Food List
                           </div>
                           <p className="text-sm leading-tight text-muted-foreground">
-                            Beautifully designed components built with Radix UI
-                            and Tailwind CSS.
+                            Browse the entire list of food creations curated
+                            over time by our artistic community
                           </p>
-                        </a>
+                        </Link>
                       </NavigationMenuLink>
                     </li>
                     <ListItem href="/docs" title="Introduction">
@@ -156,9 +166,7 @@ function TopNavBar() {
         </div>
         <div className="flex items-center gap-4">
           <div className="w-full">
-            <SearchProvider searchList={initialState.searchList}>
-              <CustomSearchBar />
-            </SearchProvider>
+            <CustomSearchBar />
           </div>
           <div className="hidden md:block">
             <ModeToggle />

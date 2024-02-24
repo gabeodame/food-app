@@ -28,6 +28,8 @@ const config = {
         "color-secondary-alt": "var(--color-secondary-alt)",
         "color-green": "var(--color-green)",
         "color-red": "var(--color-red)",
+        "color-tertiary": "var(--color-tertiary)",
+        "color-tertiary-alt": "var(--color-tertiary-alt)",
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",

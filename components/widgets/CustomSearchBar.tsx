@@ -9,7 +9,8 @@ import { TrashIcon } from "@radix-ui/react-icons";
 
 function CustomSearchBar() {
   const [open, setOpen] = useState(false);
-  const { searchList, deleteSearch, clearSearch } = useSearch();
+  const { state, deleteSearch, clearSearch } = useSearch();
+  const { searchList } = state;
 
   const handleKeyDown = (event: {
     metaKey: any;

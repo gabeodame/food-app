@@ -44,9 +44,7 @@ function FoodItem({ item }: { item: FoodItemProps }) {
               alt={item.title}
               width="0"
               height="0"
-              sizes="(min-width: 60em) 24vw,
-                    (min-width: 28em) 45vw,
-                    100vw"
+              sizes="100vw"
               className="w-full h-auto overflow-hidden rounded-md"
             />
           </div>

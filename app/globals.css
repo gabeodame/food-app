@@ -41,6 +41,8 @@
     --color-secondary-alt: #fbad39;
     --color-green: #0d2914;
     --color-red: #c33130;
+    --color-tertiary: #9fab38;
+    --color-tertiary-alt: #008271;
   }
 
   .dark {

@@ -4,6 +4,7 @@ import React from "react";
 import Link from "next/link";
 import Lottie from "react-lottie";
 import * as logoAnimationData from "../lib/lottieFiles/animations/food_animation.json";
+import LogoText from "./LogoText";
 
 function Logo() {
   const defaultOptions = {
@@ -28,16 +29,7 @@ function Logo() {
             paddingBottom: "20px",
           }}
         />
-        <div className="hidden font-black text-3xl h-full md:flex ">
-          <span className="text-color-secondary-alt dark:text-muted-foreground">
-            D
-          </span>
-          <span className="text-color_primary">ish</span>
-          <span className="text-color-secondary-alt dark:text-muted-foreground">
-            S
-          </span>
-          <span className="text-color_primary">hare</span>
-        </div>
+        <LogoText />
       </Link>
     </div>
   );

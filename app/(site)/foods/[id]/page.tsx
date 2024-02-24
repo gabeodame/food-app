@@ -21,14 +21,14 @@ export default async function FoodDetailPage({ params }: Props) {
   const found = foodData.find((item) => item.id === id) as FoodItemProps;
 
   return (
-    <div className="overflow-hidden">
+    <div className="overflow-hidden max-h-svh mt-4">
       <div className="container custom-min-height flex gap-4 flex-col items-center justify-center mt-2">
         <Link className="container h-fit w-full flex justify-end" href="/foods">
           <div className="flex w-fit items-center justify-center gap-2 px-2 p-y-2 text-white font-bold bg-color-secondary rounded-sm cursor-pointer">
             <ArrowLeftIcon className="h-4 w-4" /> Back to All
           </div>
         </Link>
-        <div className="w-full grid grid-cols-1 md:grid-cols-[1fr,_400px] lg:grid-cols-[1fr,_600px]  items-center shadow-md border-[1px] border-gray-100 overflow-hidden">
+        <div className="w-full h-max grid grid-cols-1 md:grid-cols-[1fr,_400px] lg:grid-cols-[1fr,_600px]  items-center shadow-md border-[1px] border-gray-100">
           <div className=" rounded-md border-r-[2px] border-gray-200">
             <Image
               src={found?.imageUrl ?? ""}
