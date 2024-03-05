@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { FoodItemProps } from "../../models/types/types";
 
 function FoodItem({ item }: { item: FoodItemProps }) {
+  // console.log(item);
   const router = useRouter();
   const imageVariants = {
     initial: {

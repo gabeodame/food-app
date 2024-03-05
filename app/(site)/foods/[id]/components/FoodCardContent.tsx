@@ -15,6 +15,9 @@ interface FoodContentProps {
 
 function FoodCardContent({ food }: FoodContentProps) {
   const updateQueryParams = useUpdateQueryParams();
+  console.log(food);
+
+  type foodProps = typeof food.categories;
 
   return (
     <ScrollArea className="h-full overflow-auto">
@@ -25,20 +28,26 @@ function FoodCardContent({ food }: FoodContentProps) {
         </div>
         <div className="w-full flex gap-2 items-center  bg-gray-200 p-2">
           <span className=" text-gray-500"> Category(s):</span>
-          <ul className="w-fit flex gap-1 items-center text-gray-500">
-            {Array.isArray(food?.category)
-              ? food.category.map((item, idx) => (
-                  <li
-                    key={item}
-                    className="flex gap-1 items-center font-bold cursor-pointer "
-                    onClick={() => {
-                      updateQueryParams("category", item.toLowerCase());
-                    }}
-                  >
-                    {item} {idx < food.category.length - 1 ? "|" : null}
-                  </li>
-                ))
-              : food?.category}
+          <ul className="w-fit grid grid-cols-1 md:grid-cols-3 gap-1 items-center text-gray-500">
+            {Array.isArray(food?.categories)
+              ? food.categories.map((cat: any, idx) => {
+                  console.log(cat.category.name);
+                  return (
+                    <li
+                      key={cat.category.name}
+                      className="flex gap-1 items-center font-bold cursor-pointer "
+                      onClick={() => {
+                        updateQueryParams(
+                          "category",
+                          cat.cagetegory.name.toLowerCase()
+                        );
+                      }}
+                    >
+                      {cat.category.name}
+                    </li>
+                  );
+                })
+              : food?.categories}
           </ul>
         </div>
         <div className="">
@@ -47,10 +56,10 @@ function FoodCardContent({ food }: FoodContentProps) {
         <div className="w-[80%] flex flex-col items-start text-gray-500 font-semibold">
           <h3 className="underline text-gray-600">Recipes</h3>
           <ul className="flex flex-col gap-2 text-gray-500">
-            {food?.recipes?.ingredients.map((recipe, idx) => (
+            {food?.ingredients?.map((recipe, idx) => (
               <li key={idx} className="flex gap-1 items-center">
                 <CheckCircledIcon className="h-4 w-4 text-color-secondary-alt" />
-                {recipe}
+                {`${recipe.quantity} ${recipe.name}`}
               </li>
             ))}
           </ul>
@@ -58,14 +67,14 @@ function FoodCardContent({ food }: FoodContentProps) {
         <div className="w-[80%] flex flex-col items-start text-gray-500 font-semibold">
           <h3 className="underline text-gray-600">Instructions</h3>
           <ol className="flex flex-col gap-2 text-gray-500">
-            {food?.recipes?.instructions.map((instruction, idx) => (
+            {food?.instructions?.map((instruction, idx) => (
               <li key={idx} className="flex gap-1 items-center ">
-                {idx + 1}. {instruction}
+                {idx + 1}. {instruction.step}
               </li>
             ))}
           </ol>
         </div>
-        <Tags tags={food.tag as string[]} />
+        <Tags tags={food.tags as { name: string }[]} />
       </div>
     </ScrollArea>
   );

@@ -1,5 +1,5 @@
 import React from "react";
-import { foodData } from "../../page";
+
 import CategoryItem from "./CategoryItem";
 
 type FoodCategory = {
@@ -51,7 +51,7 @@ function CategoryList() {
   return (
     <div className="w-screen h-full flex flex-nowrap ">
       {foodCategories.map((food, idx) => {
-        console.log(food);
+        // console.log(food);
         // if (idx > 3) {
         //   return null;
         // }

@@ -8,7 +8,8 @@ import Link from "next/link";
 import { ScrollArea } from "@radix-ui/react-scroll-area";
 import FoodCardContent from "./components/FoodCardContent";
 import { FoodItemProps } from "../../models/types/types";
-import { foodData } from "../data/foodData";
+// import { foodData } from "../data/foodData";
+import { prisma } from "@/lib/prisma";
 
 type Props = {
   params: { id: string };
@@ -16,9 +17,30 @@ type Props = {
 };
 
 export default async function FoodDetailPage({ params }: Props) {
-  const id = params.id;
+  // const id = +params.id;
+  const id = parseInt(params.id, 10);
 
-  const found = foodData.find((item) => item.id === id) as FoodItemProps;
+  const found = await prisma.recipe.findFirst({
+    where: {
+      id: id,
+    },
+    include: {
+      ingredients: true,
+      instructions: true,
+      // tags: true,
+      categories: {
+        select: {
+          category: {
+            select: {
+              name: true,
+            },
+          },
+        },
+      },
+    },
+  });
+
+  console.log(found, "found");
 
   return (
     <div className="overflow-hidden max-h-svh mt-4">
@@ -41,39 +63,48 @@ export default async function FoodDetailPage({ params }: Props) {
               className="w-full h-auto  rounded-md"
             />
           </div>
-          <FoodCardContent food={found} />
+          <FoodCardContent food={found as any} />
         </div>
       </div>
     </div>
   );
 }
 
-export async function generateMetadata(
-  { params, searchParams }: Props,
-  parent: ResolvingMetadata
-): Promise<Metadata> {
-  // read route params
-  const id = params.id;
+// export async function generateMetadata(
+//   { params, searchParams }: Props,
+//   parent: ResolvingMetadata
+// ): Promise<Metadata> {
+//   // read route params
+//   const id = +params.id;
 
-  // fetch data
-  const food = foodData.find((food) => food.id === params.id);
-  // const product = await fetch(`https://.../${id}`).then((res) => res.json());
+//   // fetch data
+//   const food = await prisma.recipe.findUnique({
+//     where: {
+//       id,
+//     },
+//   });
+//   // const product = await fetch(`https://.../${id}`).then((res) => res.json());
 
-  // optionally access and extend (rather than replace) parent metadata
-  // const previousImages = (await parent).openGraph?.images || [];
+//   // optionally access and extend (rather than replace) parent metadata
+//   // const previousImages = (await parent).openGraph?.images || [];
 
-  return {
-    title: food?.title,
-    // openGraph: {
-    //   images: ["/some-specific-page-image.jpg", ...previousImages],
-    // },
-  };
-}
+//   return {
+//     title: food?.title,
+//     // openGraph: {
+//     //   images: ["/some-specific-page-image.jpg", ...previousImages],
+//     // },
+//   };
+// }
 
-export async function generateStaticParams() {
-  // const foods = await fetch("https://.../posts").then((res) => res.json());
+// export async function generateStaticParams({ params, searchParams }: Props) {
+//   const id = +params.id;
+//   const food = await prisma.recipe.findUnique({
+//     where: {
+//       id,
+//     },
+//   });
 
-  return foodData.map((food) => ({
-    title: food.title,
-  }));
-}
+//   return {
+//     title: food?.title,
+//   };
+// }

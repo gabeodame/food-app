@@ -9,15 +9,16 @@ import CustomButton from "@/components/ui/CustomButton";
 import { ArrowLeftIcon } from "@radix-ui/react-icons";
 import { Button } from "@/components/ui/Button";
 import { useRouter } from "next/navigation";
+import { FoodListTypes } from "../../page";
 
 function FoodList({
   foodData,
   limit,
 }: {
-  foodData: FoodItemProps[];
+  foodData: FoodListTypes[];
   limit?: number;
 }) {
-  const [data, setData] = useState<FoodItemProps[]>([]);
+  const [data, setData] = useState<FoodListTypes[]>([]);
   const { setFilteredItems, toggleFiltered, state } = useSearch();
   const router = useRouter();
 
@@ -26,10 +27,6 @@ function FoodList({
   const searchParams = useSearchParams();
   const search = searchParams.get("search") as string;
   const params = new URLSearchParams(searchParams.toString());
-  console.log(searchParams);
-
-  console.log(state.isFiltered);
-  console.log(state.filteredItems);
 
   useEffect(() => {
     if (search?.length > 0) {
@@ -44,15 +41,17 @@ function FoodList({
           .includes(searchTermLower);
 
         // Check if the search term is present in any of the categories or tags
-        const isInCategory = item.category?.some((category) =>
-          category.toLowerCase().includes(searchTermLower)
-        );
-        const isInTag = item.tag?.some((tag) =>
-          tag.toLowerCase().includes(searchTermLower)
+        const isInCategory = item.categories?.some((category) =>
+          category.name.toLowerCase().includes(searchTermLower)
         );
 
+        // const isInTag = item.tags?.some((tag) =>
+        //   tag.name.toLowerCase().includes(searchTermLower)
+        // );
+
         // Return true if the search term is found in any of the fields
-        return isInTitle || isInDescription || isInCategory || isInTag;
+        return isInTitle || isInDescription || isInCategory;
+        // || isInTag;
       });
       toggleFiltered();
       setFilteredItems(items);

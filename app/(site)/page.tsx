@@ -6,13 +6,30 @@ import Categories from "./components/FoodList/Categories";
 import Featured from "./components/Featured";
 import AdList from "./components/ads/AdList";
 import { FoodItemProps } from "./models/types/types";
-import { foodData } from "./foods/data/foodData";
+
 import { StickyCards } from "./components/StickyCards";
 import ContactUs from "./components/ContactUs";
 import Logo from "@/components/Logo";
 import LogoText from "@/components/LogoText";
+import { prisma } from "@/lib/prisma";
+
+export type FoodListTypes = {
+  id: number;
+  title: string;
+  imageUrl: string;
+  description: string;
+  views: number;
+  favoritesCount: number;
+  categories: any[];
+};
 
 export default async function MainHome() {
+  const foodData = await prisma.recipe.findMany({
+    include: {
+      categories: true,
+    },
+  });
+
   return (
     <main className="w-full">
       <div className=" hidden md:block">
