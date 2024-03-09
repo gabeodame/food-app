@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  labels:
+    app: auth-depl
+  name: auth-depl
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: auth-depl
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: auth-depl
+    spec:
+      containers:
+        - image: gabeodame/auth-service:1.0.1
+          name: auth-service
+          resources: {}
+          envFrom:
+            - configMapRef:
+                name: auth-config
+status: {}

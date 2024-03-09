@@ -1,0 +1,21 @@
+{
+  "name": "auth",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "ts-node-dev --poll src/index.ts",
+    "test": "jest --watchAll --no-cache"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "mongoose": "^8.2.1"
+  },
+  "devDependencies": {
+    "@types/typescript": "^2.0.0",
+    "mongodb-memory-server": "^9.1.6",
+    "ts-node-dev": "^2.0.0"
+  }
+}

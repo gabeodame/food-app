@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  labels:
+    app: auth-mongo
+    project: recipe
+  name: auth-mongo-depl
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: auth-mongo
+      project: recipe
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: auth-mongo
+        project: recipe
+    spec:
+      containers:
+        - image: mongo
+          name: auth-mongo
+          resources: {}
+status: {}
