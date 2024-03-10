@@ -24,4 +24,6 @@ spec:
           envFrom:
             - configMapRef:
                 name: auth-config
+            - secretRef:
+                name: jwt-secret
 status: {}

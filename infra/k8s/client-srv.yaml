@@ -7,10 +7,10 @@ metadata:
   name: recipe-client-srv
 spec:
   ports:
-    - name: 80-80
-      port: 80
+    - name: client
+      port: 3000
       protocol: TCP
-      targetPort: 80
+      targetPort: 3000
   selector:
     app: recipe-client
   type: ClusterIP

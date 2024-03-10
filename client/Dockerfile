@@ -34,10 +34,9 @@ RUN mkdir -p .next && chmod -R 777 .next
 # This step is after changing the ownership, so new files will already have correct 'app' user permissions
 COPY . .
 
-
-
+RUN npm run build
 
 EXPOSE 3000
 
-CMD ["npm", "run", "dev"]
+CMD ["npm", "start"]
 
