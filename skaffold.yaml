@@ -6,23 +6,28 @@ build:
   artifacts:
     - image: gabeodame/auth-service
       context: auth
-      buildpacks:
-        builder: gcr.io/buildpacks/builder:v1
+      docker:
+        dockerfile: Dockerfile
+      sync:
+        manual:
+          - src: "src/**/*.ts"
+            dest: .
     - image: gabeodame/recipe-client
       context: client
-      buildpacks:
-        builder: gcr.io/buildpacks/builder:v1
-    - image: mongo
+      docker:
+        dockerfile: Dockerfile
+      sync:
+        manual:
+          - src: "app/**/*.ts"
+            dest: .
+    - image: gabeodame/recipe-service
       context: recipe
-      buildpacks:
-        builder: gcr.io/buildpacks/builder:v1
+      docker:
+        dockerfile: Dockerfile
+      sync:
+        manual:
+          - src: "src/**/*.ts"
+            dest: .
 manifests:
   rawYaml:
-    - infra/k8s/auth-config.yaml
-    - infra/k8s/auth-depl.yaml
-    - infra/k8s/auth-mongo-depl.yaml
-    - infra/k8s/auth-mongo-secret.yaml
-    - infra/k8s/auth-mongo-srv.yaml
-    - infra/k8s/auth-srv.yaml
-    - infra/k8s/client-depl.yaml
-    - infra/k8s/client-srv.yaml
+    - ./infra/k8s/*

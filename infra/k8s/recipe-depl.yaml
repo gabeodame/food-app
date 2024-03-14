@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: recipe
+  name: recipe-depl
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: recipe
+  template:
+    metadata:
+      labels:
+        app: recipe
+    spec:
+      containers:
+        - image: gabeodame/recipe-service:1.0.0
+          name: recipe
+          env: # This line is correctly indented now
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: recipe-postgres-secret
+                  key: database-url

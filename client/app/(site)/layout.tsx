@@ -6,6 +6,7 @@ import ThemeProvider from "@/components/ThemeProvider";
 import TopNavBar from "./components/TopNavBar";
 import { SearchProvider, initialState } from "@/context/SearchContext";
 import ContextWrapper from "@/components/ContextWrapper";
+import { Suspense } from "react";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -36,8 +37,9 @@ export default function RootLayout({
         >
           <ContextWrapper>
             <section className="w-full h-full">
-              <TopNavBar />
-
+              <Suspense>
+                <TopNavBar />
+              </Suspense>
               {children}
             </section>
           </ContextWrapper>

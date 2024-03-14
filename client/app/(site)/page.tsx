@@ -11,7 +11,7 @@ import { StickyCards } from "./components/StickyCards";
 import ContactUs from "./components/ContactUs";
 import Logo from "@/components/Logo";
 import LogoText from "@/components/LogoText";
-import { prisma } from "@/lib/prisma";
+// import { prisma } from "@/lib/prisma";
 
 export type FoodListTypes = {
   id: number;
@@ -26,17 +26,7 @@ export type FoodListTypes = {
 };
 
 export default async function MainHome() {
-  const foodData = await prisma.recipe.findMany({
-    include: {
-      categories: true,
-      tags: true,
-      cuisineTypes: true,
-      seasons: true,
-      specialDiets: true,
-    },
-  });
-
-  console.log("foodData", foodData);
+  const foodData: FoodListTypes[] = []; // make api call to recipe service for list of recipes
 
   return (
     <main className="w-full">

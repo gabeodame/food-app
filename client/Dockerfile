@@ -13,15 +13,6 @@ COPY package*.json ./
 
 # Install dependencies
 RUN npm install 
-#resolves permission issue to next cache folder
-RUN mkdir node_modules/.cache && chmod -R 777 node_modules/.cache
-
-# Copy the Prisma schema file to the container
-COPY prisma ./prisma/
-
-# Generate Prisma client
-# This step is now correctly placed after copying the Prisma schema
-RUN npx prisma generate
 
 # Change the ownership of all files in /app to 'app' user and group
 # This step needs to be done before switching to user 'app' to avoid permission issues

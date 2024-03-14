@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  labels:
+    app: recipe-postgres
+  name: recipe-postgres
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: recipe-postgres
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: recipe-postgres
+    spec:
+      containers:
+        - name: recipe-postgres
+          image: postgres
+          env:
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: recipe-postgres-secret
+                  key: postgres-user
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: recipe-postgres-secret
+                  key: postgres-password
+            - name: POSTGRES_DB
+              valueFrom:
+                secretKeyRef:
+                  name: recipe-postgres-secret
+                  key: postgres-db
+            - name: POSTGRES_HOST
+              value: recipe-postgres-service
+            - name: POSTGRES_PORT
+              value: "5432"
+          resources: {}
+status: {}

@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: Service
+metadata:
+  creationTimestamp: null
+  labels:
+    app: recipe
+    skaffold.dev/run-id: 0d296e8b-df12-4741-bc7e-69fed25721f4
+  name: recipe-service
+spec:
+  ports:
+  - port: 3000
+    protocol: TCP
+    targetPort: 3000
+  selector:
+    app: recipe
+  type: ClusterIP
+status:
+  loadBalancer: {}

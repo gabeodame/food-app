@@ -1,4 +1,4 @@
-import { prisma } from "@/lib/prisma";
+// import { prisma } from "@/lib/prisma";
 import FeaturedCategories from "../components/FeaturedCategories";
 import FoodList from "../components/FoodList/FoodList";
 import { FoodItemProps } from "../models/types/types";
@@ -7,7 +7,7 @@ import { FoodListTypes } from "../page";
 
 type Props = {
   params: { id: string };
-  searchParams: { [key: string]: string | string[] | undefined };
+  searchParams: { [key: string]: string | string[] | null };
 };
 
 export default async function FoodListHome({ params, searchParams }: Props) {
@@ -15,7 +15,8 @@ export default async function FoodListHome({ params, searchParams }: Props) {
   const tags = searchParams.tag as string;
   const search = searchParams.search as string;
 
-  const recipes = await prisma.recipe.findMany();
+  // const recipes =  //make api call to food service to get food
+  // await prisma.recipe.findMany();
 
   // Below logic will be replaced with ORM (possibly PRISMA)
   // Function to filter food data based on categories and tags
@@ -53,11 +54,11 @@ export default async function FoodListHome({ params, searchParams }: Props) {
     });
   };
 
-  const filteredFood = filterFoodData(recipes, categories, tags, search);
+  const filteredFood = filterFoodData([], categories, tags, search);
 
   return (
     <section>
-      <FeaturedCategories />
+      {/* <FeaturedCategories /> */}
       <div className="container flex flex-col items-end overflow-hidden mt-4">
         <FoodList foodData={filteredFood as FoodListTypes[]} />
       </div>

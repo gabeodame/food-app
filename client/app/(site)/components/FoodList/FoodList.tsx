@@ -24,43 +24,43 @@ function FoodList({
 
   // const [isFiltered, setIsFiltered] = useState(false);
   // const [filteredItems, setFilteredItems] = useState([]);
-  const searchParams = useSearchParams();
-  const search = searchParams.get("search") as string;
-  const params = new URLSearchParams(searchParams.toString());
+  // const searchParams = useSearchParams();
+  // const params = new URLSearchParams(searchParams.toString());
+  // const search = params.get("search") as string;
 
-  useEffect(() => {
-    if (search?.length > 0) {
-      const items = foodData.filter((item) => {
-        // Convert search term to lower case once for efficiency
-        const searchTermLower = search?.toLowerCase();
+  // useEffect(() => {
+  //   if (search?.length > 0) {
+  //     const items = foodData.filter((item) => {
+  //       // Convert search term to lower case once for efficiency
+  //       const searchTermLower = search?.toLowerCase();
 
-        // Check if the search term is present in title, description, or tag
-        const isInTitle = item.title.toLowerCase().includes(searchTermLower);
-        const isInDescription = item.description
-          .toLowerCase()
-          .includes(searchTermLower);
+  //       // Check if the search term is present in title, description, or tag
+  //       const isInTitle = item.title.toLowerCase().includes(searchTermLower);
+  //       const isInDescription = item.description
+  //         .toLowerCase()
+  //         .includes(searchTermLower);
 
-        // Check if the search term is present in any of the categories or tags
-        const isInCategory = item.categories?.some((category) =>
-          category.name.toLowerCase().includes(searchTermLower)
-        );
+  //       // Check if the search term is present in any of the categories or tags
+  //       const isInCategory = item.categories?.some((category) =>
+  //         category.name.toLowerCase().includes(searchTermLower)
+  //       );
 
-        // const isInTag = item.tags?.some((tag) =>
-        //   tag.name.toLowerCase().includes(searchTermLower)
-        // );
+  //       // const isInTag = item.tags?.some((tag) =>
+  //       //   tag.name.toLowerCase().includes(searchTermLower)
+  //       // );
 
-        // Return true if the search term is found in any of the fields
-        return isInTitle || isInDescription || isInCategory;
-        // || isInTag;
-      });
-      toggleFiltered();
-      setFilteredItems(items);
-    } else {
-      setData(foodData);
-      setFilteredItems(foodData);
-      // toggleFiltered();
-    }
-  }, [foodData, search]);
+  //       // Return true if the search term is found in any of the fields
+  //       return isInTitle || isInDescription || isInCategory;
+  //       // || isInTag;
+  //     });
+  //     toggleFiltered();
+  //     setFilteredItems(items);
+  //   } else {
+  //     setData(foodData);
+  //     setFilteredItems(foodData);
+  //     // toggleFiltered();
+  //   }
+  // }, [foodData, search]);
 
   return (
     <div className="flex flex-col gap-4">

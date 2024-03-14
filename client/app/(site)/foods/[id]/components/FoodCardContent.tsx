@@ -6,7 +6,7 @@ import { FoodItemProps } from "@/app/(site)/models/types/types";
 import { Separator } from "@radix-ui/themes";
 import { CheckCircledIcon } from "@radix-ui/react-icons";
 import Tags from "@/app/(site)/components/FoodList/Tags";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+
 import useUpdateQueryParams from "@/app/hooks/useUpdateQueryParams";
 
 interface FoodContentProps {

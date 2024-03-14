@@ -1,7 +1,6 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  creationTimestamp: null
   labels:
     app: recipe-client
   name: recipe-client-depl
@@ -10,15 +9,11 @@ spec:
   selector:
     matchLabels:
       app: recipe-client
-  strategy: {}
   template:
     metadata:
-      creationTimestamp: null
       labels:
         app: recipe-client
     spec:
       containers:
-        - image: gabeodame/recipe-client:1.0.0
+        - image: gabeodame/recipe-client:1.0.1
           name: recipe-client
-          resources: {}
-status: {}

@@ -166,7 +166,9 @@ function TopNavBar() {
         </div>
         <div className="flex items-center gap-4">
           <div className="w-full">
-            <CustomSearchBar />
+            <React.Suspense fallback={<p>Loading...</p>}>
+              <CustomSearchBar />
+            </React.Suspense>
           </div>
           <div className="hidden md:block">
             <ModeToggle />

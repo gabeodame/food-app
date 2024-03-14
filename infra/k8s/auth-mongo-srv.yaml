@@ -4,7 +4,7 @@ metadata:
   creationTimestamp: null
   labels:
     skaffold.dev/run-id: e09da58c-ed62-4803-a8ff-25700e2e19b9
-  name: auth-mongo-srv
+  name: auth-mongo-service
 spec:
   ports:
     - port: 27017

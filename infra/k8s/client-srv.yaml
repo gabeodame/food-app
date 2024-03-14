@@ -4,7 +4,7 @@ metadata:
   creationTimestamp: null
   labels:
     app: recipe-client
-  name: recipe-client-srv
+  name: recipe-client-service
 spec:
   ports:
     - name: client

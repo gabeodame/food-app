@@ -14,20 +14,20 @@ spec:
             pathType: ImplementationSpecific
             backend:
               service:
-                name: auth-srv
+                name: auth-service
+                port:
+                  number: 3000
+          - path: /api/recipes/?(.*)
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: recipe-service
                 port:
                   number: 3000
           - path: /?(.*)
             pathType: ImplementationSpecific
             backend:
               service:
-                name: recipe-client-srv
-                port:
-                  number: 3000
-          - path: /api/recipe/?(.*)
-            pathType: ImplementationSpecific
-            backend:
-              service:
-                name: recipe-srv
+                name: recipe-client-service
                 port:
                   number: 3000

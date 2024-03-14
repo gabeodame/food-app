@@ -1,29 +1,24 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  creationTimestamp: null
   labels:
-    app: auth-depl
+    app: auth-service # Updated for clarity
   name: auth-depl
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: auth-depl
-  strategy: {}
+      app: auth-service # Make sure this matches the updated label
   template:
     metadata:
-      creationTimestamp: null
       labels:
-        app: auth-depl
+        app: auth-service # Updated label to match the selector
     spec:
       containers:
-        - image: gabeodame/auth-service:1.0.1
-          name: auth-service
-          resources: {}
+        - name: auth-service
+          image: gabeodame/auth-service:1.0.3
           envFrom:
             - configMapRef:
                 name: auth-config
             - secretRef:
                 name: jwt-secret
-status: {}
