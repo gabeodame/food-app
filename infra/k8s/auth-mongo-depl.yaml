@@ -1,6 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
+  namespace: recipe
   labels:
     app: auth-mongo
     project: recipe
@@ -34,6 +35,7 @@ status: {}
 apiVersion: v1
 kind: Service
 metadata:
+  namespace: recipe
   labels:
     app: auth-mongo
   name: auth-mongo-service

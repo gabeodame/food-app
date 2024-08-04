@@ -1,6 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
+  namespace: recipe
   labels:
     app: recipe-client
   name: recipe-client-depl
@@ -22,6 +23,7 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
+  namespace: recipe
   labels:
     app: recipe-client
   name: recipe-client-service

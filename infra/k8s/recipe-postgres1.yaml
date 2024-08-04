@@ -1,6 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
+  namespace: recipe
   labels:
     app: recipe-postgres
   name: recipe-postgres
@@ -41,10 +42,10 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
+  namespace: recipe
   labels:
     app: recipe-postgres
   name: recipe-postgres-service
-  namespace: default
 spec:
   type: ClusterIP
   ports:

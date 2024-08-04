@@ -3,5 +3,6 @@ data:
   MONGO_URI: mongodb://auth-mongo-service:27017/auth
 kind: ConfigMap
 metadata:
+  namespace: recipe
   creationTimestamp: null
   name: auth-config
