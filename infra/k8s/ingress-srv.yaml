@@ -17,7 +17,7 @@ spec:
                 name: auth-service
                 port:
                   number: 3000
-          - path: /api/recipes/?(.*)
+          - path: /api/1/recipes/?(.*)
             pathType: ImplementationSpecific
             backend:
               service:

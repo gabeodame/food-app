@@ -22,3 +22,18 @@ spec:
                 name: auth-config
             - secretRef:
                 name: jwt-secret
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: auth-service
+  name: auth-service
+spec:
+  type: ClusterIP
+  ports:
+    - port: 3000
+      protocol: TCP
+      targetPort: 3000
+  selector:
+    app: auth-service

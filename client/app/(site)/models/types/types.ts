@@ -21,3 +21,15 @@ export type FoodItemProps = {
   seasonalEvent?: { name: string }[];
   specialDiets?: { name: string }[];
 };
+
+export type FoodListTypes = {
+  id: number;
+  title: string;
+  imageUrl: string;
+  description: string;
+  views: number;
+  favoritesCount: number;
+  categories?: any[];
+  tags?: any[];
+  season?: any[];
+};

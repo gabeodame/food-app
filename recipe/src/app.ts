@@ -1,6 +1,12 @@
 import express from "express";
 import cookieSession from "cookie-session";
+import "express-async-errors";
 import { json } from "body-parser";
+import { allRecipesRouter } from "./routes/allRecipes";
+import { recipeDetailsRouter } from "./routes/recipeDetails";
+import { newRecipesRouter } from "./routes/newRecipe";
+
+// import cors from "cors";
 
 const app = express();
 
@@ -15,5 +21,11 @@ app.use(
     secure: process.env.NODE_ENV != "test",
   })
 );
+
+// app.use(cors);
+
+app.use(allRecipesRouter);
+app.use(recipeDetailsRouter);
+app.use(newRecipesRouter);
 
 export { app };

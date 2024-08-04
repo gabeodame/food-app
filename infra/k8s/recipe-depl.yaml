@@ -14,8 +14,27 @@ spec:
       labels:
         app: recipe
     spec:
+      initContainers:
+        - name: db-check-and-seed
+          image: gabeodame/recipe-backend:1.0.0
+          command: ["/bin/sh", "-c"]
+          args:
+            - >
+              until nc -z recipe-postgres-service 5432; do
+                echo 'Waiting for PostgreSQL to become ready...';
+                sleep 2;
+              done;
+              echo 'PostgreSQL is ready, running seed operation...';
+              npx prisma migrate deploy &&
+              npx prisma db seed
+          env:
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: recipe-postgres-secret
+                  key: database-url
       containers:
-        - image: gabeodame/recipe-service:1.0.0
+        - image: gabeodame/recipe-backend:1.0.0
           name: recipe
           env: # This line is correctly indented now
             - name: DATABASE_URL
@@ -23,3 +42,18 @@ spec:
                 secretKeyRef:
                   name: recipe-postgres-secret
                   key: database-url
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: recipe
+  name: recipe-service
+spec:
+  ports:
+    - port: 3000
+      protocol: TCP
+      targetPort: 3000
+  selector:
+    app: recipe
+  type: ClusterIP

@@ -15,7 +15,7 @@ interface FoodContentProps {
 
 function FoodCardContent({ food }: FoodContentProps) {
   const updateQueryParams = useUpdateQueryParams();
-  console.log(food);
+  console.log(food, "from foodContent component");
 
   type Category = {
     name: string;

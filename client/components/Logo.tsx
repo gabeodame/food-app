@@ -3,7 +3,6 @@
 import React from "react";
 import Link from "next/link";
 import Lottie from "react-lottie";
-import * as logoAnimationData from "../lib/lottieFiles/animations/food_animation.json";
 import LogoText from "./LogoText";
 
 function Logo() {

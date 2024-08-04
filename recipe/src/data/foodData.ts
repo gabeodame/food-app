@@ -10,7 +10,7 @@ export const recipes: FoodItemProps[] = [
       "A large-sized sushi roll featuring creamy avocado and perfectly seasoned sushi rice, wrapped in nori.",
     imageUrl:
       "https://images.unsplash.com/photo-1582450871972-ab5ca641643d?q=80&w=2574&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-    userId: 1, // Example userId, adjust based on actual users created
+    userId: "65ff19cb5d2dd11a751d4445", // Example userId, adjust based on actual users created
     categories: [
       { name: "Appetizers & Snacks" },
       { name: "Main Courses" },
@@ -39,7 +39,7 @@ export const recipes: FoodItemProps[] = [
     ],
   },
   {
-    userId: 1,
+    userId: "65ff19cb5d2dd11a751d4445",
     title: "Avocado Rolls Sushi",
     imageUrl:
       "https://images.unsplash.com/photo-1580822184713-fc5400e7fe10?q=80&w=2574&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90oy1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
@@ -68,7 +68,7 @@ export const recipes: FoodItemProps[] = [
     ],
   },
   {
-    userId: 1,
+    userId: "65ff19cb5d2dd11a751d4445",
     title: "Pancake Stack",
     imageUrl:
       "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?q=80&w=3360&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90oy1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
@@ -111,7 +111,7 @@ export const recipes: FoodItemProps[] = [
     ],
   },
   {
-    userId: 1,
+    userId: "65ff19cb5d2dd11a751d4445",
     title: "Yellow Spaghetti",
     imageUrl:
       "https://images.unsplash.com/photo-1579631542720-3a87824fff86?q=80&w=2564&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90oy1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
@@ -149,7 +149,7 @@ export const recipes: FoodItemProps[] = [
     ],
   },
   {
-    userId: 1,
+    userId: "65ff19cb5d2dd11a751d4445",
     title: "Pasta with Tomato & Cheese",
     imageUrl:
       "https://images.unsplash.com/photo-1587206668283-c21d974993c3?q=80&w=2535&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90oy1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
@@ -194,7 +194,7 @@ export const recipes: FoodItemProps[] = [
     ],
   },
   {
-    userId: 1,
+    userId: "65ff19cb5d2dd11a751d4445",
     title: "Ravioli with Tomato Cuts",
     imageUrl:
       "https://images.unsplash.com/photo-1617474019977-0e105d1b430e?q=80&w=2268&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90oy1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
@@ -244,21 +244,10 @@ export const recipes: FoodItemProps[] = [
 
 export const users = [
   {
-    email: "admin@anchordiv.com",
-    name: "Admin",
-    password: "hashedpassword1",
-  },
-  {
-    email: "user1@example.com",
-    name: "John Doe",
-    password: "hashedpassword1",
-  },
-  {
+    id: "65ff19cb5d2dd11a751d4445",
     email: "user2@example.com",
     name: "Jane Doe",
-    password: "hashedpassword2",
   },
-  // Add more users as needed
 ];
 
 export const categories = [
@@ -413,7 +402,7 @@ export const tagData = [
 //   //   },
 //   // },
 //   {
-//     userId: 1,
+//     userId: "65ff19cb5d2dd11a751d4445",
 //     title: "Avocado Rolls Sushi",
 //     imageUrl:
 //       "https://images.unsplash.com/photo-1580822184713-fc5400e7fe10?q=80&w=2574&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90oy1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
@@ -441,7 +430,7 @@ export const tagData = [
 //     ],
 //   },
 //   {
-//     userId: 1,
+//     userId: "65ff19cb5d2dd11a751d4445",
 //     title: "Pancake Stack",
 //     imageUrl:
 //       "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?q=80&w=3360&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90oy1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
@@ -474,7 +463,7 @@ export const tagData = [
 //     ],
 //   },
 //   {
-//     userId: 1,
+//     userId: "65ff19cb5d2dd11a751d4445",
 //     title: "Yellow Spaghetti",
 //     imageUrl:
 //       "https://images.unsplash.com/photo-1579631542720-3a87824fff86?q=80&w=2564&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90oy1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
@@ -501,7 +490,7 @@ export const tagData = [
 //     ],
 //   },
 //   {
-//     userId: 1,
+//     userId: "65ff19cb5d2dd11a751d4445",
 //     title: "Pasta with Tomato & Cheese",
 //     imageUrl:
 //       "https://images.unsplash.com/photo-1587206668283-c21d974993c3?q=80&w=2535&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90oy1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
@@ -534,7 +523,7 @@ export const tagData = [
 //     ],
 //   },
 //   {
-//     userId: 1,
+//     userId: "65ff19cb5d2dd11a751d4445",
 //     title: "Ravioli with Tomato Cuts",
 //     imageUrl:
 //       "https://images.unsplash.com/photo-1617474019977-0e105d1b430e?q=80&w=2268&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90oy1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
@@ -567,7 +556,7 @@ export const tagData = [
 //   },
 // ];
 // // {
-// //   userId: 1,
+// //   userId: "65ff19cb5d2dd11a751d4445",
 // //   title: "Alfredo Pasta",
 // //   imageUrl:
 // //     "https://images.unsplash.com/photo-1608219992759-8d74ed8d76eb?q=80&w=2574&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90oy1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",

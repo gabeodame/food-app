@@ -1,33 +1,22 @@
-import Image from "next/image";
-import Hero from "./components/Hero";
-import Container from "./components/ui/Container";
-import FoodList from "./components/FoodList/FoodList";
-import Categories from "./components/FoodList/Categories";
 import Featured from "./components/Featured";
+import Categories from "./components/FoodList/Categories";
+import FoodList from "./components/FoodList/FoodList";
+import Hero from "./components/Hero";
 import AdList from "./components/ads/AdList";
-import { FoodItemProps } from "./models/types/types";
 
-import { StickyCards } from "./components/StickyCards";
-import ContactUs from "./components/ContactUs";
-import Logo from "@/components/Logo";
 import LogoText from "@/components/LogoText";
-// import { prisma } from "@/lib/prisma";
+import ContactUs from "./components/ContactUs";
+import { StickyCards } from "./components/StickyCards";
 
-export type FoodListTypes = {
-  id: number;
-  title: string;
-  imageUrl: string;
-  description: string;
-  views: number;
-  favoritesCount: number;
-  categories?: any[];
-  tags?: any[];
-  season?: any[];
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "DishShare",
+  description:
+    "DishShare is your ultimate destination for culinary inspiration and collaboration. Explore a diverse array of mouthwatering recipes shared by food enthusiasts just like you. Whether you're craving savory dishes, decadent desserts, or delightful snacks, DishShare brings together a community of passionate cooks and foodies to share their favorite recipes and culinary creations. Join us to discover new flavors, connect with fellow food lovers, and embark on a delicious journey of exploration and sharing.",
 };
 
 export default async function MainHome() {
-  const foodData: FoodListTypes[] = []; // make api call to recipe service for list of recipes
-
   return (
     <main className="w-full">
       <div className=" hidden md:block">
@@ -40,7 +29,7 @@ export default async function MainHome() {
         </div>
         <AdList />
         <div className="container">
-          <FoodList foodData={foodData} limit={4} />
+          <FoodList limit={4} />
         </div>
       </div>
       <StickyCards />

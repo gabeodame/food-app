@@ -4,7 +4,7 @@ export type FoodItemProps = {
   imageUrl: string;
   description: string;
   categories?: { id?: number; name: string }[]; // Assuming each category has an id and name
-  userId: number;
+  userId: string;
   ingredients: {
     id?: number;
     name: string;

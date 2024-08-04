@@ -1,6 +1,6 @@
 FROM node:alpine3.19
 # Create app user and group
-# RUN addgroup app && adduser -S -G app app
+RUN addgroup app && adduser -S -G app app
 # Change the ownership of the application directory to the created user
 # RUN chown -R app:app /usr/src/app
 # USER app
@@ -18,7 +18,7 @@ RUN npm install
 # This step needs to be done before switching to user 'app' to avoid permission issues
 # Since we want all operations requiring root privileges to be done before switching to 'app'
 # We do it here after all necessary files are in place and before changing the user context
-# USER root
+USER root
 RUN mkdir -p .next && chmod -R 777 .next
 
 # Copy the rest of the application code
@@ -26,6 +26,8 @@ RUN mkdir -p .next && chmod -R 777 .next
 COPY . .
 
 RUN npm run build
+
+USER app
 
 EXPOSE 3000
 

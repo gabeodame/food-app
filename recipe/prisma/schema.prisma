@@ -8,12 +8,9 @@ datasource db {
 }
 
 model User {
-  id            Int            @id @default(autoincrement())
+  id            String         @id
   email         String         @unique
-  password      String
   name          String?
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
   comments      Comment[]
   favorites     Favorite[]
   pinnedRecipes PinnedRecipe[]
@@ -26,7 +23,7 @@ model Recipe {
   title          String
   imageUrl       String
   description    String
-  userId         Int
+  userId         String
   views          Int                 @default(0)
   favoritesCount Int                 @default(0)
   createdAt      DateTime            @default(now())
@@ -47,7 +44,7 @@ model Recipe {
 
 model PinnedRecipe {
   id        Int      @id @default(autoincrement())
-  userId    Int
+  userId    String
   recipeId  Int
   createdAt DateTime @default(now())
   recipe    Recipe   @relation(fields: [recipeId], references: [id])
@@ -57,7 +54,7 @@ model PinnedRecipe {
 model Comment {
   id        Int      @id @default(autoincrement())
   content   String
-  userId    Int
+  userId    String
   recipeId  Int
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -69,7 +66,7 @@ model Review {
   id        Int      @id @default(autoincrement())
   rating    Int
   comment   String?
-  userId    Int
+  userId    String
   recipeId  Int
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -79,7 +76,7 @@ model Review {
 
 model Favorite {
   id        Int      @id @default(autoincrement())
-  userId    Int
+  userId    String
   recipeId  Int
   createdAt DateTime @default(now())
   recipe    Recipe   @relation("RecipeToFavorites", fields: [recipeId], references: [id])

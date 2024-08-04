@@ -6,29 +6,26 @@ const nextConfig = {
       {
         protocol: "https",
         hostname: "s3.amazonaws.com",
-        port: "",
         pathname: "/my-bucket/**",
       },
       {
         protocol: "https",
         hostname: "images.unsplash.com",
-        port: "",
         pathname: "/**",
       },
       {
         protocol: "https",
         hostname: "unsplash.com",
-        port: "",
         pathname: "/**",
       },
       {
         protocol: "https",
         hostname: "plus.unsplash.com",
-        port: "",
         pathname: "/**",
       },
     ],
   },
+  // output: "standalone",
 };
 
 export default nextConfig;

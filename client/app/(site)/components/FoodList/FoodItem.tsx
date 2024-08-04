@@ -4,9 +4,9 @@ import Image from "next/image";
 import { motion } from "framer-motion";
 import FavoriteHeart from "@/components/widgets/FavoriteHeart";
 import { useRouter } from "next/navigation";
-import { FoodItemProps } from "../../models/types/types";
+import { FoodItemProps, FoodListTypes } from "../../models/types/types";
 
-function FoodItem({ item }: { item: FoodItemProps }) {
+function FoodItem({ item }: { item: FoodListTypes }) {
   // console.log(item);
   const router = useRouter();
   const imageVariants = {

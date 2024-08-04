@@ -1,0 +1,25 @@
+apiVersion: configuration.konghq.com/v1
+kind: KongIngress
+metadata:
+  name: recipe-service-route
+  annotations:
+    konghq.com/strip-path: "true"
+    konghq.com/preserve-host: "true"
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: recipe-service-ingress
+  annotations:
+    konghq.com/override: recipe-service-route
+spec:
+  rules:
+    - http:
+        paths:
+          - path: /api/1/recipes/?(.*)
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: recipe-service
+                port:
+                  number: 3000

@@ -29,3 +29,19 @@ spec:
           persistentVolumeClaim:
             claimName: mongo-pvc
 status: {}
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: auth-mongo
+  name: auth-mongo-service
+spec:
+  ports:
+    - port: 27017
+      protocol: TCP
+      targetPort: 27017
+  selector:
+    app: auth-mongo
+  type: ClusterIP

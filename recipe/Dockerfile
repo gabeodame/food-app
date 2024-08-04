@@ -1,43 +1,25 @@
 FROM node:alpine3.19
-# Create app user and group
-# RUN addgroup app && adduser -S -G app app
-# Change the ownership of the application directory to the created user
-# RUN chown -R app:app /usr/src/app
-# USER app
 
-# Set the working directory
 WORKDIR /app
 
-# Copy package.json and package-lock.json
+# Copying package.json and package-lock.json
 COPY package*.json ./
 
-# Install dependencies
-RUN npm install 
+# Installing dependencies as root, including Prisma CLI
+RUN npm ci
 
-#resolves permission issue to next cache folder
-RUN mkdir node_modules/.cache && chmod -R 777 node_modules/.cache
+# Ensuring the node user has ownership of the directories Prisma CLI might write to
+RUN mkdir -p node_modules/.cache prisma && chown -R node:node ./
 
-# Copy the Prisma schema file to the container
-COPY prisma ./prisma/
+# Switching to the node user for subsequent commands
+USER node
 
-# Generate Prisma client
-# This step is now correctly placed after copying the Prisma schema
+# Copying the rest of your application code with appropriate permissions
+COPY --chown=node:node . .
+
+# Generating the Prisma client using the locally installed Prisma CLI
 RUN npx prisma generate
-
-# Change the ownership of all files in /app to 'app' user and group
-# This step needs to be done before switching to user 'app' to avoid permission issues
-# Since we want all operations requiring root privileges to be done before switching to 'app'
-# We do it here after all necessary files are in place and before changing the user context
-# USER root
-# RUN mkdir -p .next && chmod -R 777 .next
-
-# Copy the rest of the application code
-# This step is after changing the ownership, so new files will already have correct 'app' user permissions
-COPY . .
-
-
 
 EXPOSE 3000
 
 CMD ["npm", "start"]
-

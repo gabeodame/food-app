@@ -20,7 +20,7 @@ build:
         manual:
           - src: "app/**/*.ts"
             dest: .
-    - image: gabeodame/recipe-service
+    - image: gabeodame/recipe-backend
       context: recipe
       docker:
         dockerfile: Dockerfile

@@ -7,110 +7,72 @@ import { ArrowLeftIcon } from "@radix-ui/react-icons";
 import Link from "next/link";
 import { ScrollArea } from "@radix-ui/react-scroll-area";
 import FoodCardContent from "./components/FoodCardContent";
-import { FoodItemProps } from "../../models/types/types";
+import { FoodItemProps, FoodListTypes } from "../../models/types/types";
 // import { foodData } from "../data/foodData";
 // import { prisma } from "@/lib/prisma";
 import { createSlug } from "@/app/util/helperfunctions";
+import FoodItemDetail from "./components/FoodItemDetail";
 
 type Props = {
   params: { id: string };
   searchParams: { [key: string]: string | string[] | null };
 };
 
-export default async function FoodDetailPage({ params, searchParams }: Props) {
-  // const id = +params.id;
-  // const id = parseInt(params.id, 10);
-
-  // const found = await prisma.recipe.findFirst({
-  //   where: {
-  //     id: +params.id,
-  //   },
-  //   include: {
-  //     ingredients: true,
-  //     instructions: true,
-  //     tags: {
-  //       select: {
-  //         tag: {
-  //           select: {
-  //             name: true,
-  //           },
-  //         },
-  //       },
-  //     },
-  //     categories: {
-  //       select: {
-  //         category: {
-  //           select: {
-  //             name: true,
-  //           },
-  //         },
-  //       },
-  //     },
-  //   },
-  // });
-
-  // console.log(found, "found");
-
+export default async function FoodDetailPage({ params }: Props) {
+  console.log(params);
   return (
     <div className="overflow-hidden max-h-svh mt-4">
-      <div className="container custom-min-height flex gap-4 flex-col items-center justify-center mt-2">
-        <Link className="container h-fit w-full flex justify-end" href="/foods">
-          <div className="flex w-fit items-center justify-center gap-2 px-2 p-y-2 text-white font-bold bg-color-secondary rounded-sm cursor-pointer">
-            <ArrowLeftIcon className="h-4 w-4" /> Back to All
-          </div>
-        </Link>
-        <div className="w-full h-max grid grid-cols-1 md:grid-cols-[1fr,_400px] lg:grid-cols-[1fr,_600px]  items-center shadow-md border-[1px] border-gray-100">
-          {/* <div className=" rounded-md border-r-[2px] border-gray-200"> */}
-          {/* <Image
-              src={found?.imageUrl ?? ""}
-              alt={found?.title ?? ""}
-              width="0"
-              height="0"
-              sizes="(min-width: 60em) 24vw,
-                    (min-width: 28em) 45vw,
-                    100vw"
-              className="w-full h-auto  rounded-md"
-            />
-          </div>
-          <FoodCardContent food={found as any} /> */}
-        </div>
-      </div>
+      <FoodItemDetail id={+params.id} />
     </div>
   );
 }
 
-export async function generateMetadata(
-  { params, searchParams }: Props,
-  parent: ResolvingMetadata
-): Promise<Metadata> {
-  // read route params
-  const id = +params.id;
+// export async function generateMetadata(
+//   { params, searchParams }: Props,
+//   parent: ResolvingMetadata
+// ): Promise<Metadata> {
+//   // read route params
+//   const id = +params.id;
 
-  // fetch data
-  // const product = await prisma.recipe.findUnique({
-  //   where: {
-  //     id: id,
-  //   },
-  // });
+//   // fetch data
+//   const res = await fetch(`https://recipe.dev/api/1/recipes/${id}`);
+//   const { data } = await res.json();
 
-  // optionally access and extend (rather than replace) parent metadata
-  const previousImages = (await parent).openGraph?.images || [];
+//   // optionally access and extend (rather than replace) parent metadata
+//   const previousImages = (await parent).openGraph?.images || [];
 
-  return {
-    // title: product?.title,
-    // openGraph: {
-    //   images: ["/some-specific-page-image.jpg", ...previousImages],
-    // },
-  };
-}
+//   return {
+//     title: data?.title,
+//     // openGraph: {
+//     //   images: ["/some-specific-page-image.jpg", ...previousImages],
+//     // },
+//   };
+// }
 
 // export async function generateStaticParams() {
-//   const recipes = await prisma.recipe.findMany();
+//   if (typeof window === "undefined") {
+//     const res = await fetch(
+//       `http://kong-kong-manager.default.svc.cluster.local/api/1/recipes`
+//     );
+//     const { data } = await res.json();
+//     console.log(data);
 
-//   return recipes.map((recipe) => {
-//     const slug = createSlug(recipe.title);
-//     return {
-//       slug,
-//     };
-//   });
+//     return data.map((recipe: FoodListTypes) => {
+//       const slug = createSlug(recipe.title);
+//       return {
+//         slug,
+//       };
+//     });
+//   } else {
+//     const res = await fetch(`https://recipe.dev/api/1/recipes`);
+//     const { data } = await res.json();
+//     console.log(data);
+
+//     return data.map((recipe: FoodListTypes) => {
+//       const slug = createSlug(recipe.title);
+//       return {
+//         slug,
+//       };
+//     });
+//   }
 // }
