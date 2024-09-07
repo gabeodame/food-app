@@ -26,7 +26,7 @@ function FoodList({
   useEffect(() => {
     const getFoodData = async () => {
       try {
-        const res = await fetch("https://recipe.dev/api/1/recipes");
+        const res = await fetch("http://www.dishsharing.com/api/1/recipes");
         console.log(res.status);
 
         if (res.ok) {

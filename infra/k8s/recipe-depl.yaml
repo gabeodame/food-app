@@ -20,14 +20,19 @@ spec:
           image: gabeodame/recipe-backend:1.0.0
           command: ["/bin/sh", "-c"]
           args:
-            - >
-              until nc -z recipe-postgres-service 5432; do
+            - |
+              echo 'Checking PostgreSQL service readiness...'; 
+              until nc -zv recipe-postgres-service 5432; do
                 echo 'Waiting for PostgreSQL to become ready...';
-                sleep 2;
+                sleep 5;
               done;
-              echo 'PostgreSQL is ready, running seed operation...';
-              npx prisma migrate deploy &&
-              npx prisma db seed
+              echo 'PostgreSQL is ready, generating migrations...';
+              npx prisma migrate dev --name init;
+              echo 'Applying migrations...';
+              npx prisma migrate deploy;
+              echo 'Running database seeding...';
+              npx prisma db seed;
+              echo 'Database setup complete!';
           env:
             - name: DATABASE_URL
               valueFrom:
@@ -35,9 +40,11 @@ spec:
                   name: recipe-postgres-secret
                   key: database-url
       containers:
-        - image: gabeodame/recipe-backend:1.0.0
-          name: recipe
-          env: # This line is correctly indented now
+        - name: recipe
+          image: gabeodame/recipe-backend:1.0.0
+          ports:
+            - containerPort: 3000
+          env:
             - name: DATABASE_URL
               valueFrom:
                 secretKeyRef:
@@ -53,7 +60,8 @@ metadata:
   name: recipe-service
 spec:
   ports:
-    - port: 3000
+    - name: recipe
+      port: 3000
       protocol: TCP
       targetPort: 3000
   selector:
