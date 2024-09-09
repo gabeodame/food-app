@@ -1,4 +1,8 @@
-import { BadRequestError, validateRequest } from "@gogittix/common";
+import {
+  BadRequestError,
+  validateRequest,
+  CustomError,
+} from "@gogittix/common";
 import express, { Request, Response } from "express";
 import { body } from "express-validator";
 import jwt from "jsonwebtoken";

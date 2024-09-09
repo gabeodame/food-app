@@ -3,7 +3,8 @@ FROM node:alpine3.19
 RUN addgroup app && adduser -S -G app app
 # Change the ownership of the application directory to the created user
 # RUN chown -R app:app /usr/src/app
-# USER app
+USER root
+RUN apk update && apk add curl
 
 # Set the working directory
 WORKDIR /app
