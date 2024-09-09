@@ -1,19 +1,12 @@
 import express from "express";
-import "express-async-errors"; // for catching errors in async routes
-import { json } from "body-parser";
-import { errorHandler, NotFoundError } from "@gogittix/common";
-
 import cookieSession from "cookie-session";
+import { authRoutes } from "./routes/authRoutes";
+import { errorHandler, NotFoundError, currentUser } from "@gogittix/common"; // Adjust paths
 
-import { signoutRouter } from "./routes/signout";
-import { signupRouter } from "./routes/signup";
-import { currentUserRouter } from "./routes/currentUser";
-import { signinRouter } from "./routes/signin";
-
-//configures app
 const app = express();
-app.set("trust proxy", true); //this is to make sure express trusts ngnix proxy
-app.use(json());
+
+app.set("trust proxy", true);
+app.use(express.json());
 app.use(
   cookieSession({
     signed: false,
@@ -21,14 +14,14 @@ app.use(
   })
 );
 
-app.use(currentUserRouter);
-app.use(signinRouter);
-app.use(signoutRouter);
-app.use(signupRouter);
+// Use authentication routes
+app.use(authRoutes);
 
-app.all("*", () => {
+// Catch-all for undefined routes
+app.all("*", async (req, res) => {
   throw new NotFoundError();
 });
+
 app.use(errorHandler);
 
 export { app };
