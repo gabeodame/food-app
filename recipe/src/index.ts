@@ -1,15 +1,17 @@
 import { app } from "./app";
-import dotenv from "dotenv";
-dotenv.config();
+import { config } from "./config"; // Import from config module
 
 const start = async () => {
-  if (!process.env.DATABASE_URL) {
-    throw new Error("DATABASE_URL must be defined");
+  try {
+    // Start the server and print the database URL
+    app.listen(config.port, () => {
+      console.log(`Connected to database at: ${config.databaseUrl}`);
+      console.log(`Recipe service is now listening on port ${config.port}!`);
+    });
+  } catch (err) {
+    console.error("Error starting server:", err);
+    process.exit(1); // Exit process with failure code
   }
-  app.listen(3000, () => {
-    console.log(process.env.DATABASE_URL);
-    console.log("recipe service is now listening on port 3000!");
-  });
 };
 
 start();

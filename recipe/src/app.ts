@@ -1,31 +1,24 @@
-import express from "express";
 import cookieSession from "cookie-session";
+import express from "express";
 import "express-async-errors";
-import { json } from "body-parser";
-import { allRecipesRouter } from "./routes/allRecipes";
-import { recipeDetailsRouter } from "./routes/recipeDetails";
-import { newRecipesRouter } from "./routes/newRecipe";
-
-// import cors from "cors";
+import helmet from "helmet";
+import { recipeRoutes } from "./routes/recipeRoutes";
+import { config } from "./config";
 
 const app = express();
 
-app.set("trust proxy", true); //trust traffic coming from ingress-ngnix
+app.set("trust proxy", 1); //trust traffic coming from ingress-nginx
 
 app.use(express.json()); // express.json() is a middleware that parses incoming requests with JSON payloads
-app.use(json());
+app.use(helmet());
 
 app.use(
   cookieSession({
     signed: false,
-    secure: process.env.NODE_ENV != "test",
+    secure: config.isProduction, // Reference the config module for environment check
   })
 );
 
-// app.use(cors);
-
-app.use(allRecipesRouter);
-app.use(recipeDetailsRouter);
-app.use(newRecipesRouter);
+app.use(recipeRoutes);
 
 export { app };
