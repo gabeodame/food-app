@@ -30,5 +30,5 @@ build:
             dest: .
 manifests:
   rawYaml:
-    - ./infra/k8s/namespace.yaml
-    - ./infra/k8s/*
+    - ./infra/k8s/dev/namespace.yaml
+    - ./infra/k8s/dev/*.yaml

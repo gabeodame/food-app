@@ -15,30 +15,6 @@ spec:
       labels:
         app: recipe
     spec:
-      initContainers:
-        - name: db-check-and-seed
-          image: gabeodame/recipe-backend:1.0.0
-          command: ["/bin/sh", "-c"]
-          args:
-            - |
-              echo 'Checking PostgreSQL service readiness...'; 
-              until nc -zv recipe-postgres-service 5432; do
-                echo 'Waiting for PostgreSQL to become ready...';
-                sleep 5;
-              done;
-              echo 'PostgreSQL is ready, generating migrations...';
-              npx prisma migrate dev --name init;
-              echo 'Applying migrations...';
-              npx prisma migrate deploy;
-              echo 'Running database seeding...';
-              npx prisma db seed;
-              echo 'Database setup complete!';
-          env:
-            - name: DATABASE_URL
-              valueFrom:
-                secretKeyRef:
-                  name: recipe-postgres-secret
-                  key: database-url
       containers:
         - name: recipe
           image: gabeodame/recipe-backend:1.0.0
@@ -50,6 +26,37 @@ spec:
                 secretKeyRef:
                   name: recipe-postgres-secret
                   key: database-url
+      initContainers:
+        - name: db-check-and-seed
+          image: gabeodame/recipe-backend:1.0.0
+          command: ["/bin/sh", "-c"]
+          args:
+            - |
+              echo 'Checking PostgreSQL service readiness...'; 
+
+              # Print the current DATABASE_URL value
+              echo "Current DATABASE_URL: $DATABASE_URL";
+
+              # Check if PostgreSQL is ready
+              until nc -zv recipe-postgres-service 5432; do
+                echo 'Waiting for PostgreSQL to become ready...';
+                echo ''
+                sleep 5;
+              done;
+
+              echo 'PostgreSQL is ready, generating migrations...';
+
+              # Run Prisma migrations
+              npx prisma migrate dev --name init;
+
+              echo 'Applying migrations...';
+              npx prisma migrate deploy;
+
+              echo 'Running database seeding...';
+              npx prisma db seed;
+
+              echo 'Database setup complete!';
+
 ---
 apiVersion: v1
 kind: Service
