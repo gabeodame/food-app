@@ -4,26 +4,31 @@ import React from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
+// import { revalidate } from "@/app/util/revalidate";
+import fetchData from "@/app/util/fetchData";
+
 function SignUp() {
   const userSignupInput = z
     .object({
       username: z
         .string()
-        .nonempty({ message: "Username is required" })
+        // .nonempty({ message: "Username is required" })
         .min(4, { message: "Username must be at least 4 characters long" })
         .max(20, { message: "Username must be at most 20 characters long" }),
       email: z
         .string()
-        .nonempty({ message: "Email is required" })
+        .min(4, { message: "Enter a valid email" })
+        // .nonempty({ message: "Email is required" })
         .email({ message: "Invalid email address" }),
       password: z
         .string()
-        .nonempty({ message: "Password is required" })
+        // .nonempty({ message: "Password is required" })
         .min(8, { message: "Password must be at least 8 characters long" })
         .max(20, { message: "Password must be at most 20 characters long" }),
       confirm_password: z
         .string()
-        .nonempty({ message: "Please confirm your password" }),
+        .min(8, { message: "Password must be at least 8 characters long" }),
+      // .nonempty({ message: "Please confirm your password" }),
     })
     .refine((data) => data.password === data.confirm_password, {
       message: "Passwords don't match",
@@ -35,12 +40,33 @@ function SignUp() {
   const {
     register,
     handleSubmit,
+    reset,
     formState: { errors },
   } = useForm<userSignupType>({
     resolver: zodResolver(userSignupInput),
   });
 
-  const onSubmit = (data: userSignupType) => console.log(data);
+  const onSubmit = async (data: userSignupType) => {
+    console.log(`data - ${data}`);
+    console.log("signing up");
+    const userData = await fetchData(
+      "http://ingress-nginx-controller.ingress-nginx.svc.cluster.local/api/users/signup",
+      "post",
+      {
+        email: data.email,
+        password: data.password,
+      }
+    );
+    console.log(userData);
+
+    if (!userData.errors || userData.errors === null) {
+      // await revalidate("/", "/");
+    } else {
+      console.log(userData.error);
+    }
+
+    reset();
+  };
   return (
     <form
       onSubmit={handleSubmit(onSubmit)}
@@ -131,6 +157,13 @@ function SignUp() {
           className="bg-color-green w-full p-2 text-gray-50 font-semibold rounded-md"
           title="Signup"
         />
+      </div>
+      <div className="" aria-describedby="form-error">
+        {errors === undefined && (
+          <div className="text-red-800 text-sm w-full bg-red-200 py-1 px-2">
+            <p>{errors}</p>
+          </div>
+        )}
       </div>
     </form>
   );

@@ -3,6 +3,7 @@
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import fetchData from "@/app/util/fetchData";
 
 function Login() {
   const userLoginSchema = z.object({
@@ -20,8 +21,13 @@ function Login() {
     resolver: zodResolver(userLoginSchema),
   });
 
-  const submitData = (data: userInput) => {
+  const submitData = async (data: userInput) => {
     console.log(data);
+    const userData = await fetchData("/api/users/login", "post", data);
+    console.log(userData);
+    if (!userData.errors || userData.errors === null) {
+      // await revalidate("/", "/");
+    }
   };
 
   return (

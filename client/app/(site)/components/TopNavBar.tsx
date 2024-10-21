@@ -23,8 +23,12 @@ import Search from "@/components/Search";
 import CustomDialog from "@/components/widgets/CustomDialog";
 import CustomSearchBar from "@/components/widgets/CustomSearchBar";
 import Image from "next/image";
+import CategoryMenu from "./CategoryMenu";
+import { getImage } from "@/app/util/helperfunctions";
+import UserAccount from "./UserAccount";
+import { DropdownMenuItem } from "@/components/widgets/DropdownMenuCheckboxes";
 
-const components: {
+const categories: {
   title: string;
   href: string;
   description: string;
@@ -103,8 +107,27 @@ const components: {
   },
 ];
 
+const items: DropdownMenuItem[] = [
+  {
+    label: "Status Bar",
+    defaultChecked: true,
+  },
+  {
+    label: "Activity Bar",
+    defaultChecked: false,
+    disabled: true,
+  },
+  {
+    label: "Panel",
+    defaultChecked: false,
+  },
+];
+
 function TopNavBar() {
   const [isSticky, setIsSticky] = useState(false);
+  const [imageDataUrl, setImageDataUrl] = useState();
+  const foodListListUrl =
+    "https://images.unsplash.com/photo-1476718406336-bb5a9690ee2a?q=80&w=2000&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D";
 
   useEffect(() => {
     const handleScroll = () => {
@@ -117,6 +140,16 @@ function TopNavBar() {
     // Cleanup
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  // useEffect(() => {
+  //   const getDataUrl = async () => {
+  //     const image = await getImage(foodListListUrl);
+  //     setImageDataUrl(image);
+  //   };
+
+  //   getDataUrl();
+  // }, [foodListListUrl]);
+
   return (
     <div
       className={cn("w-full h-16  sticky top-0 z-50", {
@@ -134,7 +167,7 @@ function TopNavBar() {
                   Recipes & Menus
                 </NavigationMenuTrigger>
                 <NavigationMenuContent>
-                  <ul className="grid gap-3 p-4 md:w-[400px] lg:w-[500px] lg:grid-cols-[.75fr_1fr]">
+                  <ul className="grid gap-4 p-4 md:w-[600px] lg:w-[800px] lg:grid-cols-[1.65fr_1fr]">
                     <li className="row-span-3">
                       <NavigationMenuLink asChild>
                         <Link
@@ -143,38 +176,93 @@ function TopNavBar() {
                         >
                           <div className="h-full w-full">
                             <Image
-                              src="https://images.unsplash.com/photo-1704403529456-a676da0de4f0?q=80&w=4000&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+                              src={foodListListUrl}
                               alt="Food display as icon"
                               width="0"
                               height="0"
                               sizes="100vw"
-                              className="w-full h-full overflow-hidden m-0"
+                              className="w-full h-auto rounded-md overflow-hidden"
+                              priority
+                              // placeholder="blur"
+                              // blurDataURL={imageDataUrl}
                             />
                           </div>
-                          <div className="mb-2 mt-4 text-lg font-medium">
+                          <div className="mt-4 text-lg font-medium">
                             All Recipes
                           </div>
                           <p className="text-sm leading-tight text-muted-foreground">
                             Browse the entire list of food creations curated
-                            over time by our artistic community
+                            over time by our artistic community.
                           </p>
                         </Link>
                       </NavigationMenuLink>
                     </li>
-                    <ListItem href="/docs" title="Introduction">
-                      Breakfast Menu
+                    <ListItem href="/breakfast-recipes" title="Breakfast">
+                      <div className="flex flex-col gap-2">
+                        <div className="w-full rounded-sm shadow-sm overflow-hidden">
+                          <Image
+                            src="https://images.unsplash.com/photo-1604882356682-8ec3d3037c82?q=80&w=5070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+                            width="0"
+                            height="0"
+                            sizes="100vw"
+                            className="w-full h-auto rounded-md"
+                            priority
+                            alt="Breakfast image"
+                          />
+                        </div>
+                        <p className="text-sm text-muted-foreground">
+                          Start your day right with delicious breakfast ideas
+                          and recipes.
+                        </p>
+                      </div>
                     </ListItem>
-                    <ListItem href="/docs/installation" title="Installation">
-                      Lunch Menu
+                    <ListItem href="/lunch-recipes" title="Lunch">
+                      <div className="flex flex-col gap-2">
+                        <div className="w-full rounded-sm shadow-sm overflow-hidden">
+                          <Image
+                            src="https://images.unsplash.com/photo-1505207957430-0378f105b2ba?q=80&w=4032&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+                            width="0"
+                            height="0"
+                            sizes="100vw"
+                            className="w-full h-auto rounded-md"
+                            priority
+                            alt="Lunch image"
+                          />
+                        </div>
+                        <p className="text-sm text-muted-foreground">
+                          Discover satisfying lunch options to keep you
+                          energized all afternoon.
+                        </p>
+                      </div>
                     </ListItem>
-                    <ListItem
-                      href="/docs/primitives/typography"
-                      title="Typography"
-                    >
-                      Dinner Menu
+                    <ListItem href="/dinner-recipes" title="Dinner">
+                      <div className="flex flex-col gap-2">
+                        <div className="w-full rounded-sm shadow-sm overflow-hidden">
+                          <Image
+                            src="https://images.unsplash.com/photo-1653418621896-50e12c0f289b?q=80&w=5070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+                            width="0"
+                            height="0"
+                            sizes="100vw"
+                            className="w-full h-auto rounded-md"
+                            priority
+                            alt="Dinner image"
+                          />
+                        </div>
+                        <p className="text-sm text-muted-foreground">
+                          Explore our dinner menu for a perfect end to your day
+                          with hearty meals.
+                        </p>
+                      </div>
                     </ListItem>
                   </ul>
                 </NavigationMenuContent>
+              </NavigationMenuItem>
+              <NavigationMenuItem className="text-lg">
+                <Link href="/vendors" legacyBehavior passHref>
+                  <NavigationMenuLink className={navigationMenuTriggerStyle()}>
+                    <div className="text-xl">Blog</div>
+                  </NavigationMenuLink>
+                </Link>
               </NavigationMenuItem>
               <NavigationMenuItem>
                 <NavigationMenuTrigger className="text-lg">
@@ -182,39 +270,25 @@ function TopNavBar() {
                 </NavigationMenuTrigger>
                 <NavigationMenuContent>
                   <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px] ">
-                    {components.map((component) => (
-                      <ListItem
-                        key={component.title}
-                        // title={component.title}
-                        href={component.href}
-                      >
-                        <div className="flex gap-2  items-center justify-center">
-                          <div className="w-full h-full rounded-sm shadow-sm overflow-hidden">
-                            <Image
-                              src={component.imageUrl}
-                              alt={component.title}
-                              width="0"
-                              height="0"
-                              sizes="100vw"
-                              className="w-full h-full overflow-hidden m-0"
-                            />
-                          </div>
-                          <div className="flex flex-col gap-1 justify-center">
-                            <span className="font-bold text-primary">
-                              {component.title}
-                            </span>
-                            <span>{component.description}</span>
-                          </div>
-                        </div>
-                      </ListItem>
+                    {categories.map((category) => (
+                      <React.Fragment key={category.title}>
+                        <CategoryMenu category={category} />
+                      </React.Fragment>
                     ))}
                   </ul>
                 </NavigationMenuContent>
               </NavigationMenuItem>
               <NavigationMenuItem className="text-lg">
-                <Link href="/docs" legacyBehavior passHref>
+                <Link href="/vendors" legacyBehavior passHref>
                   <NavigationMenuLink className={navigationMenuTriggerStyle()}>
-                    <div className="text-xl"> Documentation</div>
+                    <div className="text-xl">Vendors</div>
+                  </NavigationMenuLink>
+                </Link>
+              </NavigationMenuItem>
+              <NavigationMenuItem className="text-lg">
+                <Link href="/vendors" legacyBehavior passHref>
+                  <NavigationMenuLink className={navigationMenuTriggerStyle()}>
+                    <div className="text-xl">Events & Promotions</div>
                   </NavigationMenuLink>
                 </Link>
               </NavigationMenuItem>
@@ -232,12 +306,13 @@ function TopNavBar() {
           </div>
           <HamburgerMenuIcon className="md:hidden w-8 h-8 text-gray-500" />
         </div>
+        <UserAccount items={items} />
       </div>
     </div>
   );
 }
 
-const ListItem = React.forwardRef<
+export const ListItem = React.forwardRef<
   React.ElementRef<"a">,
   React.ComponentPropsWithoutRef<"a">
 >(({ className, title, children, ...props }, ref) => {

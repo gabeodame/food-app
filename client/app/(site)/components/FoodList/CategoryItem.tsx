@@ -20,16 +20,16 @@ function CategoryItem({
 
   const titleVariants = {
     initial: {
-      y: 50, // Start a bit lower
+      y: 50, // Start lower to animate upwards
       opacity: 0,
     },
     visible: {
-      y: 280,
+      y: 410, // Position it just below the image
       opacity: 1,
       transition: { duration: 0.5, ease: "easeOut" },
     },
     hover: {
-      y: -40, // Move above the image
+      y: -40, // Move above the image on hover
       transition: { duration: 0.2, ease: "easeOut" },
     },
   };
@@ -77,14 +77,18 @@ function CategoryItem({
         >
           {food.category}
         </motion.div>
-        <motion.div variants={imageVariants}>
+        <motion.div
+          variants={imageVariants}
+          className="rounded-md shadow-sm overflow-hidden"
+        >
           <Image
             src={food.imageUrl}
             alt={food.category}
             width="280"
             height="280"
             sizes="(max-width: 280px) 100vw, 280px"
-            className="w-full h-auto"
+            className="w-full h-auto z-10 overflow-hidden"
+            priority
           />
         </motion.div>
         <motion.p variants={descriptionVariants} className="text-center">

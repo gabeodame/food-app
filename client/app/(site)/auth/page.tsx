@@ -1,4 +1,3 @@
-import { TabsList, Tabs, TabsContent, TabsTrigger } from "@/components/ui/tabs";
 import Login from "./components/Login";
 import {
   Card,
@@ -8,6 +7,7 @@ import {
 } from "@/components/ui/card";
 import { Separator } from "@radix-ui/themes";
 import SignUp from "./components/Signup";
+import LoginForm from "./components/LoginForm";
 
 export default function Auth() {
   return (
@@ -18,23 +18,7 @@ export default function Auth() {
         </CardHeader> */}
 
         <CardContent className="flex flex-col gap-4 min-h-full">
-          <Tabs className="" defaultValue="login">
-            <TabsList className="w-full h-full flex justify-evenly">
-              <TabsTrigger value="login" className="w-full">
-                Login
-              </TabsTrigger>
-              <TabsTrigger value="signup" className="w-full">
-                Signup
-              </TabsTrigger>
-            </TabsList>
-            <Separator className="bg-color-secondary h-[2px] w-full my-4" />
-            <TabsContent value="login">
-              <Login />
-            </TabsContent>
-            <TabsContent value="signup">
-              <SignUp />
-            </TabsContent>
-          </Tabs>
+          <LoginForm />
         </CardContent>
         {/* <Separator className="bg-color-secondary h-[2px] w-full my-4" /> */}
         <CardFooter></CardFooter>
