@@ -1,4 +1,7 @@
 FROM node:alpine3.19
+
+RUN apk add --no-cache curl
+
 # Create app user and group
 RUN addgroup app && adduser -S -G app app
 # Change the ownership of the application directory to the created user
