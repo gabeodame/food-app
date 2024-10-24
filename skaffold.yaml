@@ -3,6 +3,8 @@ kind: Config
 metadata:
   name: food-app
 build:
+  local:
+    push: true
   artifacts:
     - image: gabeodame/auth-service
       context: auth
@@ -30,5 +32,6 @@ build:
             dest: .
 manifests:
   rawYaml:
-    - ./infra/k8s/dev/namespace.yaml
-    - ./infra/k8s/dev/*.yaml
+    - ./infra/k8s/base/namespace.yaml
+    - ./infra/k8s/base/*
+    - ./infra/k8s/local/*

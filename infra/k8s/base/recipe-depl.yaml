@@ -17,7 +17,8 @@ spec:
     spec:
       containers:
         - name: recipe
-          image: gabeodame/recipe-backend:1.0.0
+          image: gabeodame/recipe-backend:latest
+          imagePullPolicy: Always
           ports:
             - containerPort: 3000
           env:
@@ -28,7 +29,8 @@ spec:
                   key: database-url
       initContainers:
         - name: db-check-and-seed
-          image: gabeodame/recipe-backend:1.0.0
+          image: gabeodame/recipe-backend:latest
+          imagePullPolicy: Always
           command: ["/bin/sh", "-c"]
           args:
             - |
