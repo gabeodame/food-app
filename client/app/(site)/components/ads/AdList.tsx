@@ -1,12 +1,11 @@
 import React from "react";
 import AdOne from "./AdOne";
-import Image from "next/image";
 import AdTwo from "./AdTwo";
 import AdThree from "./AdThree";
 
 function AdList() {
   return (
-    <div className="w-full grid gap- md:gap-[1px] md:grid-cols-2 lg:grid-cols-3 auto-rows-auto ">
+    <div className="w-full max-w-7xl mx-auto  grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 auto-rows-auto">
       <AdOne
         bg_imageUrl="https://images.unsplash.com/photo-1549590143-d5855148a9d5?q=80&w=3328&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
         text="Your Passion for"

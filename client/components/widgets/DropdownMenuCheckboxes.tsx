@@ -12,6 +12,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { CiUser } from "react-icons/ci";
 
 type Checked = DropdownMenuCheckboxItemProps["checked"];
 
@@ -35,12 +36,11 @@ export const DropdownMenuCheckboxes = ({
   label,
   separator = true,
 }: DropdownMenuComponentProps) => {
-  // State management for checkbox items
   const [checkedStates, setCheckedStates] = React.useState<Checked[]>(
     items.map((item) => item.defaultChecked ?? false)
   );
 
-  const handleCheckedChange = (index: number, checked: Checked) => {
+  const handleCheckedChange = (index: number, checked: boolean) => {
     setCheckedStates((prev) => {
       const newCheckedStates = [...prev];
       newCheckedStates[index] = checked;

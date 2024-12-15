@@ -5,16 +5,10 @@ import { BuildingOffice2Icon, UserGroupIcon } from "@heroicons/react/20/solid";
 import { useScroll, motion, useTransform, MotionValue } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
-import React, { ElementType, ReactElement, ReactNode, useRef } from "react";
-import {
-  FiArrowRight,
-  FiAward,
-  FiCalendar,
-  FiCopy,
-  FiDatabase,
-} from "react-icons/fi";
+import React, { ElementType, useRef } from "react";
+import { FiArrowRight, FiAward, FiCopy } from "react-icons/fi";
 
-//main component
+// Main component
 export const StickyCards = () => {
   const ref = useRef(null);
   const { scrollYProgress } = useScroll({
@@ -23,18 +17,16 @@ export const StickyCards = () => {
   });
 
   return (
-    <>
-      <div ref={ref} className="relative">
-        {CARDS.map((c, idx) => (
-          <Card
-            key={c.id}
-            card={c}
-            scrollYProgress={scrollYProgress}
-            position={idx + 1}
-          />
-        ))}
-      </div>
-    </>
+    <div ref={ref} className="w-full max-w-7xl mx-auto">
+      {CARDS.map((c, idx) => (
+        <Card
+          key={c.id}
+          card={c}
+          scrollYProgress={scrollYProgress}
+          position={idx + 1}
+        />
+      ))}
+    </div>
   );
 };
 
@@ -63,45 +55,45 @@ const Card = ({ position, card, scrollYProgress }: CardProps) => {
       style={{
         height: CARD_HEIGHT,
         y: position === CARDS.length ? undefined : y,
-        background: isOddCard ? "black" : "white",
-        color: isOddCard ? "white" : "black",
       }}
-      className={cn("sticky top-0 flex justify-center w-full origin-top")}
+      className={cn(
+        "sticky top-0 w-full max-w-7xl mx-auto  flex justify-center",
+        {
+          "bg-black text-white": isOddCard,
+          "bg-white text-black": !isOddCard,
+        }
+      )}
     >
-      <div
-        className={cn("max-w-[80%] flex ", {
-          "flex-row-reverse": !isOddCard,
-        })}
-      >
-        <div className="w-full flex">
+      <div className="w-full max-w-full md:max-w-3xl lg:max-w-4xl xl:max-w-7xl mx-auto flex flex-col md:flex-row gap-4">
+        <div className="w-full h-[320px] md:h-[400px] lg:h-[500px] relative">
           <Image
             alt={card.title}
             src={card.imageUrl ?? ""}
-            width="0"
-            height="0"
+            fill
             sizes="(min-width: 60em) 24vw,
                     (min-width: 28em) 45vw,
                     100vw"
-            className="w-full h-full overflow-hidden m-0 "
+            className="w-full h-full object-cover rounded-lg"
           />
         </div>
         <div className="w-full flex flex-col items-center justify-center px-4">
-          <card.Icon className="mb-4 w-16 h-16 lg:h-24 lg:w-24" />
-          <h3 className="mb-6 text-center text-4xl font-semibold md:text-6xl">
+          <card.Icon className="mb-4 w-12 h-12 lg:w-16 lg:h-16" />
+          <h3 className="mb-4 text-center text-2xl lg:text-4xl font-semibold">
             {card.title}
           </h3>
-          <p className="mb-8 max-w-lg text-center text-sm md:text-base">
+          <p className="mb-6 text-center text-sm lg:text-lg max-w-lg">
             {card.description}
           </p>
           <Link
             href={card.routeTo}
-            className={`flex items-center gap-2 rounded px-6 py-4 text-base font-medium uppercase text-black transition-all hover:-translate-x-0.5 hover:-translate-y-0.5 md:text-lg ${
-              card.ctaClasses
-            } ${
-              isOddCard
-                ? "shadow-[4px_4px_0px_white] hover:shadow-[8px_8px_0px_white]"
-                : "shadow-[4px_4px_0px_black] hover:shadow-[8px_8px_0px_black]"
-            }`}
+            className={cn(
+              `flex items-center mb-2 gap-2 px-4 py-2 text-sm lg:text-base font-medium rounded-md uppercase transition-all`,
+              card.ctaClasses,
+              {
+                "shadow-white hover:shadow-[8px_8px_0px_white]": isOddCard,
+                "shadow-black hover:shadow-[8px_8px_0px_black]": !isOddCard,
+              }
+            )}
           >
             <span>Learn more</span>
             <FiArrowRight />

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { use, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { TabsList, Tabs, TabsContent, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@radix-ui/themes";
 
@@ -9,8 +9,26 @@ import SignUp from "./Signup";
 import { usePathname, useSearchParams } from "next/navigation";
 
 function LoginForm() {
+  const [formState, setFormState] = useState<"login" | "signup">("login");
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    const loginParam = searchParams.get("login");
+    if (loginParam === "signup") {
+      setFormState("signup");
+    } else {
+      setFormState("login");
+    }
+  }, [searchParams]);
+
+  const handleTabChange = (value: string) => {
+    if (value === "login" || value === "signup") {
+      setFormState(value);
+    }
+  };
+
   return (
-    <Tabs className="" defaultValue="login">
+    <Tabs value={formState} onValueChange={handleTabChange}>
       <TabsList className="w-full h-full flex justify-evenly">
         <TabsTrigger value="login" className="w-full">
           Login

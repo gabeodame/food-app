@@ -22,11 +22,18 @@ function FoodList({
   const pathName = usePathname();
   const { setFilteredItems, toggleFiltered, state } = useSearch();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const params = new URLSearchParams(searchParams.toString());
+  const category = params.get("category") as string;
+
+  const url = category
+    ? `/api/1/recipes?category=${category}`
+    : "/api/1/recipes";
 
   useEffect(() => {
     const getFoodData = async () => {
       try {
-        const res = await fetch("/api/1/recipes");
+        const res = await fetch(url);
         console.log(res.status);
 
         if (res.ok) {
@@ -89,19 +96,22 @@ function FoodList({
 
   return (
     <div className="flex flex-col gap-4">
+      {/* Conditional Button */}
       {isLandingPage && (
         <Button
           variant="link"
           onClick={() => {
             router.push("/foods");
           }}
-          className="flex gap-1 items-center self-end"
+          className="flex gap-1 items-center justify-center md:justify-end" // Center on mobile, right-align on larger screens
         >
           <ArrowLeftIcon className="h-4 w-4" />
           Show All
         </Button>
       )}
-      <div className="w-full grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 auto-rows-auto gap-4">
+
+      {/* Grid Layout */}
+      <div className="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 auto-rows-auto gap-4">
         {data?.map((item, index) => {
           if (limit && index >= limit) return;
           return <FoodItem key={index} item={item} />;

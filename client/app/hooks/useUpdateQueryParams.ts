@@ -21,6 +21,8 @@ function useUpdateQueryParams() {
         params.delete(name); // Delete parameter if value is null
       }
 
+      console.log("params", params.toString());
+
       const baseUrl =
         isDetailPage() || pathname === "/foods" ? "/foods" : pathname;
       const newUrl = `${baseUrl}?${params.toString()}`;

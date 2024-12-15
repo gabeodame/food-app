@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: recipe
+  labels:
+    app: recipe-client
+  name: recipe-client-depl
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: recipe-client
+  template:
+    metadata:
+      labels:
+        app: recipe-client
+    spec:
+      containers:
+        - image: gabeodame/recipe-client
+          name: recipe-client
+          imagePullPolicy: IfNotPresent
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: recipe
+  labels:
+    app: recipe-client
+  name: recipe-client-service
+spec:
+  ports:
+    - name: client
+      port: 3000
+      protocol: TCP
+      targetPort: 3000
+  selector:
+    app: recipe-client
+  type: ClusterIP

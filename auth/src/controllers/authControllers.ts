@@ -9,7 +9,12 @@ export class AuthController {
   async signup(req: Request) {
     const { email, password, username } = req.body;
 
+    if (!email || !username) {
+      throw new BadRequestError("Either email or username is required");
+    }
+
     const existingUser = await User.findOne({ $or: [{ email }, { username }] });
+    console.log(existingUser);
     if (existingUser) {
       throw new BadRequestError("Email already in use");
     }
@@ -17,21 +22,20 @@ export class AuthController {
     const user = User.build({ email, password, username });
     await user.save();
 
-    // Generate JWT and store in session
-    const userJwt = jwt.sign(
-      { id: user.id, email: user.email },
-      process.env.JWT_KEY!
-    );
-
-    // Return the user and token, but do not send the response here
-    return { user, token: userJwt };
+    return { message: "User created successfully" };
   }
 
   // Business logic for signing in users
   async signin(req: Request) {
     const { email, password, username } = req.body;
 
-    const user = await User.findOne({ $or: [{ email }, { username }] });
+    const identifier = email || username;
+    if (!identifier) {
+      throw new BadRequestError("Either email or username is required");
+    }
+
+    // Query by email or username based on which is provided
+    const user = await User.findOne(email ? { email } : { username });
     if (!user) {
       throw new BadRequestError("Invalid credentials");
     }
@@ -44,12 +48,16 @@ export class AuthController {
       throw new BadRequestError("Invalid credentials");
     }
 
-    // Generate JWT and return the user and token
+    // Generate JWT
     const userJwt = jwt.sign(
-      { id: user.id, email: user.email },
+      { id: user.id, email: user.email, username: user.username },
       process.env.JWT_KEY!
     );
 
+    // Set JWT in cookie for authenticated sessions
+    req.session = { jwt: userJwt };
+
+    // Return the authenticated user
     return { user, token: userJwt };
   }
 

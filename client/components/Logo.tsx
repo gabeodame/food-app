@@ -20,18 +20,24 @@ function Logo() {
         href="/"
         className="NavigationMenuLink flex items-center justify-center w-full h-full"
       >
-        {/* <Lottie
-          options={defaultOptions}
-          height={80}
-          width={80}
-          style={{
-            paddingBottom: "20px",
-          }}
-        /> */}
-        <LogoText />
+        {/* Show full text on md+ screens, badge on small screens */}
+        <div className="hidden md:block">
+          <LogoText />
+        </div>
+        <div className="block md:hidden">
+          <LogoBadge />
+        </div>
       </Link>
     </div>
   );
 }
 
 export default Logo;
+
+function LogoBadge() {
+  return (
+    <div className="flex items-center justify-center w-8 h-8 bg-color-secondary-alt text-white font-bold rounded-full dark:bg-muted-foreground">
+      DS
+    </div>
+  );
+}

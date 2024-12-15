@@ -6,8 +6,8 @@ import { useState } from "react";
 const ContactUs = () => {
   const [selected, setSelected] = useState("individual");
   return (
-    <section className="h-full py-8 mx-auto bg-color-secondary-alt">
-      <div className="w-full max-w-6xl mx-auto shadow-lg flex flex-col-reverse lg:flex-row rounded-lg overflow-hidden">
+    <section className="w-full h-full py-8 mx-auto bg-color-secondary-alt">
+      <div className="w-full max-w-7xl mx-auto shadow-lg flex flex-col-reverse lg:flex-row rounded-lg overflow-hidden">
         <Form selected={selected} setSelected={setSelected} />
         <Images selected={selected} />
       </div>

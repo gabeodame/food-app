@@ -21,7 +21,7 @@ type Props = {
 export default async function FoodDetailPage({ params }: Props) {
   console.log(params);
   return (
-    <div className="overflow-hidden max-h-svh mt-4">
+    <div className="w-full h-full overflow-y-auto flex justify-center mt-4">
       <FoodItemDetail id={+params.id} />
     </div>
   );
