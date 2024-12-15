@@ -45,8 +45,8 @@ export default function fetchData<T = any>(
       if (onSuccess) {
         onSuccess(data);
       }
-      revalidatePath("/");
-      // console.log(data);
+      // revalidatePath("/");
+      console.log(data);
       return { data: data, errors: null };
     } catch (error: any) {
       console.log(error);

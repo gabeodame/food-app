@@ -16,12 +16,17 @@ p {
   display: flex;
   width: 100%;
   justify-content: space-between;
-  /* background-color: white; */
   padding: 4px;
   border-radius: 6px;
   list-style: none;
   box-shadow: 0 2px 10px var(--black-a7);
   margin: 0;
+
+  /* Adjust padding and flex direction on smaller screens */
+  @media (max-width: 768px) {
+    align-items: center;
+    padding: 2px; /*Reduce padding on smaller screens */
+  }
 }
 
 .NavigationMenuTrigger,
@@ -60,13 +65,18 @@ p {
 
 .NavigationMenuContent {
   position: absolute;
-  top: 0;
+  top: 100%; /* Drop it below the trigger */
   left: 0;
   width: 100%;
   animation-duration: 250ms;
   animation-timing-function: ease;
-}
 
+  /* Make sure it fits within screen boundaries on smaller screens */
+  @media (max-width: 768px) {
+    width: 100vw; /* Ensure it fills the viewport width */
+    left: 0; /* Align to the left of the screen */
+  }
+}
 .NavigationMenuContent[data-motion="from-start"] {
   animation-name: enterFromLeft;
 }

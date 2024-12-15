@@ -7,6 +7,9 @@ import { useSearch } from "@/context/hooks/useSearch";
 import { cn } from "@/lib/utils";
 import { TrashIcon } from "@radix-ui/react-icons";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
+import { ScrollArea } from "../ui/scroll-area";
 
 const Search = lazy(() => import("../Search"));
 
@@ -14,6 +17,8 @@ function CustomSearchBar() {
   const [open, setOpen] = useState(false);
   const { state, deleteSearch, clearSearch } = useSearch();
   const { searchList } = state;
+
+  const router = useRouter();
 
   const handleKeyDown = (event: {
     metaKey: any;
@@ -24,45 +29,58 @@ function CustomSearchBar() {
     // Check if Command (metaKey) or Ctrl (ctrlKey) and 'K' are pressed
     if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") {
       event.preventDefault(); // Prevent default to avoid any browser shortcut conflicts
-      setOpen(true); // Open your search dialog
+      setOpen(!open); // Open your search dialog
     }
   };
 
   return (
     <div
-      className="w-full flex items-center"
+      className="min-w-full h-full flex-1"
       tabIndex={0}
       onKeyDown={handleKeyDown}
     >
       <CustomDialog
         trigger={
-          <Suspense>
-            <Search placeholder="Search Food Items" showCommands={true} />
-          </Suspense>
+          <div className="flex w-full items-center">
+            {/* Search bar should take full width */}
+            <Suspense fallback={<Skeleton className="w-full h-12" />}>
+              <Search
+                placeholder="Search Food Items"
+                showCommands={true}
+                // className="w-full"
+              />
+            </Suspense>
+          </div>
         }
         open={open}
         setOpen={() => setOpen(!open)}
       >
         <div className="w-full m-0">
-          <Suspense fallback={<Skeleton className="w-fit h-fit" />}>
+          <Suspense fallback={<Skeleton className="w-full h-fit" />}>
             <Search
               onSearchCompleted={() => setOpen(!open)}
               placeholder="Search Food Items"
+              showCommands={true}
             />
           </Suspense>
         </div>
-        <div className="w-full min-h-[352px]">
-          <ul className="w-full h-full">
+
+        <ScrollArea className="w-full max-h-[500px] overflow-auto">
+          <ul className="w-full">
             {searchList?.map((search, idx) => (
               <li
                 key={search}
                 className={cn(
-                  "p-2 w-full flex items-center justify-between bg-gray-100 dark:bg-muted h-fit cursor-pointer hover:bg-gray-200",
+                  "p-2 w-full flex items-center justify-between bg-gray-100 dark:bg-muted cursor-pointer hover:bg-gray-200",
                   {
                     "bg-color-secondary-alt dark:bg-muted transition-all duration-150 ease-in-out":
                       idx % 2 === 1,
                   }
                 )}
+                onClick={() => {
+                  router.push(`/foods?search=${search}`);
+                  setOpen(false);
+                }}
               >
                 <span>{search}</span>
                 <TrashIcon
@@ -72,7 +90,7 @@ function CustomSearchBar() {
               </li>
             ))}
           </ul>
-        </div>
+        </ScrollArea>
       </CustomDialog>
     </div>
   );

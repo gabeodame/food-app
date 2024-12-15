@@ -13,11 +13,7 @@ interface CategoryProp {
 function CategoryMenu({ category }: { category: CategoryProp }) {
   //   const imageDataUrl = await getImage(category.imageUrl);
   return (
-    <ListItem
-      key={category.title}
-      // title={category.title}
-      href={category.href}
-    >
+    <ListItem key={category.title} title={category.title} href={category.href}>
       <div className="flex gap-2  items-center justify-center">
         <div className="w-full h-full rounded-sm shadow-sm overflow-hidden">
           <Image

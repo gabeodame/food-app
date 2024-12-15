@@ -1,0 +1,125 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: recipe
+  labels:
+    app: recipe
+  name: recipe-depl
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: recipe
+  template:
+    metadata:
+      labels:
+        app: recipe
+    spec:
+      containers:
+        - name: recipe
+          image: gabeodame/recipe-backend
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 3000
+          env:
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: recipe-postgres-secret
+                  key: database-url
+      initContainers:
+        - name: db-check-and-seed
+          image: gabeodame/recipe-backend
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: DB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: recipe-postgres-secret
+                  key: postgres-user
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: recipe-postgres-secret
+                  key: postgres-password
+            - name: DB_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: recipe-postgres-secret
+                  key: postgres-db
+            - name: DB_HOST
+              value: "recipe-postgres-headless"
+          command: ["/bin/sh", "-c"]
+          args:
+            - |
+              echo 'Checking PostgreSQL service DNS resolution...';
+
+              # Limit DNS retries to avoid getting stuck
+              DNS_RETRIES=5
+              while ! nslookup recipe-postgres-headless >/dev/null 2>&1; do
+                echo "Waiting for DNS resolution of recipe-postgres-headless (Attempt $((5 - DNS_RETRIES + 1)) of 5)...";
+                sleep 15;
+                DNS_RETRIES=$((DNS_RETRIES - 1))
+                if [ $DNS_RETRIES -eq 0 ]; then
+                  echo "DNS resolution failed after multiple attempts. Proceeding to connection check..."
+                  break
+                fi
+              done
+
+              echo 'DNS check completed. Proceeding to PostgreSQL readiness check...';
+
+              # Check if PostgreSQL is ready using psql, with limited retries
+              CONNECTION_RETRIES=5
+              until PGPASSWORD=$DB_PASSWORD psql -h $DB_HOST -U $DB_USER -d $DB_NAME -c '\q'; do
+                echo "Waiting for PostgreSQL to become ready (Attempt $((5 - CONNECTION_RETRIES + 1)) of 5)...";
+                sleep 15;
+                CONNECTION_RETRIES=$((CONNECTION_RETRIES - 1))
+                if [ $CONNECTION_RETRIES -eq 0 ]; then
+                  echo "Connection to PostgreSQL failed after multiple attempts. Exiting..."
+                  exit 1
+                fi
+              done
+
+              echo 'PostgreSQL is ready, generating migrations...';
+
+              # Run Prisma migrations
+              DEBUG="prisma:*" npx prisma migrate dev --name init;
+
+              echo 'Applying migrations...';
+              npx prisma migrate deploy;
+
+              # Verify connection before seeding
+              echo 'Verifying connection to PostgreSQL before seeding...';
+              CONNECTION_RETRIES=5
+              until PGPASSWORD=$DB_PASSWORD psql -h $DB_HOST -U $DB_USER -d $DB_NAME -c '\q'; do
+                echo "Waiting for a stable connection to PostgreSQL before running seeding (Attempt $((5 - CONNECTION_RETRIES + 1)) of 5)...";
+                sleep 15;
+                CONNECTION_RETRIES=$((CONNECTION_RETRIES - 1))
+                if [ $CONNECTION_RETRIES -eq 0 ]; then
+                  echo "Connection to PostgreSQL failed before seeding. Exiting..."
+                  exit 1
+                fi
+              done
+
+              echo 'Running database seeding...';
+              npx prisma db seed;
+
+              echo 'Database setup complete!';
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: recipe
+  labels:
+    app: recipe
+  name: recipe-service
+spec:
+  ports:
+    - name: recipe
+      port: 3000
+      protocol: TCP
+      targetPort: 3000
+  selector:
+    app: recipe
+  type: ClusterIP

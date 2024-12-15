@@ -27,8 +27,8 @@ app.use(
 app.use(recipeRoutes);
 
 // Handle undefined routes
-app.all("*", async (req, res) => {
-  throw new NotFoundError();
+app.all("*", async (req, res, next) => {
+  next(new NotFoundError());
 });
 
 // Error handling middleware

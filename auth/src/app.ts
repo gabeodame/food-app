@@ -15,11 +15,13 @@ app.use(
 );
 
 // Use authentication routes
-app.use(authRoutes);
+app.use("/api/users", authRoutes);
 
 // Catch-all for undefined routes
-app.all("*", async (req, res) => {
-  throw new NotFoundError();
+app.all("*", async (req, res, next) => {
+  // throw new NotFoundError();
+  next(new NotFoundError());
+  // res.status(404).send({ message: "Route not found" });
 });
 
 app.use(errorHandler);

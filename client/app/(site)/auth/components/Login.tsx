@@ -4,8 +4,11 @@ import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import fetchData from "@/app/util/fetchData";
+import { useRouter, usePathname } from "next/navigation";
 
 function Login() {
+  const router = useRouter();
+  const pathname = usePathname();
   const userLoginSchema = z.object({
     username: z.string(),
     password: z.string(),
@@ -23,10 +26,12 @@ function Login() {
 
   const submitData = async (data: userInput) => {
     console.log(data);
-    const userData = await fetchData("/api/users/login", "post", data);
-    console.log(userData);
+    const userData = await fetchData("/api/users/signin", "post", data);
+
     if (!userData.errors || userData.errors === null) {
-      // await revalidate("/", "/");
+      router.push(`${pathname}/${data.username}`);
+    } else {
+      console.log(userData.errors);
     }
   };
 
@@ -72,7 +77,7 @@ function Login() {
       <div className="w-full">
         <button
           type="submit"
-          className="bg-color-green w-full p-2 text-gray-50 font-semibold rounded-md"
+          className="bg-color-green w-full flex justify-center p-2 text-gray-50 font-semibold rounded-md"
         >
           Submit
         </button>

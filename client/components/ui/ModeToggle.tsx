@@ -23,9 +23,9 @@ function ModeToggle({ ...rest }) {
       className="flex gap-2 items-center justify-center cursor-pointer"
     >
       {isDarkMode ? (
-        <SunIcon className="h-8 w-8 text-gray-500" onClick={toggleTheme} />
+        <SunIcon className="h-6 w-6 text-gray-500" onClick={toggleTheme} />
       ) : (
-        <MoonIcon className="h-8 w-8 text-gray-500" onClick={toggleTheme} />
+        <MoonIcon className="h-6 w-6 text-gray-500" onClick={toggleTheme} />
       )}
     </div>
   );

@@ -55,12 +55,8 @@ const foodCategories: FoodCategory[] = [
 
 function CategoryList() {
   return (
-    <div className="w-screen h-full flex flex-nowrap ">
+    <div className="w-full h-full flex flex-nowrap gap-2 sm:gap-4 overflow-x-auto p-2 sm:p-4">
       {foodCategories.map((food, idx) => {
-        // console.log(food);
-        // if (idx > 3) {
-        //   return null;
-        // }
         return <CategoryItem key={idx} food={food} />;
       })}
     </div>

@@ -6,7 +6,6 @@ import { FoodItemProps } from "@/app/(site)/models/types/types";
 import { Separator } from "@radix-ui/themes";
 import { CheckCircledIcon } from "@radix-ui/react-icons";
 import Tags from "@/app/(site)/components/FoodList/Tags";
-
 import useUpdateQueryParams from "@/app/hooks/useUpdateQueryParams";
 
 interface FoodContentProps {
@@ -24,35 +23,34 @@ function FoodCardContent({ food }: FoodContentProps) {
   type TagsType = { tags: { tag: { name: string } }[] };
 
   return (
-    <ScrollArea className="h-full overflow-auto">
-      <div className="flex flex-col w-full items-center gap-3 p-5">
+    <ScrollArea className="md:container w-full h-full overflow-hidden flex justify-center">
+      <div className="w-full flex flex-col items-center gap-3 p-5">
         <div className="flex flex-col w-full sticky">
           <p className="font-bold text-3xl text-gray-600">{food?.title}</p>
           <Separator className="bg-color-secondary h-[2px] w-full my-1" />
         </div>
-        <div className="w-full flex gap-2 items-center  bg-gray-200 p-2">
+        <div className="w-full flex flex-col gap-2 items-center  bg-gray-200 p-2">
           <span className=" text-gray-500"> Category(s):</span>
-          <ul className="w-fit grid grid-cols-1 lg:grid-cols-3 gap-1 items-center text-gray-500">
-            {Array.isArray(food?.categories)
-              ? food?.categories?.map((cat: any, idx) => {
-                  console.log(cat?.category?.name);
-                  return (
-                    <li
-                      key={cat?.category?.name}
-                      className="flex gap-1 items-center font-bold cursor-pointer "
-                      onClick={() => {
-                        updateQueryParams(
-                          "category",
-                          cat.cagetegory?.name.toLowerCase()
-                        );
-                      }}
-                    >
-                      {cat.category.name}
-                    </li>
-                  );
-                })
-              : food?.categories}
-          </ul>
+          <ScrollArea className="w-full h-full">
+            <ul className="w-full grid grid-cols-1 gap-2 items-center text-gray-500">
+              {Array.isArray(food?.categories)
+                ? food?.categories?.map((cat: any, idx) => {
+                    const category = cat?.category?.name;
+                    return (
+                      <li
+                        key={category}
+                        className="w-full h-full bg-gray-100 hover:bg-color-secondary-alt hover:text-white rounded-sm shadow-sm p-2 flex gap-2 items-center font-bold cursor-pointer "
+                        onClick={() => {
+                          updateQueryParams("category", category.toLowerCase());
+                        }}
+                      >
+                        {category}
+                      </li>
+                    );
+                  })
+                : food?.categories}
+            </ul>
+          </ScrollArea>
         </div>
         <div className="">
           <p className=" text-gray-500">{food?.description}</p>

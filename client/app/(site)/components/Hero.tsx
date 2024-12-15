@@ -6,7 +6,7 @@ import Image from "next/image";
 
 function Hero() {
   return (
-    <div className=" bg-green-100">
+    <div className="w-full bg-green-100">
       <div className="relative w-full h=[540px]">
         <Image
           src="https://images.unsplash.com/photo-1476224203421-9ac39bcb3327?q=80&w=4170&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"

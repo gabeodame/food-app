@@ -26,7 +26,7 @@ export default function RootLayout({
     <html lang="en">
       <body
         className={cn(
-          "w-svw h-full min-h-screen bg-background font-sans antialiased dark:bg-muted",
+          "w-full max-w-svw h-full min-h-screen bg-background font-sans antialiased dark:bg-muted",
           inter.className
         )}
       >

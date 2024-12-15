@@ -2,7 +2,7 @@ import React from "react";
 
 function LogoText() {
   return (
-    <div className="hidden font-black text-3xl h-fit md:flex ">
+    <div className="w-full font-black text-2xl h-fit flex">
       <span className="text-color-secondary-alt dark:text-muted-foreground">
         D
       </span>
