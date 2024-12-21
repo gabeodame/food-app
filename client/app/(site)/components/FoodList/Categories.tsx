@@ -4,7 +4,7 @@ import { ArrowLeftIcon, ArrowRightIcon } from "@heroicons/react/20/solid";
 
 function Categories() {
   return (
-    <div className="relative">
+    <div className="relative w-full max-w-7xl mx-auto ">
       <div className="flex overflow-x-auto overflow-y-hidden gap-0 bg-slate-50 no-scrollbar">
         <div className="flex flex-nowrap ">
           {/* <!-- Category Card 1 --> */}

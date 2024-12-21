@@ -1,0 +1,75 @@
+# 1. SecretProviderClass - For retrieving secrets from Azure Key Vault
+apiVersion: secrets-store.csi.x-k8s.io/v1
+kind: SecretProviderClass
+metadata:
+  name: postgres-secrets
+  namespace: recipe
+spec:
+  provider: azure
+  parameters:
+    usePodIdentity: "true"
+    keyvaultName: foodAppKeyVault # Name of your Key Vault
+    objects: |
+      array:
+        - |
+          objectName: PostgresConnectionString
+          objectType: secret                # Object type: secret, key, or certificate
+---
+# 2. Deployment - Your application that will retrieve secrets from Key Vault
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: recipe
+  labels:
+    app: recipe
+  name: recipe-depl
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: recipe
+  template:
+    metadata:
+      labels:
+        app: recipe
+    spec:
+      containers:
+        - name: recipe
+          image: gabeodame/recipe-backend:1.0.0
+          ports:
+            - containerPort: 3000
+          env:
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: recipe-postgres-secret # This secret is fetched dynamically from Azure Key Vault
+                  key: database-url # Key retrieved from the SecretProviderClass
+          volumeMounts:
+            - name: secrets-store-inline
+              mountPath: /mnt/secrets-store
+              readOnly: true
+      volumes:
+        - name: secrets-store-inline
+          csi:
+            driver: secrets-store.csi.k8s.io
+            readOnly: true
+            volumeAttributes:
+              secretProviderClass: "postgres-secrets"
+---
+# 3. Service - Exposing your application within the cluster
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: recipe
+  labels:
+    app: recipe
+  name: recipe-service
+spec:
+  ports:
+    - name: recipe
+      port: 3000
+      protocol: TCP
+      targetPort: 3000
+  selector:
+    app: recipe
+  type: ClusterIP
