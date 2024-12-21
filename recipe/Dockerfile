@@ -1,4 +1,6 @@
 FROM node:alpine3.19
+# Install PostgreSQL client
+RUN apk add --no-cache postgresql-client
 
 WORKDIR /app
 

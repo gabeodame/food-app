@@ -16,6 +16,11 @@ export default async function FoodListHome({ params, searchParams }: Props) {
   const search = searchParams.search as string;
   const id = +params.id;
 
+  console.log("params", params);
+
+  // Below logic will be replaced with ORM (possibly PRISMA)
+  // Function to get food data based on param
+
   // const recipes =  //make api call to food service to get food
   // await prisma.recipe.findMany();
 
@@ -60,7 +65,7 @@ export default async function FoodListHome({ params, searchParams }: Props) {
   return (
     <section>
       {/* <FeaturedCategories /> */}
-      <div className="container flex flex-col items-end overflow-hidden mt-4">
+      <div className="w-full md:container px-4 md:px-0 mt-4">
         <FoodList />
       </div>
     </section>

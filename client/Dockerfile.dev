@@ -1,0 +1,31 @@
+FROM node:alpine3.19
+
+# Create a non-root user and group for the app
+RUN addgroup app && adduser -S -G app app
+
+# Set the working directory
+WORKDIR /app
+
+# Copy package.json and package-lock.json first for caching layers
+COPY package*.json ./
+
+# Install dependencies as root
+RUN npm install
+
+# Change ownership of the app directory to the non-root user
+RUN chown -R app:app /app
+
+# Switch to the non-root user
+USER app
+
+# Copy the application source code with correct ownership
+COPY --chown=app:app . .
+
+# Create .next directory and ensure the app user can write to it
+RUN mkdir -p /app/.next
+
+# Expose the application port
+EXPOSE 3000
+
+# Run the development server
+CMD ["npm", "run", "dev"]

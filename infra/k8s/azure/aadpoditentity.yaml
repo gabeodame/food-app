@@ -1,0 +1,18 @@
+apiVersion: aadpodidentity.k8s.io/v1
+kind: AzureIdentity
+metadata:
+  name: recipe-aks-identity
+  namespace: recipe
+spec:
+  type: 0
+  resourceID: /subscriptions/<subscription-id>/resourceGroups/<resource-group-name>/providers/Microsoft.ManagedIdentity/userAssignedIdentities/<aks-managed-identity>
+  clientID: <aks-managed-identity-client-id>
+---
+apiVersion: aadpodidentity.k8s.io/v1
+kind: AzureIdentityBinding
+metadata:
+  name: recipe-identity-binding
+  namespace: recipe
+spec:
+  azureIdentity: recipe-aks-identity
+  selector: recipe-app

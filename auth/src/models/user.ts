@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 import { PasswordManager } from "../services/password-manager";
 
 interface UserAttrs {
+  username: string;
   email: string;
   password: string;
 }
@@ -13,12 +14,17 @@ interface UserModel extends mongoose.Model<UserDoc> {
 
 // User Document interface
 interface UserDoc extends mongoose.Document {
+  username: string;
   email: string;
   password: string;
 }
 
 const userSchema = new mongoose.Schema(
   {
+    username: {
+      type: String,
+      require: true,
+    },
     email: {
       type: String,
       required: true,

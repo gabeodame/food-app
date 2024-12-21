@@ -4,8 +4,8 @@ import "express-async-errors";
 import helmet from "helmet";
 import { errorHandler, NotFoundError } from "@gogittix/common";
 import { recipeRoutes } from "./routes/recipeRoutes";
-import { config } from "./config";
 
+// Initialize the express app
 const app = express();
 
 app.set("trust proxy", 1); //trust traffic coming from ingress-nginx
@@ -20,17 +20,18 @@ app.use(
 app.use(
   cookieSession({
     signed: false,
-    secure: config.isProduction, // Reference the config module for environment check
+    secure: process.env.NODE_ENV === "production", // Secure in production
   })
 );
 
 app.use(recipeRoutes);
+
 // Handle undefined routes
-app.all("*", async (req, res) => {
-  throw new NotFoundError();
+app.all("*", async (req, res, next) => {
+  next(new NotFoundError());
 });
 
 // Error handling middleware
 app.use(errorHandler);
 
-export { app };
+export { app }; // Export the app for use in index.js
