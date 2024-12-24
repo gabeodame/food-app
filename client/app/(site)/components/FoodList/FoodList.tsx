@@ -38,7 +38,7 @@ function FoodList({
 
         if (res.ok) {
           const { data } = await res.json();
-          console.log(data);
+          console.log("data", data);
           setData(data as FoodListTypes[]);
         }
       } catch (error: any) {
