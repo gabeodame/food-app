@@ -54,6 +54,7 @@ function UserAccount({ items }: { items: DropdownMenuItem[] }) {
 
   const { user, isError, isLoading } = useUser();
   // const currentUser = user?.currentUser;
+  console.log("isLoading", isLoading);
 
   const handleCheckedChange = (index: number, checked: boolean) => {
     setCheckedStates((prev) => {
@@ -64,37 +65,49 @@ function UserAccount({ items }: { items: DropdownMenuItem[] }) {
   };
 
   return (
-    <div className="ml-24">
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <div className="flex items-center gap-2">
-            {user ? <Avatar user={user} /> : <LoginButton />}
-          </div>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent className="w-56" sideOffset={10} alignOffset={5}>
-          <DropdownMenuLabel>
-            <p>User Options</p>
-          </DropdownMenuLabel>
-          <DropdownMenuSeparator />
-          {items.map((item, index) =>
-            item.component ? (
-              <React.Fragment key={index}>{item.component}</React.Fragment>
-            ) : (
-              <DropdownMenuCheckboxItem
-                key={index}
-                checked={checkedStates[index]}
-                onCheckedChange={(checked) =>
-                  handleCheckedChange(index, checked)
-                }
-                disabled={item.disabled}
-              >
-                {item.label}
-              </DropdownMenuCheckboxItem>
-            )
-          )}
-        </DropdownMenuContent>
-      </DropdownMenu>
-    </div>
+    <>
+      {isLoading ? (
+        <div>Loading...</div>
+      ) : user ? (
+        <div className="ml-24">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <div className="flex items-center gap-2">
+                {user ? <Avatar user={user} /> : <LoginButton />}
+              </div>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent
+              className="w-56"
+              sideOffset={10}
+              alignOffset={5}
+            >
+              <DropdownMenuLabel>
+                <p>User Options</p>
+              </DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              {items.map((item, index) =>
+                item.component ? (
+                  <React.Fragment key={index}>{item.component}</React.Fragment>
+                ) : (
+                  <DropdownMenuCheckboxItem
+                    key={index}
+                    checked={checkedStates[index]}
+                    onCheckedChange={(checked) =>
+                      handleCheckedChange(index, checked)
+                    }
+                    disabled={item.disabled}
+                  >
+                    {item.label}
+                  </DropdownMenuCheckboxItem>
+                )
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+      ) : (
+        <LoginButton />
+      )}
+    </>
   );
 }
 

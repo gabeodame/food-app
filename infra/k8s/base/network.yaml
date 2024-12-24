@@ -1,62 +1,74 @@
+# apiVersion: networking.k8s.io/v1
+# kind: NetworkPolicy
+# metadata:
+#   name: allow-client-to-auth
+#   namespace: recipe
+# spec:
+#   podSelector:
+#     matchLabels:
+#       app: auth-service
+#   policyTypes:
+#     - Ingress
+#   ingress:
+#     - from:
+#         - podSelector:
+#             matchLabels:
+#               app: recipe-client
+#       ports:
+#         - protocol: TCP
+#           port: 3000
+
+# ---
+# apiVersion: networking.k8s.io/v1
+# kind: NetworkPolicy
+# metadata:
+#   name: allow-client-to-backend
+#   namespace: recipe
+# spec:
+#   podSelector:
+#     matchLabels:
+#       app: recipe
+#   ingress:
+#     - from:
+#         - podSelector:
+#             matchLabels:
+#               app: recipe-client
+#       ports:
+#         - protocol: TCP
+#           port: 3000
+#   policyTypes:
+#     - Ingress
+
+# ---
+# apiVersion: networking.k8s.io/v1
+# kind: NetworkPolicy
+# metadata:
+#   name: allow-ingress-to-auth
+#   namespace: recipe
+# spec:
+#   podSelector:
+#     matchLabels:
+#       app: auth-service
+#   policyTypes:
+#     - Ingress
+#   ingress:
+#     - from:
+#         - podSelector:
+#             matchLabels:
+#               app: ingress-nginx  # Replace with your ingress controller's app label
+#       ports:
+#         - protocol: TCP
+#           port: 3000
+
+
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
-  name: allow-client-to-auth
+  name: allow-all
   namespace: recipe
 spec:
-  podSelector:
-    matchLabels:
-      app: auth-service
-  policyTypes:
-    - Ingress
+  podSelector: {}
   ingress:
-    - from:
-        - podSelector:
-            matchLabels:
-              app: recipe-client
-      ports:
-        - protocol: TCP
-          port: 3000
-
----
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-  name: allow-client-to-backend
-  namespace: recipe
-spec:
-  podSelector:
-    matchLabels:
-      app: recipe
-  ingress:
-    - from:
-        - podSelector:
-            matchLabels:
-              app: recipe-client
-      ports:
-        - protocol: TCP
-          port: 3000
-  policyTypes:
-    - Ingress
-
----
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-  name: allow-ingress-to-auth
-  namespace: recipe
-spec:
-  podSelector:
-    matchLabels:
-      app: auth-service
-  policyTypes:
-    - Ingress
-  ingress:
-    - from:
-        - podSelector:
-            matchLabels:
-              app: ingress-nginx  # Replace with your ingress controller's app label
-      ports:
-        - protocol: TCP
-          port: 3000
-
+    - {}
+  egress:
+    - {}
