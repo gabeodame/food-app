@@ -2,7 +2,7 @@ import { Router, Request, Response, NextFunction } from "express";
 import { body } from "express-validator";
 
 import { requireAuth, validateRequest } from "@gogittix/common"; // Adjust import path accordingly
-import { recipeController } from "../controllers/RecipeController";
+import { recipeController } from "../controllers/recipeController";
 
 const router = Router();
 
