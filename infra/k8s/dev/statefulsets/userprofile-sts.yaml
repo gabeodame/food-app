@@ -1,0 +1,59 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: userprofile-postgres
+  namespace: recipe
+  labels:
+    app: userprofile-postgres
+spec:
+  serviceName: userprofile-postgres-headless
+  replicas: 1
+  selector:
+    matchLabels:
+      app: userprofile-postgres
+  template:
+    metadata:
+      labels:
+        app: userprofile-postgres
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:15
+          env:
+            - name: POSTGRES_DB
+              value: userprofile
+            - name: POSTGRES_USER
+              value: gabrielodame
+            - name: POSTGRES_PASSWORD
+              value: HardPassword
+            - name: PGDATA
+              value: "/var/lib/postgresql/data/pgdata" # Use a subdirectory for safety
+          ports:
+            - containerPort: 5432
+          volumeMounts:
+            - name: postgres-storage
+              mountPath: /var/lib/postgresql/data
+  volumeClaimTemplates:
+    - metadata:
+        name: postgres-storage
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: 1Gi
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: userprofile-postgres-headless
+  namespace: recipe
+  labels:
+    app: userprofile-postgres
+spec:
+  clusterIP: None # Headless service for StatefulSet
+  ports:
+    - port: 5432
+      targetPort: 5432
+  selector:
+    app: userprofile-postgres

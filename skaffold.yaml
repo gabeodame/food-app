@@ -61,7 +61,7 @@ build:
     useBuildkit: true
   artifacts:
     - image: gabeodame/auth-service
-      context: auth
+      context: services/auth
       docker:
         dockerfile: Dockerfile
       sync:
@@ -69,7 +69,7 @@ build:
           - src: "src/**/*.ts"
             dest: .
     - image: gabeodame/recipe-client
-      context: client
+      context: services/client
       docker:
         dockerfile: Dockerfile.dev
       sync:
@@ -77,7 +77,15 @@ build:
           - src: "app/**/*.ts"
             dest: .
     - image: gabeodame/recipe-backend
-      context: recipe
+      context: services/recipe
+      docker:
+        dockerfile: Dockerfile
+      sync:
+        manual:
+          - src: "src/**/*.ts"
+            dest: .
+    - image: gabeodame/userprofile-backend
+      context: services/profile
       docker:
         dockerfile: Dockerfile
       sync:
@@ -90,8 +98,10 @@ manifests:
     - ./infra/k8s/base/network.yaml
     - ./infra/k8s/dev/secrets/auth-mongo-secret.yaml
     - ./infra/k8s/dev/secrets/recipe-postgres-secret.yaml
+    - ./infra/k8s/dev/secrets/userprofile-psql-secret.yaml
     - ./infra/k8s/dev/statefulsets/auth-mongo-sts.yaml
     - ./infra/k8s/dev/statefulsets/recipe-postgres-sts.yaml
+    - ./infra/k8s/dev/statefulsets/userprofile-sts.yaml
     - ./infra/k8s/dev/deployments/*.yaml
     - ./infra/k8s/dev/ingress/*.yaml
 profiles:
@@ -109,8 +119,10 @@ profiles:
         - ./infra/k8s/base/network.yaml
         - ./infra/k8s/dev/secrets/auth-mongo-secret.yaml
         - ./infra/k8s/dev/secrets/recipe-postgres-secret.yaml
+        - ./infra/k8s/dev/secrets/userprofile-psql-secret.yaml
         - ./infra/k8s/dev/statefulsets/auth-mongo-sts.yaml
         - ./infra/k8s/dev/statefulsets/recipe-postgres-sts.yaml
+        - ./infra/k8s/dev/statefulsets/userprofile-sts.yaml
         - ./infra/k8s/dev/deployments/*.yaml
         - ./infra/k8s/dev/ingress/*.yaml
 
@@ -122,6 +134,7 @@ profiles:
         - image: gabeodame/auth-service
         - image: gabeodame/recipe-client
         - image: gabeodame/recipe-backend
+        - image: gabeodame/userprofile-backend
     deploy:
       kubectl: {}
     manifests:
