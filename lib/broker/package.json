@@ -1,6 +1,6 @@
 {
   "name": "@anchordiv/broker",
-  "version": "1.0.10",
+  "version": "1.0.12",
   "description": "A reusable RabbitMQ broker library",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
