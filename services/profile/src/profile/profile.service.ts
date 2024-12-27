@@ -1,23 +1,52 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  OnApplicationBootstrap,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Profile } from './profile.entity';
 import { Repository } from 'typeorm';
+import { Profile } from './profile.entity';
 import { CreateProfileDto, UpdateProfileDto } from './dto';
+import { RabbitMQBroker } from '@anchordiv/broker';
 
 @Injectable()
-export class ProfileService {
+export class ProfileService implements OnApplicationBootstrap {
   constructor(
     @InjectRepository(Profile)
     private readonly profileRepository: Repository<Profile>,
   ) {}
 
+  async onApplicationBootstrap() {
+    const broker = RabbitMQBroker.getInstance();
+    await broker.init(process.env.RABBITMQ_URL!);
+
+    // Set up the consumer for the 'user-created' queue
+    await broker.consume('user-created', async (message) => {
+      await this.handleUserCreated(message.content);
+    });
+  }
+
+  private async handleUserCreated(message: Buffer): Promise<void> {
+    try {
+      const data: CreateProfileDto = JSON.parse(message.toString());
+      console.log('Message received:', data);
+
+      // Process the message: Create a new profile
+      const profile = this.profileRepository.create(data);
+      await this.profileRepository.save(profile);
+    } catch (error) {
+      console.error('Error handling user-created message:', error);
+    }
+  }
+
+  // Remaining ProfileService logic
   async createProfile(data: CreateProfileDto): Promise<Profile> {
     const profile = this.profileRepository.create(data);
     return this.profileRepository.save(profile);
   }
 
   async getProfileById(id: string): Promise<Profile> {
-    const profile = this.profileRepository.findOne({ where: { id } });
+    const profile = await this.profileRepository.findOne({ where: { id } });
     if (!profile) {
       throw new NotFoundException('Profile not found');
     }

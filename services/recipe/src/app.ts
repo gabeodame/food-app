@@ -26,7 +26,7 @@ app.use(
 
 app.use(recipeRoutes);
 
-// Handle undefined routes
+// Catch all route handler
 app.all("*", async (req, res, next) => {
   next(new NotFoundError());
 });
