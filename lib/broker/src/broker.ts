@@ -1,4 +1,4 @@
-import amqp, { Connection, Channel, Message } from "amqplib";
+import amqp, { Connection, Channel, Message, Options } from "amqplib";
 
 class RabbitMQBroker {
   private static instance: RabbitMQBroker;
@@ -26,7 +26,6 @@ class RabbitMQBroker {
       throw new Error("RabbitMQ connection URL is undefined.");
     }
 
-    // Trim the URL to remove any unwanted whitespace or line breaks
     const sanitizedUrl = url.trim();
     console.log("Connecting to RabbitMQ with sanitized URL:", sanitizedUrl);
 
@@ -45,11 +44,16 @@ class RabbitMQBroker {
   }
 
   /**
-   * Publishes a message to a specified queue.
+   * Publishes a message directly to a specified queue.
    * @param queue - The queue name.
    * @param message - The message to publish.
+   * @param options - Additional publish options.
    */
-  public async publish(queue: string, message: Buffer | string): Promise<void> {
+  public async publish(
+    queue: string,
+    message: Buffer | string,
+    options: Options.Publish = {}
+  ): Promise<void> {
     if (!this.channel) {
       throw new Error(
         "RabbitMQ channel is not initialized. Call init() first."
@@ -60,11 +64,73 @@ class RabbitMQBroker {
       await this.channel.assertQueue(queue, { durable: true });
       this.channel.sendToQueue(
         queue,
-        Buffer.isBuffer(message) ? message : Buffer.from(message)
+        Buffer.isBuffer(message) ? message : Buffer.from(message),
+        options
       );
       console.log(`Message published to queue: ${queue}`);
     } catch (err) {
-      console.error("Failed to publish message:", err);
+      console.error("Failed to publish message to queue:", err);
+      throw err;
+    }
+  }
+
+  /**
+   * Publishes a message to a specified exchange with a routing key.
+   * @param exchange - The exchange name.
+   * @param routingKey - The routing key.
+   * @param message - The message to publish.
+   * @param options - Additional publish options.
+   */
+  public async publishToExchange(
+    exchange: string,
+    routingKey: string,
+    message: Buffer | string,
+    type: "direct" | "topic" | "fanout" | "headers" = "topic", // Default to "topic"
+    options: Options.Publish = {}
+  ): Promise<void> {
+    if (!this.channel) {
+      throw new Error(
+        "RabbitMQ channel is not initialized. Call init() first."
+      );
+    }
+
+    try {
+      await this.channel.assertExchange(exchange, type, { durable: true });
+      this.channel.publish(
+        exchange,
+        routingKey,
+        Buffer.isBuffer(message) ? message : Buffer.from(message),
+        options
+      );
+      console.log(
+        `Message published to exchange: ${exchange}, routingKey: ${routingKey}, type: ${type}`
+      );
+    } catch (err) {
+      console.error("Failed to publish message to exchange:", err);
+      throw err;
+    }
+  }
+
+  /**
+   * Sets up a queue with an optional dead-letter exchange.
+   * @param queue - The queue name.
+   * @param options - Queue options (including dead-letter configurations).
+   */
+  public async setupQueue(
+    queue: string,
+    options: Options.AssertQueue = {}
+  ): Promise<void> {
+    if (!this.channel) {
+      throw new Error(
+        "RabbitMQ channel is not initialized. Call init() first."
+      );
+    }
+
+    try {
+      await this.channel.assertQueue(queue, options);
+      console.log(`Queue set up: ${queue}`);
+    } catch (err) {
+      console.error(`Failed to set up queue: ${queue}`, err);
       throw err;
     }
   }
@@ -85,7 +151,6 @@ class RabbitMQBroker {
     }
 
     try {
-      await this.channel.assertQueue(queue, { durable: true });
       await this.channel.consume(queue, async (msg) => {
         if (msg !== null) {
           try {
@@ -101,6 +166,45 @@ class RabbitMQBroker {
       console.log(`Consumer set up for queue: ${queue}`);
     } catch (err) {
       console.error("Failed to set up consumer:", err);
+      throw err;
+    }
+  }
+
+  /**
+   * Sets up a dead-letter queue and binds it to the main queue.
+   * @param queue - The primary queue name.
+   * @param dlx - The dead-letter exchange name.
+   * @param dlq - The dead-letter queue name.
+   */
+  public async setupDeadLetterQueue(
+    queue: string,
+    dlx: string,
+    dlq: string,
+    dlxType: "direct" | "topic" | "fanout" | "headers" = "topic" // Default to "topic"
+  ): Promise<void> {
+    if (!this.channel) {
+      throw new Error(
+        "RabbitMQ channel is not initialized. Call init() first."
+      );
+    }
+
+    try {
+      // Assert the dead-letter exchange and queue
+      await this.channel.assertExchange(dlx, dlxType, { durable: true });
+      await this.channel.assertQueue(dlq, { durable: true });
+      await this.channel.bindQueue(dlq, dlx, "#"); // Bind all messages to DLQ
+
+      // Assert the primary queue with dead-letter exchange configuration
+      await this.channel.assertQueue(queue, {
+        durable: true,
+        deadLetterExchange: dlx,
+      });
+
+      console.log(
+        `Dead-letter queue set up: ${dlq} bound to exchange: ${dlx}, type: ${dlxType}`
+      );
+    } catch (err) {
+      console.error(`Failed to set up dead-letter queue for ${queue}:`, err);
       throw err;
     }
   }
@@ -125,4 +229,4 @@ class RabbitMQBroker {
   }
 }
 
-export default RabbitMQBroker; // Ensure this is the default export
+export default RabbitMQBroker;
