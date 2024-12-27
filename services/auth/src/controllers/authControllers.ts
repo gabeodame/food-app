@@ -3,9 +3,16 @@ import { User } from "../models/user";
 import jwt from "jsonwebtoken";
 import { BadRequestError, NotAuthorizedError } from "@gogittix/common"; // Adjust based on your project
 import { PasswordManager } from "../services/password-manager";
+import { RabbitMQBroker } from "@anchordiv/broker";
 
 export class AuthController {
   // Business logic for signing up users
+  private rabbitMQUrl: string;
+
+  constructor(rabbitMQUrl: string) {
+    this.rabbitMQUrl = rabbitMQUrl;
+  }
+
   async signup(req: Request) {
     const { email, password, username } = req.body;
 
@@ -21,6 +28,11 @@ export class AuthController {
 
     const user = User.build({ email, password, username });
     await user.save();
+
+    // Initialize RabbitMQ broker and publish user-created event
+    const broker = RabbitMQBroker.getInstance();
+    await broker.init(this.rabbitMQUrl);
+    await broker.publish("user-created", JSON.stringify({ username, email }));
 
     return { message: "User created successfully" };
   }
@@ -107,4 +119,4 @@ export class AuthController {
   }
 }
 
-export const authController = new AuthController();
+export const authController = new AuthController(process.env.RABBITMQ_URL!);

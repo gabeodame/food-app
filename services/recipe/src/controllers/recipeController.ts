@@ -5,6 +5,7 @@ import { NotAuthorizedError, DatabaseConnectionError } from "@gogittix/common";
 
 class RecipeController {
   // Business logic to fetch all recipes
+
   async getAllRecipes() {
     const recipes = await prisma.recipe.findMany();
     return recipes;

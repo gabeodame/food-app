@@ -99,9 +99,11 @@ manifests:
     - ./infra/k8s/dev/secrets/auth-mongo-secret.yaml
     - ./infra/k8s/dev/secrets/recipe-postgres-secret.yaml
     - ./infra/k8s/dev/secrets/userprofile-psql-secret.yaml
+    - ./infra/k8s/dev/secrets/rabbitmq-secret.yaml
     - ./infra/k8s/dev/statefulsets/auth-mongo-sts.yaml
     - ./infra/k8s/dev/statefulsets/recipe-postgres-sts.yaml
     - ./infra/k8s/dev/statefulsets/userprofile-sts.yaml
+    - ./infra/k8s/dev/statefulsets/rabbitmq-sts.yaml
     - ./infra/k8s/dev/deployments/*.yaml
     - ./infra/k8s/dev/ingress/*.yaml
 profiles:
@@ -120,9 +122,11 @@ profiles:
         - ./infra/k8s/dev/secrets/auth-mongo-secret.yaml
         - ./infra/k8s/dev/secrets/recipe-postgres-secret.yaml
         - ./infra/k8s/dev/secrets/userprofile-psql-secret.yaml
+        - ./infra/k8s/dev/secrets/rabbitmq-secret.yaml
         - ./infra/k8s/dev/statefulsets/auth-mongo-sts.yaml
         - ./infra/k8s/dev/statefulsets/recipe-postgres-sts.yaml
         - ./infra/k8s/dev/statefulsets/userprofile-sts.yaml
+        - ./infra/k8s/dev/statefulsets/rabbitmq-sts.yaml
         - ./infra/k8s/dev/deployments/*.yaml
         - ./infra/k8s/dev/ingress/*.yaml
 
