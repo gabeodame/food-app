@@ -7,7 +7,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Profile } from './profile.entity';
 import { CreateProfileDto, UpdateProfileDto } from './dto';
-import { RabbitMQBroker } from '@anchordiv/broker';
+import { RabbitMQBroker } from '@anchordiv/rabbitmq-broker';
 
 @Injectable()
 export class ProfileService implements OnApplicationBootstrap {
@@ -21,7 +21,35 @@ export class ProfileService implements OnApplicationBootstrap {
     await broker.init(process.env.RABBITMQ_URL!);
 
     // Set up the consumer for the 'user-created' queue
-    await broker.consume('user-created', async (message) => {
+    // await broker.consume('user-created', async (message) => {
+    //   await this.handleUserCreated(message.content);
+    // });
+
+    const exchange = 'recipe.users.profile-updates';
+    const mainQue = 'user-signup-queue';
+    const dlx = 'recipe.users.dlx';
+    const dlq = 'user-signup-dlq';
+
+    const routingKey = 'users.signup.new-user';
+
+    await broker.setupDeadLetterQueue(mainQue, dlx, dlq);
+
+    // Process dead-lettered messages
+    await broker.consume(dlq, async (message) => {
+      try {
+        console.log('Dead-lettered message:', message.content.toString());
+        await this.handleUserCreated(message.content);
+      } catch (error) {
+        console.error('Error handling dead-lettered message:', error);
+        // Decide on further actions, such as logging or alerting
+      }
+    });
+
+    // Bind Main Queue to Exchange
+    await broker.assertExchange(exchange, 'topic');
+    await broker.bindQueue(mainQue, exchange, routingKey);
+
+    await broker.consume(mainQue, async (message) => {
       await this.handleUserCreated(message.content);
     });
   }

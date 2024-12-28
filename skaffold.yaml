@@ -1,53 +1,3 @@
-# apiVersion: skaffold/v4beta8
-# kind: Config
-# metadata:
-#   name: food-app
-# build:
-#   tagPolicy:
-#     gitCommit:
-#       variant: AbbrevCommitSha
-#     # envTemplate:
-#     #   template: "{{.IMAGE_NAME}}:latest"
-#   local:
-#     push: false
-#     useBuildkit: true # BuildKit is a modern build subsystem that is faster and more efficient than the traditional Docker build subsystem.
-#   artifacts:
-#     - image: gabeodame/auth-service
-#       context: auth
-#       docker:
-#         dockerfile: Dockerfile
-#       sync:
-#         manual:
-#           - src: "src/**/*.ts"
-#             dest: .
-#     - image: gabeodame/recipe-client
-#       context: client
-#       docker:
-#         dockerfile: Dockerfile.dev
-#       sync:
-#         manual:
-#           - src: "app/**/*.ts"
-#             dest: .
-#     - image: gabeodame/recipe-backend
-#       context: recipe
-#       docker:
-#         dockerfile: Dockerfile
-#       sync:
-#         manual:
-#           - src: "src/**/*.ts"
-#             dest: .
-# manifests:
-#   rawYaml:
-#     - ./infra/k8s/base/namespace.yaml
-#     - ./infra/k8s/base/network.yaml
-#     - ./infra/k8s/dev/secrets/auth-mongo-secret.yaml
-#     - ./infra/k8s/dev/secrets/recipe-postgres-secret.yaml
-#     - ./infra/k8s/dev/statefulsets/auth-mongo-sts.yaml
-#     - ./infra/k8s/dev/statefulsets/recipe-postgres-sts.yaml
-#     - ./infra/k8s/dev/deployments/*.yaml
-#     - ./infra/k8s/dev/ingress/*.yaml
-
-
 apiVersion: skaffold/v4beta8
 kind: Config
 metadata:
@@ -100,10 +50,10 @@ manifests:
     - ./infra/k8s/dev/secrets/recipe-postgres-secret.yaml
     - ./infra/k8s/dev/secrets/userprofile-psql-secret.yaml
     - ./infra/k8s/dev/secrets/rabbitmq-secret.yaml
+    - ./infra/k8s/dev/statefulsets/rabbitmq-sts.yaml
     - ./infra/k8s/dev/statefulsets/auth-mongo-sts.yaml
     - ./infra/k8s/dev/statefulsets/recipe-postgres-sts.yaml
     - ./infra/k8s/dev/statefulsets/userprofile-sts.yaml
-    - ./infra/k8s/dev/statefulsets/rabbitmq-sts.yaml
     - ./infra/k8s/dev/deployments/*.yaml
     - ./infra/k8s/dev/ingress/*.yaml
 profiles:
@@ -123,10 +73,10 @@ profiles:
         - ./infra/k8s/dev/secrets/recipe-postgres-secret.yaml
         - ./infra/k8s/dev/secrets/userprofile-psql-secret.yaml
         - ./infra/k8s/dev/secrets/rabbitmq-secret.yaml
+        - ./infra/k8s/dev/statefulsets/rabbitmq-sts.yaml
         - ./infra/k8s/dev/statefulsets/auth-mongo-sts.yaml
         - ./infra/k8s/dev/statefulsets/recipe-postgres-sts.yaml
         - ./infra/k8s/dev/statefulsets/userprofile-sts.yaml
-        - ./infra/k8s/dev/statefulsets/rabbitmq-sts.yaml
         - ./infra/k8s/dev/deployments/*.yaml
         - ./infra/k8s/dev/ingress/*.yaml
 

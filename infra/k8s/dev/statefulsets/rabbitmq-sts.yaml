@@ -20,6 +20,14 @@ spec:
         ports:
         - containerPort: 5672 # AMQP Port
         - containerPort: 15672 # Management Console Port
+        readinessProbe:
+          exec:
+            command:
+              - rabbitmq-diagnostics
+              - ping
+          initialDelaySeconds: 5
+          periodSeconds: 10
+
         env:
         - name: RABBITMQ_DEFAULT_USER
           valueFrom:
