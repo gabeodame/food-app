@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import RabbitMQBroker from './broker';
+import { RabbitMQBroker } from '@anchordiv/rabbitmq-broker';
 
 @Injectable()
 export class RabbitMQConsumerService {
