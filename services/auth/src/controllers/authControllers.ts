@@ -3,7 +3,7 @@ import { User } from "../models/user";
 import jwt from "jsonwebtoken";
 import { BadRequestError, NotAuthorizedError } from "@gogittix/common"; // Adjust based on your project
 import { PasswordManager } from "../services/password-manager";
-import { RabbitMQBroker } from "@anchordiv/broker";
+import { RabbitMQBroker } from "@anchordiv/rabbitmq-broker";
 
 export class AuthController {
   // Business logic for signing up users
@@ -32,7 +32,16 @@ export class AuthController {
     // Initialize RabbitMQ broker and publish user-created event
     const broker = RabbitMQBroker.getInstance();
     await broker.init(this.rabbitMQUrl);
-    await broker.publish("user-created", JSON.stringify({ username, email }));
+    // await broker.publish("user-created", JSON.stringify({ username, email }));
+
+    // Publish user signup event to the exchange
+    const exchange = "recipe.users.profile-updates";
+    const routingKey = "users.signup.new-user";
+    const message = JSON.stringify({ username, email });
+    const type = "topic";
+    await broker.publishToExchange(exchange, routingKey, message, type, {
+      persistent: true,
+    });
 
     return { message: "User created successfully" };
   }

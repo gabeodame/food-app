@@ -15,12 +15,27 @@ spec:
       labels:
         app: userprofile
     spec:
+      initContainers:
+        - name: wait-for-rabbitmq
+          image: busybox
+          command: ['sh', '-c', 'until nc -z rabbitmq-service 5672; do echo waiting for rabbitmq; sleep 2; done;']
+
       containers:
         - name: userprofile
           image: gabeodame/userprofile-backend
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 3000
+          readinessProbe:
+            exec:
+              command:
+                - sh
+                - -c
+                - |
+                  nc -z rabbitmq-service 5672
+            initialDelaySeconds: 5
+            periodSeconds: 10
+
           env:
             - name: DATABASE_URL
               valueFrom:
@@ -57,7 +72,7 @@ spec:
             - name: RABBITMQ_URL
               valueFrom:
                 secretKeyRef:
-                  name: mongo-secret
+                  name: userprofile-postgres-secret
                   key: RABBITMQ_URL
 
 
