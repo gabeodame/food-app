@@ -81,6 +81,10 @@ export class ProfileService implements OnApplicationBootstrap {
     return profile;
   }
 
+  async getProfileByEmail(email: string): Promise<Profile> {
+    return this.profileRepository.findOne({ where: { email } });
+  }
+
   async updateProfile(id: string, data: UpdateProfileDto): Promise<Profile> {
     const profile = await this.getProfileById(id);
     Object.assign(profile, data); // Merge updates

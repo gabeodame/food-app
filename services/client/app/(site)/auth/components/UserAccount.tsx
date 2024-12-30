@@ -74,7 +74,7 @@ function UserAccount({ items }: { items: DropdownMenuItem[] }) {
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <div className="flex items-center gap-2">
-                {user ? <Avatar user={user} /> : <LoginButton />}
+                {user ? <Avatar email={user?.email} /> : <LoginButton />}
               </div>
             </DropdownMenuTrigger>
             <DropdownMenuContent

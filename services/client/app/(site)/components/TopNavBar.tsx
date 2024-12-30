@@ -78,7 +78,7 @@ const items: DropdownMenuItem[] = [
     label: "Customize Profile",
     component: (
       <div className="">
-        <Link href="/auth/profile" passHref>
+        <Link href="/auth/profile/?action=update" passHref>
           <div className="flex items-center gap-2 p-2 hover:bg-accent hover:text-accent-foreground rounded-md cursor-pointer">
             <FiEdit2 />
             <span>Customize Profile</span>

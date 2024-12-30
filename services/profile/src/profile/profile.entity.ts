@@ -21,5 +21,5 @@ export class Profile {
   bio?: string;
 
   @Column({ nullable: true })
-  image?: string; // URL or image path
+  imageUrl?: string; // URL or image path
 }
