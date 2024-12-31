@@ -27,6 +27,11 @@ const nextConfig = {
         hostname: "plus.unsplash.com",
         pathname: "/**",
       },
+      {
+        protocol: "https",
+        hostname: "anchortest01.s3.amazonaws.com",
+        pathname: "/**",
+      },
     ],
   },
   // output: "standalone",

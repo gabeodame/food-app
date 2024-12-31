@@ -8,13 +8,21 @@ import { Repository } from 'typeorm';
 import { Profile } from './profile.entity';
 import { CreateProfileDto, UpdateProfileDto } from './dto';
 import { RabbitMQBroker } from '@anchordiv/rabbitmq-broker';
+import { S3 } from 'aws-sdk';
 
 @Injectable()
 export class ProfileService implements OnApplicationBootstrap {
+  private s3: S3;
   constructor(
     @InjectRepository(Profile)
     private readonly profileRepository: Repository<Profile>,
-  ) {}
+  ) {
+    this.s3 = new S3({
+      region: process.env.AWS_REGION,
+      accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+      secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+    });
+  }
 
   async onApplicationBootstrap() {
     const broker = RabbitMQBroker.getInstance();
@@ -95,6 +103,45 @@ export class ProfileService implements OnApplicationBootstrap {
     const result = await this.profileRepository.delete(id);
     if (!result.affected) {
       throw new NotFoundException('Profile not found');
+    }
+  }
+
+  async uploadProfileImageToS3(
+    id: string,
+    file: Express.Multer.File,
+  ): Promise<{ imageUrl: string }> {
+    const profile = await this.getProfileById(id);
+
+    if (!profile) {
+      throw new NotFoundException('Profile not found');
+    }
+
+    if (!file) {
+      throw new NotFoundException('File not found');
+    }
+
+    const fileKey = `profile-images/${profile.id}/profile-picture`;
+
+    console.log('Uploading file:', fileKey);
+
+    const params = {
+      Bucket: process.env.AWS_S3_BUCKET!,
+      Key: fileKey,
+      Body: file.buffer,
+      ContentType: file.mimetype,
+      ServerSideEncryption: 'AES256',
+    };
+
+    try {
+      // Upload and overwrite the existing file
+      const uploadResult = await this.s3.upload(params).promise();
+
+      return {
+        imageUrl: uploadResult.Location,
+      };
+    } catch (error) {
+      console.error('Error uploading file:', error);
+      throw new Error('Error uploading file');
     }
   }
 }

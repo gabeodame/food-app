@@ -2,3 +2,4 @@
 # /infra/k8s/auth-mongo-secret.yaml
 archive/
 secrets/
+**/secrets/

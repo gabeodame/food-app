@@ -3,14 +3,22 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import React, { useEffect, useState } from "react";
 import { useForm, SubmitHandler } from "react-hook-form";
-import { set, z } from "zod";
+import { z } from "zod";
 import { User } from "../../components/Avatar";
 import { useRouter } from "next/navigation";
+
 type formProps = {
   firstName: string;
   lastName: string;
   bio?: string;
-  imageUrl?: string;
+  imageUrl?: File[] | null;
+};
+
+const InitialProfile: formProps = {
+  firstName: "",
+  lastName: "",
+  bio: "",
+  //   imageUrl: null,
 };
 
 const schema = z.object({
@@ -21,11 +29,13 @@ const schema = z.object({
     .string()
     .min(2, { message: "Last name must be at least 2 characters long" }),
   bio: z.string().optional(),
-  imageUrl: z.string().optional(),
+  imageUrl: z.any().optional(),
 });
 
 function UpdateProfile({ email }: { email: string }) {
   const [profile, setProfile] = useState<User>();
+  //   const [initalProfile, setInitialProfile] =
+  //     useState<formProps>(InitialProfile);
   const router = useRouter();
 
   // this can be a custom hook as it is used in multiple components
@@ -46,38 +56,75 @@ function UpdateProfile({ email }: { email: string }) {
     getProfile();
   }, [email]);
 
-  console.log("profile", profile);
-  console.log("email", email);
+  useEffect(() => {
+    reset({
+      firstName: profile?.firstName,
+      lastName: profile?.lastName,
+      bio: profile?.bio,
+    });
+  }, [profile]);
 
   const {
     register,
     handleSubmit,
     formState: { errors },
     watch,
+    reset,
   } = useForm<formProps>({
+    mode: "onChange",
     resolver: zodResolver(schema),
+    defaultValues: {
+      firstName: profile?.firstName,
+      lastName: profile?.lastName,
+      bio: profile?.bio,
+      // imageUrl: profile?.imageUrl,
+    },
   });
 
-  const onSubmit: SubmitHandler<formProps> = async (data) => {
-    try {
-      const url = `/api/1/profile/${profile?.id}`;
+  console.log(watch("imageUrl"));
 
-      const { firstName, lastName, bio, imageUrl } = data;
-      const response = await fetch(url, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ firstName, lastName, bio, imageUrl }),
+  const onSubmit: SubmitHandler<formProps> = async (data) => {
+    const formData = new FormData();
+    const fileInput = data.imageUrl as unknown as FileList;
+    const file = fileInput && fileInput[0];
+    console.log(file);
+    if (file) {
+      formData.append("file", file);
+    }
+    try {
+      const imageResponse = await fetch(`/api/1/profile/${profile?.id}/image`, {
+        method: "POST",
+        body: formData,
       });
 
-      if (response.ok) {
-        console.error("Failed to update profile");
-        const res = await response.json();
+      if (imageResponse.ok) {
+        const res = await imageResponse.json();
+        console.log(res);
+        const url = `/api/1/profile/${profile?.id}`;
 
-        router.push("/auth/profile");
+        const { firstName, lastName, bio } = data;
+        const response = await fetch(url, {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            firstName,
+            lastName,
+            bio,
+            imageUrl: res?.imageUrl,
+          }),
+        });
+
+        if (response.ok) {
+          const res = await response.json();
+          reset();
+          router.push("/auth/profile");
+        } else {
+          console.error("Failed to update profile");
+        }
       } else {
-        console.error("Failed to update profile");
+        console.error("Failed to upload image");
       }
     } catch (error) {
       console.error("Error updating profile:", error);
@@ -139,7 +186,7 @@ function UpdateProfile({ email }: { email: string }) {
             {/* would be an upload file */}
             <input
               className="w-full bg-color-primary-light rounded-md p-2 placeholder-gray-400 focus:outline-0 text-white"
-              type="text"
+              type="file"
               placeholder="Image URL"
               {...register("imageUrl")}
             />

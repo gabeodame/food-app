@@ -1,6 +1,6 @@
 "use client";
 
-import React, { Suspense, useEffect, useState } from "react";
+import React, { Suspense, use, useEffect, useState } from "react";
 import Image from "next/image";
 
 export type User = {
@@ -20,7 +20,9 @@ async function Avatar({ email }: { email: string }) {
     const getProfile = async () => {
       try {
         const url = `/api/1/profile/email/${email}`;
-        const response = await fetch(url);
+        const response = await fetch(url, {
+          cache: "no-cache",
+        });
         if (response.ok) {
           const data = await response.json();
           setProfile(data);
@@ -35,8 +37,8 @@ async function Avatar({ email }: { email: string }) {
     getProfile();
   }, [email]);
 
-  //   const profile = await GetProfile({ email: user.email });
-  //   console.log("profile", profile);
+  console.log("profile", profile);
+
   return (
     <Suspense fallback={<div>Loading...</div>}>
       {profile ? (
