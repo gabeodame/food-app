@@ -42,14 +42,14 @@ build:
         manual:
           - src: "src/**/*.ts"
             dest: .
-    # - image: gabeodame/ingredient-backend
-    #   context: services/ingredient
-    #   docker:
-    #     dockerfile: Dockerfile
-    #   sync:
-    #     manual:
-    #       - src: "src/**/*.ts"
-    #         dest: .
+    - image: gabeodame/ingredient-backend
+      context: services/ingredient
+      docker:
+        dockerfile: Dockerfile
+      sync:
+        manual:
+          - src: "src/**/*.ts"
+            dest: .
 manifests:
   rawYaml:
   # base k8s resources
@@ -67,7 +67,7 @@ manifests:
     - ./infra/k8s/dev/statefulsets/auth-mongo-sts.yaml
     - ./infra/k8s/dev/statefulsets/recipe-postgres-sts.yaml
     - ./infra/k8s/dev/statefulsets/userprofile-sts.yaml
-    # - ./infra/k8s/dev/statefulsets/ingredient-postgres-sts.yaml
+    - ./infra/k8s/dev/statefulsets/ingredient-postgres-sts.yaml
   # dev k8s resources - deployments
     - ./infra/k8s/dev/deployments/*.yaml
     - ./infra/k8s/dev/ingress/*.yaml

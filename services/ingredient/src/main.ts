@@ -22,17 +22,13 @@ async function bootstrap() {
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api', app, document); // Swagger UI will be available at /api
+  SwaggerModule.setup('api/1/ingredient/swagger', app, document); // Swagger UI will be available at /api
 
   // Start the server
   const port = process.env.PORT ?? 3000;
   await app.listen(port, () => {
     console.log(`Listening on port ${port}`);
-    console.log(`Swagger is available at http://localhost:${port}/api`);
-  });
-
-  await app.listen(process.env.PORT ?? 3000, () => {
-    console.log(`Listening on port ${process.env.PORT ?? 3000}`);
+    console.log(`Swagger is available at http://localhost:${port}/swagger`);
   });
 }
 bootstrap();

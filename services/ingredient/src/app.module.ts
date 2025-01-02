@@ -8,9 +8,9 @@ const getOrmConfig = (configService: ConfigService): TypeOrmModuleOptions => ({
   type: 'postgres',
   host: configService.get<string>('DB_HOST', 'localhost'),
   port: configService.get<number>('DB_PORT', 5432),
-  username: configService.get<string>('DB_USER', 'default_user'),
-  password: configService.get<string>('DB_PASSWORD', 'default_password'),
-  database: configService.get<string>('DB_NAME', 'default_db'),
+  username: configService.get<string>('POSTGRES_USER', 'default_user'),
+  password: configService.get<string>('POSTGRES_PASSWORD', 'default_password'),
+  database: configService.get<string>('POSTGRES_DB', 'default_db'),
   entities: [Ingredient],
   synchronize: configService.get<string>('NODE_ENV') !== 'production', // Disable in production
 });
