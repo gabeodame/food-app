@@ -21,28 +21,63 @@ spec:
           image: postgres:15
           env:
             - name: POSTGRES_DB
-              value: userprofile
+              valueFrom:
+                secretKeyRef:
+                  name: userprofile-postgres-secret
+                  key: POSTGRES_DB
             - name: POSTGRES_USER
-              value: gabrielodame
+              valueFrom:
+                secretKeyRef:
+                  name: userprofile-postgres-secret
+                  key: POSTGRES_USER
             - name: POSTGRES_PASSWORD
-              value: HardPassword
+              valueFrom:
+                secretKeyRef:
+                  name: userprofile-postgres-secret
+                  key: POSTGRES_PASSWORD
             - name: PGDATA
-              value: "/var/lib/postgresql/data/pgdata" # Use a subdirectory for safety
+              value: "/var/lib/postgresql/data/pgdata"
           ports:
             - containerPort: 5432
           volumeMounts:
             - name: postgres-storage
               mountPath: /var/lib/postgresql/data
+          # resources:
+          #   requests:
+          #     memory: "512Mi"
+          #     cpu: "250m"
+          #   limits:
+          #     memory: "1Gi"
+          #     cpu: "500m"
+          # readinessProbe:
+          #   exec:
+          #     command:
+          #       - pg_isready
+          #       - -U
+          #       - gabeodame
+          #   initialDelaySeconds: 5
+          #   periodSeconds: 10
+          # livenessProbe:
+          #   exec:
+          #     command:
+          #       - pg_isready
+          #       - -U
+          #       - gabeodame
+          #   initialDelaySeconds: 30
+          #   periodSeconds: 10
   volumeClaimTemplates:
     - metadata:
         name: postgres-storage
       spec:
         accessModes: ["ReadWriteOnce"]
+
         resources:
           requests:
             storage: 1Gi
 
+
 ---
+
 apiVersion: v1
 kind: Service
 metadata:

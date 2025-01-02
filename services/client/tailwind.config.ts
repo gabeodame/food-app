@@ -23,7 +23,9 @@ const config = {
         sans: ["var(--font-sans)", ...fontFamily.sans],
       },
       colors: {
-        color_primary: "var(--color-primary)",
+        "color-primary": "var(--color-primary)",
+        "color-primary-alt": "var(--primary-color-alt)",
+        "color-primary-light": "var(--color-primary-light)",
         "color-secondary": "var(--color-secondary)",
         "color-secondary-alt": "var(--color-secondary-alt)",
         "color-green": "var(--color-green)",

@@ -32,32 +32,48 @@ spec:
         - name: auth-service
           image: gabeodame/auth-service
           imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 3000
           env:
             - name: MONGO_URI
               valueFrom:
                 secretKeyRef:
                   name: mongo-secret
                   key: MONGO_URI
-            - name: MONGO_INITDB_ROOT_USERNAME
-              valueFrom:
-                secretKeyRef:
-                  name: mongo-secret
-                  key: MONGO_INITDB_ROOT_USERNAME
-            - name: MONGO_INITDB_ROOT_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: mongo-secret
-                  key: MONGO_INITDB_ROOT_PASSWORD
             - name: RABBITMQ_URL
               valueFrom:
                 secretKeyRef:
                   name: mongo-secret
                   key: RABBITMQ_URL
-      volumes:
-        - name: init-data
-          emptyDir: {}
+            - name: JWT_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: jwt-secret
+                  key: JWT_KEY
+          # readinessProbe:
+          #   httpGet:
+          #     path: /health
+          #     port: 3000
+          #   initialDelaySeconds: 5
+          #   periodSeconds: 10
+          # livenessProbe:
+          #   httpGet:
+          #     path: /health
+          #     port: 3000
+          #   initialDelaySeconds: 30
+          #   periodSeconds: 10
+          # resources:
+          #   requests:
+          #     memory: "256Mi"
+          #     cpu: "125m"
+          #   limits:
+          #     memory: "512Mi"
+          #     cpu: "250m"
+
 
 ---
+
+
 apiVersion: v1
 kind: Service
 metadata:

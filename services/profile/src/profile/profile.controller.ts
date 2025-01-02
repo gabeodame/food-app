@@ -8,10 +8,14 @@ import {
   Post,
   HttpException,
   HttpStatus,
+  UseInterceptors,
+  UploadedFile,
 } from '@nestjs/common';
 import { ProfileService } from './profile.service';
 import { CreateProfileDto, UpdateProfileDto } from './dto';
+
 import { Profile } from './profile.entity';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 @Controller('api/1/profile')
 export class ProfileController {
@@ -42,6 +46,19 @@ export class ProfileController {
     }
   }
 
+  @Get('email/:email')
+  async getProfileByEmail(@Param('email') email: string): Promise<Profile> {
+    const isValidEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    if (!isValidEmail) {
+      throw new HttpException('Invalid email address', HttpStatus.BAD_REQUEST);
+    }
+    try {
+      return await this.profileService.getProfileByEmail(email);
+    } catch (error) {
+      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
   @Patch(':id')
   async updateProfile(
     @Param('id') id: string,
@@ -65,6 +82,19 @@ export class ProfileController {
   async deleteProfile(@Param('id') id: string): Promise<void> {
     try {
       await this.profileService.deleteProfile(id);
+    } catch (error) {
+      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  @Post(':id/image')
+  @UseInterceptors(FileInterceptor('file'))
+  async uploadProfileImage(
+    @Param('id') id: string,
+    @UploadedFile() file: Express.Multer.File,
+  ): Promise<{ imageUrl: string }> {
+    try {
+      return await this.profileService.uploadProfileImageToS3(id, file);
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }

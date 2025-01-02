@@ -24,6 +24,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import Avatar from "./Avatar";
 
 const menuItems = [
   { trigger: "Profile" },
@@ -73,7 +74,7 @@ function UserAccount({ items }: { items: DropdownMenuItem[] }) {
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <div className="flex items-center gap-2">
-                {user ? <Avatar user={user} /> : <LoginButton />}
+                {user ? <Avatar email={user?.email} /> : <LoginButton />}
               </div>
             </DropdownMenuTrigger>
             <DropdownMenuContent
@@ -112,35 +113,6 @@ function UserAccount({ items }: { items: DropdownMenuItem[] }) {
 }
 
 export default UserAccount;
-
-const Avatar = ({ user }: { user: any }) => {
-  return (
-    <div className="flex items-center gap-2">
-      {user?.avatar ? (
-        <Image
-          src={user.avatar}
-          alt={user.username}
-          className="w-8 h-8 rounded-full overflow-hidden"
-          width={32}
-          height={32}
-        />
-      ) : (
-        <UserInitialsAvatar user={user} />
-      )}
-    </div>
-  );
-};
-
-const UserInitialsAvatar = ({ user }: { user: any }) => {
-  return (
-    <div className="flex items-center gap-2">
-      <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center">
-        {user?.firstName ? user.firstName[0] : ""}
-        {user?.lastName ? user.lastName[0] : ""}
-      </div>
-    </div>
-  );
-};
 
 const LoginButton = () => {
   const router = useRouter();

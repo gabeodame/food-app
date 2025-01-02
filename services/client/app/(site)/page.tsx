@@ -10,6 +10,7 @@ import { StickyCards } from "./components/StickyCards";
 
 import { Metadata } from "next";
 import Footer from "./components/Footer";
+import { Suspense } from "react";
 
 export const metadata: Metadata = {
   title: "DishShare",
@@ -19,23 +20,25 @@ export const metadata: Metadata = {
 
 export default async function MainHome() {
   return (
-    <main className="w-full flex flex-col justify-center">
-      <div className="hidden md:block">
-        <Hero />
-      </div>
-      <div className="wf-full flex flex-col justify-center">
-        <Categories />
-        <div className="w-full hidden md:block">
-          <Featured />
+    <Suspense fallback={<div>Loading...</div>}>
+      <main className="w-full flex flex-col justify-center">
+        <div className="hidden md:block">
+          <Hero />
         </div>
-        <AdList />
-        <div className="container">
-          <FoodList limit={4} />
+        <div className="wf-full flex flex-col justify-center">
+          <Categories />
+          <div className="w-full hidden md:block">
+            <Featured />
+          </div>
+          <AdList />
+          <div className="container">
+            <FoodList limit={4} />
+          </div>
         </div>
-      </div>
-      <StickyCards />
-      <ContactUs />
-      <Footer />
-    </main>
+        <StickyCards />
+        <ContactUs />
+        <Footer />
+      </main>
+    </Suspense>
   );
 }

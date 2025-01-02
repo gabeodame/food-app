@@ -12,7 +12,7 @@ function LogoutButton() {
       const res = await fetchData("/api/users/signout", "post");
       console.log(res.data);
       if (!res.errors) {
-        router.refresh();
+        router.push("/");
       }
     };
     logout();
@@ -23,7 +23,6 @@ function LogoutButton() {
       variant="ghost"
       className="w-full px-8 justify-start items-center"
     >
-      {" "}
       Logout
     </Button>
   );

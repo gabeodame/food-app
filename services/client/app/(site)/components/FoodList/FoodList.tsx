@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { Suspense, useEffect, useState } from "react";
 import { FoodItemProps, FoodListTypes } from "../../models/types/types";
 import FoodItem from "./FoodItem";
 import { usePathname, useSearchParams } from "next/navigation";
@@ -95,29 +95,31 @@ function FoodList({
   // }, [foodData, search]);
 
   return (
-    <div className="flex flex-col gap-4">
-      {/* Conditional Button */}
-      {isLandingPage && (
-        <Button
-          variant="link"
-          onClick={() => {
-            router.push("/foods");
-          }}
-          className="flex gap-1 items-center justify-center md:justify-end" // Center on mobile, right-align on larger screens
-        >
-          <ArrowLeftIcon className="h-4 w-4" />
-          Show All
-        </Button>
-      )}
+    <Suspense fallback={<div>Loading...</div>}>
+      <div className="flex flex-col gap-4">
+        {/* Conditional Button */}
+        {isLandingPage && (
+          <Button
+            variant="link"
+            onClick={() => {
+              router.push("/foods");
+            }}
+            className="flex gap-1 items-center justify-center md:justify-end" // Center on mobile, right-align on larger screens
+          >
+            <ArrowLeftIcon className="h-4 w-4" />
+            Show All
+          </Button>
+        )}
 
-      {/* Grid Layout */}
-      <div className="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 auto-rows-auto gap-4">
-        {data?.map((item, index) => {
-          if (limit && index >= limit) return;
-          return <FoodItem key={index} item={item} />;
-        })}
+        {/* Grid Layout */}
+        <div className="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 auto-rows-auto gap-4">
+          {data?.map((item, index) => {
+            if (limit && index >= limit) return;
+            return <FoodItem key={index} item={item} />;
+          })}
+        </div>
       </div>
-    </div>
+    </Suspense>
   );
 }
 

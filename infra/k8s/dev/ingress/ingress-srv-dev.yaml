@@ -32,6 +32,13 @@ spec:
                 name: userprofile-service 
                 port:
                   number: 3000
+          - path: /api/1/ingredient/?(.*)
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: ingredient-service
+                port:
+                  number: 3000
           - path: /?(.*)
             pathType: ImplementationSpecific
             backend:

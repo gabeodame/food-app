@@ -23,5 +23,10 @@ export class UpdateProfileDto {
 
   @IsOptional()
   @IsUrl() // Validate as a URL
-  image?: string; // Profile image
+  imageUrl?: string; // Profile image
+}
+
+export class EmailDto {
+  @IsEmail()
+  email: string;
 }

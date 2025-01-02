@@ -27,11 +27,11 @@ __decorate([
     __metadata("design:type", String)
 ], Profile.prototype, "email", void 0);
 __decorate([
-    (0, typeorm_1.Column)(),
+    (0, typeorm_1.Column)({ nullable: true }),
     __metadata("design:type", String)
 ], Profile.prototype, "firstName", void 0);
 __decorate([
-    (0, typeorm_1.Column)(),
+    (0, typeorm_1.Column)({ nullable: true }),
     __metadata("design:type", String)
 ], Profile.prototype, "lastName", void 0);
 __decorate([
@@ -41,8 +41,8 @@ __decorate([
 __decorate([
     (0, typeorm_1.Column)({ nullable: true }),
     __metadata("design:type", String)
-], Profile.prototype, "dietaryPreferences", void 0);
+], Profile.prototype, "imageUrl", void 0);
 exports.Profile = Profile = __decorate([
-    (0, typeorm_1.Entity)()
+    (0, typeorm_1.Entity)('profiles')
 ], Profile);
 //# sourceMappingURL=profile.entity.js.map

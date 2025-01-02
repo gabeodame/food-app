@@ -26,6 +26,7 @@ import "./TopNavBar.css";
 import { Button } from "@/components/ui/Button";
 import { Separator } from "@radix-ui/react-dropdown-menu";
 import LogoutButton from "./LogoutButton";
+import { FiEdit2 } from "react-icons/fi";
 
 interface CategoryProp {
   title: string;
@@ -73,9 +74,21 @@ const categories = [
 ];
 
 const items: DropdownMenuItem[] = [
-  { label: "Status Bar", defaultChecked: true },
-  { label: "Activity Bar", defaultChecked: false, disabled: true },
-  { label: "Panel", defaultChecked: false },
+  {
+    label: "Customize Profile",
+    component: (
+      <div className="">
+        <Link href="/auth/profile/?action=update" passHref>
+          <div className="flex items-center gap-2 p-2 hover:bg-accent hover:text-accent-foreground rounded-md cursor-pointer">
+            <FiEdit2 />
+            <span>Customize Profile</span>
+          </div>
+        </Link>
+      </div>
+    ),
+  },
+  { label: "My Recipes", defaultChecked: false },
+  { label: "Favorited Recipes", defaultChecked: false },
   {
     label: "Logout",
     defaultChecked: false,

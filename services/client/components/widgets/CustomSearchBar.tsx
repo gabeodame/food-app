@@ -34,65 +34,67 @@ function CustomSearchBar() {
   };
 
   return (
-    <div
-      className="min-w-full h-full flex-1"
-      tabIndex={0}
-      onKeyDown={handleKeyDown}
-    >
-      <CustomDialog
-        trigger={
-          <div className="flex w-full items-center">
-            {/* Search bar should take full width */}
-            <Suspense fallback={<Skeleton className="w-full h-12" />}>
+    <Suspense fallback={<Skeleton className="w-full h-12" />}>
+      <div
+        className="min-w-full h-full flex-1"
+        tabIndex={0}
+        onKeyDown={handleKeyDown}
+      >
+        <CustomDialog
+          trigger={
+            <div className="flex w-full items-center">
+              {/* Search bar should take full width */}
+              <Suspense fallback={<Skeleton className="w-full h-12" />}>
+                <Search
+                  placeholder="Search Food Items"
+                  showCommands={true}
+                  // className="w-full"
+                />
+              </Suspense>
+            </div>
+          }
+          open={open}
+          setOpen={() => setOpen(!open)}
+        >
+          <div className="w-full m-0">
+            <Suspense fallback={<Skeleton className="w-full h-fit" />}>
               <Search
+                onSearchCompleted={() => setOpen(!open)}
                 placeholder="Search Food Items"
                 showCommands={true}
-                // className="w-full"
               />
             </Suspense>
           </div>
-        }
-        open={open}
-        setOpen={() => setOpen(!open)}
-      >
-        <div className="w-full m-0">
-          <Suspense fallback={<Skeleton className="w-full h-fit" />}>
-            <Search
-              onSearchCompleted={() => setOpen(!open)}
-              placeholder="Search Food Items"
-              showCommands={true}
-            />
-          </Suspense>
-        </div>
 
-        <ScrollArea className="w-full max-h-[500px] overflow-auto">
-          <ul className="w-full">
-            {searchList?.map((search, idx) => (
-              <li
-                key={search}
-                className={cn(
-                  "p-2 w-full flex items-center justify-between bg-gray-100 dark:bg-muted cursor-pointer hover:bg-gray-200",
-                  {
-                    "bg-color-secondary-alt dark:bg-muted transition-all duration-150 ease-in-out":
-                      idx % 2 === 1,
-                  }
-                )}
-                onClick={() => {
-                  router.push(`/foods?search=${search}`);
-                  setOpen(false);
-                }}
-              >
-                <span>{search}</span>
-                <TrashIcon
-                  className="h-4 w-4 cursor-pointer mr-2 hover:text-color-secondary-alt"
-                  onClick={() => deleteSearch(search)}
-                />
-              </li>
-            ))}
-          </ul>
-        </ScrollArea>
-      </CustomDialog>
-    </div>
+          <ScrollArea className="w-full max-h-[500px] overflow-auto">
+            <ul className="w-full">
+              {searchList?.map((search, idx) => (
+                <li
+                  key={search}
+                  className={cn(
+                    "p-2 w-full flex items-center justify-between bg-gray-100 dark:bg-muted cursor-pointer hover:bg-gray-200",
+                    {
+                      "bg-color-secondary-alt dark:bg-muted transition-all duration-150 ease-in-out":
+                        idx % 2 === 1,
+                    }
+                  )}
+                  onClick={() => {
+                    router.push(`/foods?search=${search}`);
+                    setOpen(false);
+                  }}
+                >
+                  <span>{search}</span>
+                  <TrashIcon
+                    className="h-4 w-4 cursor-pointer mr-2 hover:text-color-secondary-alt"
+                    onClick={() => deleteSearch(search)}
+                  />
+                </li>
+              ))}
+            </ul>
+          </ScrollArea>
+        </CustomDialog>
+      </div>
+    </Suspense>
   );
 }
 
