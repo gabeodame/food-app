@@ -17,19 +17,24 @@ spec:
         app: recipe-postgres
     spec:
       containers:
-        - image: postgres
+        - image: postgres:15
           name: postgres
           env:
             - name: POSTGRES_USER
-              value: "gabeodame"
+              valueFrom:
+                secretKeyRef:
+                  name: recipe-postgres-secret
+                  key: POSTGRES_USER
             - name: POSTGRES_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: recipe-postgres-secret
-                  key: postgres-password
+                  key: POSTGRES_PASSWORD
             - name: POSTGRES_DB
-              value: "recipe"
-            # Setting PGDATA to point to the subdirectory
+              valueFrom:
+                secretKeyRef:
+                  name: recipe-postgres-secret
+                  key: POSTGRES_DB
             - name: PGDATA
               value: "/var/lib/postgresql/data/pgdata"
           ports:
@@ -37,6 +42,29 @@ spec:
           volumeMounts:
             - name: postgres-storage
               mountPath: /var/lib/postgresql/data
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "250m"
+            limits:
+              memory: "1Gi"
+              cpu: "500m"
+          # readinessProbe:
+          #   exec:
+          #     command:
+          #       - pg_isready
+          #       - -U
+          #       - gabeodame
+          #   initialDelaySeconds: 5
+          #   periodSeconds: 10
+          # livenessProbe:
+          #   exec:
+          #     command:
+          #       - pg_isready
+          #       - -U
+          #       - gabeodame
+          #   initialDelaySeconds: 30
+          #   periodSeconds: 10
   volumeClaimTemplates:
     - metadata:
         name: postgres-storage
@@ -45,6 +73,7 @@ spec:
         resources:
           requests:
             storage: 1Gi
+
 
 ---
 apiVersion: v1
@@ -55,10 +84,11 @@ metadata:
     app: recipe-postgres
   name: recipe-postgres-headless
 spec:
-  clusterIP: None # This creates a headless service, which is necessary for StatefulSets
+  clusterIP: None # Headless service for StatefulSet
   ports:
     - port: 5432
       protocol: TCP
       targetPort: 5432
   selector:
     app: recipe-postgres
+

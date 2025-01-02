@@ -42,18 +42,33 @@ build:
         manual:
           - src: "src/**/*.ts"
             dest: .
+    # - image: gabeodame/ingredient-backend
+    #   context: services/ingredient
+    #   docker:
+    #     dockerfile: Dockerfile
+    #   sync:
+    #     manual:
+    #       - src: "src/**/*.ts"
+    #         dest: .
 manifests:
   rawYaml:
+  # base k8s resources
     - ./infra/k8s/base/namespace.yaml
     - ./infra/k8s/base/network.yaml
+  # dev k8s resources - secrets
     - ./infra/k8s/dev/secrets/auth-mongo-secret.yaml
     - ./infra/k8s/dev/secrets/recipe-postgres-secret.yaml
+    - ./infra/k8s/dev/secrets/ingredient-postgres-secret.yaml
     - ./infra/k8s/dev/secrets/userprofile-psql-secret.yaml
     - ./infra/k8s/dev/secrets/rabbitmq-secret.yaml
+    - ./infra/k8s/dev/secrets/jwt-auth-secret.yaml
+  # dev k8s resources - statefulsets
     - ./infra/k8s/dev/statefulsets/rabbitmq-sts.yaml
     - ./infra/k8s/dev/statefulsets/auth-mongo-sts.yaml
     - ./infra/k8s/dev/statefulsets/recipe-postgres-sts.yaml
     - ./infra/k8s/dev/statefulsets/userprofile-sts.yaml
+    # - ./infra/k8s/dev/statefulsets/ingredient-postgres-sts.yaml
+  # dev k8s resources - deployments
     - ./infra/k8s/dev/deployments/*.yaml
     - ./infra/k8s/dev/ingress/*.yaml
 profiles:
@@ -67,16 +82,23 @@ profiles:
       kubectl: {}
     manifests:
       rawYaml:
+      # base k8s resources
         - ./infra/k8s/base/namespace.yaml
         - ./infra/k8s/base/network.yaml
+      # dev k8s resources - secrets
         - ./infra/k8s/dev/secrets/auth-mongo-secret.yaml
         - ./infra/k8s/dev/secrets/recipe-postgres-secret.yaml
+        - ./infra/k8s/dev/secrets/ingredient-postgres-secret.yaml
         - ./infra/k8s/dev/secrets/userprofile-psql-secret.yaml
         - ./infra/k8s/dev/secrets/rabbitmq-secret.yaml
+        - ./infra/k8s/dev/secrets/jwt-auth-secret.yaml
+      # dev k8s resources - statefulsets
         - ./infra/k8s/dev/statefulsets/rabbitmq-sts.yaml
         - ./infra/k8s/dev/statefulsets/auth-mongo-sts.yaml
         - ./infra/k8s/dev/statefulsets/recipe-postgres-sts.yaml
         - ./infra/k8s/dev/statefulsets/userprofile-sts.yaml
+        - ./infra/k8s/dev/statefulsets/ingredient-postgres-sts.yaml
+      
         - ./infra/k8s/dev/deployments/*.yaml
         - ./infra/k8s/dev/ingress/*.yaml
 
@@ -89,6 +111,7 @@ profiles:
         - image: gabeodame/recipe-client
         - image: gabeodame/recipe-backend
         - image: gabeodame/userprofile-backend
+        - image: gabeodame/ingredient-backend
     deploy:
       kubectl: {}
     manifests:

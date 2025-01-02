@@ -8,9 +8,9 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ProfileModule = void 0;
 const common_1 = require("@nestjs/common");
+const typeorm_1 = require("@nestjs/typeorm");
 const profile_controller_1 = require("./profile.controller");
 const profile_service_1 = require("./profile.service");
-const typeorm_1 = require("@nestjs/typeorm");
 const profile_entity_1 = require("./profile.entity");
 let ProfileModule = class ProfileModule {
 };

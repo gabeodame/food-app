@@ -1,0 +1,94 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: ingredient-postgres
+  namespace: recipe
+  labels:
+    app: ingredient-postgres
+spec:
+  serviceName: ingredient-postgres-headless
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ingredient-postgres
+  template:
+    metadata:
+      labels:
+        app: ingredient-postgres
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:15
+          env:
+            - name: DB_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: ingredient-postgres-secret
+                  key: DB_NAME
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: ingredient-postgres-secret
+                  key: POSTGRES_USER
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: ingredient-postgres-secret
+                  key: POSTGRES_PASSWORD
+            - name: PGDATA
+              value: "/var/lib/postgresql/data/pgdata" # Use a subdirectory for safety
+          ports:
+            - containerPort: 5432
+          volumeMounts:
+            - name: ingredient-postgres-storage
+              mountPath: /var/lib/postgresql/data
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "250m"
+            limits:
+              memory: "1Gi"
+              cpu: "500m"
+          # livenessProbe:
+          #   exec:
+          #     command:
+          #       - pg_isready
+          #       - -U
+          #       - gabrielodame
+          #   initialDelaySeconds: 30
+          #   periodSeconds: 10
+          # readinessProbe:
+          #   exec:
+          #     command:
+          #       - pg_isready
+          #       - -U
+          #       - gabrielodame
+          #   initialDelaySeconds: 5
+          #   periodSeconds: 10
+  volumeClaimTemplates:
+    - metadata:
+        name: ingredient-postgres-storage
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: 1Gi
+
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: ingredient-postgres-headless
+  namespace: recipe
+  labels:
+    app: ingredient-postgres
+spec:
+  clusterIP: None # Headless service for StatefulSet
+  ports:
+    - port: 5432
+      targetPort: 5432
+  selector:
+    app: ingredient-postgres
+

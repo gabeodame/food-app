@@ -18,7 +18,7 @@ spec:
     spec:
       containers:
         - name: auth-mongo
-          image: mongo
+          image: mongo:7.0
           env:
             - name: MONGO_INITDB_ROOT_USERNAME
               valueFrom:
@@ -30,11 +30,34 @@ spec:
                 secretKeyRef:
                   name: mongo-secret
                   key: MONGO_INITDB_ROOT_PASSWORD
+          ports:
+            - containerPort: 27017
           volumeMounts:
             - name: mongo-storage
               mountPath: /data/db
-          ports:
-            - containerPort: 27017
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "250m"
+            limits:
+              memory: "1Gi"
+              cpu: "500m"
+          # livenessProbe:
+          #   exec:
+          #     command:
+          #       - mongosh
+          #       - --eval
+          #       - db.adminCommand('ping')
+          #   initialDelaySeconds: 30
+          #   periodSeconds: 10
+          # readinessProbe:
+          #   exec:
+          #     command:
+          #       - mongosh
+          #       - --eval
+          #       - db.adminCommand('ping')
+          #   initialDelaySeconds: 5
+          #   periodSeconds: 10
   volumeClaimTemplates:
     - metadata:
         name: mongo-storage
@@ -43,7 +66,6 @@ spec:
         resources:
           requests:
             storage: 1Gi
-
 ---
 apiVersion: v1
 kind: Service

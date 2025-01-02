@@ -15,34 +15,105 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.ProfileService = void 0;
 const common_1 = require("@nestjs/common");
 const typeorm_1 = require("@nestjs/typeorm");
-const profile_entity_1 = require("./profile.entity");
 const typeorm_2 = require("typeorm");
+const profile_entity_1 = require("./profile.entity");
+const rabbitmq_broker_1 = require("@anchordiv/rabbitmq-broker");
+const aws_sdk_1 = require("aws-sdk");
 let ProfileService = class ProfileService {
     constructor(profileRepository) {
         this.profileRepository = profileRepository;
+        this.s3 = new aws_sdk_1.S3({
+            region: process.env.AWS_REGION,
+            accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+            secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+        });
+    }
+    async onApplicationBootstrap() {
+        const broker = rabbitmq_broker_1.RabbitMQBroker.getInstance();
+        await broker.init(process.env.RABBITMQ_URL);
+        const exchange = 'recipe.users.profile-updates';
+        const mainQue = 'user-signup-queue';
+        const dlx = 'recipe.users.dlx';
+        const dlq = 'user-signup-dlq';
+        const routingKey = 'users.signup.new-user';
+        await broker.setupDeadLetterQueue(mainQue, dlx, dlq);
+        await broker.consume(dlq, async (message) => {
+            try {
+                console.log('Dead-lettered message:', message.content.toString());
+                await this.handleUserCreated(message.content);
+            }
+            catch (error) {
+                console.error('Error handling dead-lettered message:', error);
+            }
+        });
+        await broker.assertExchange(exchange, 'topic');
+        await broker.bindQueue(mainQue, exchange, routingKey);
+        await broker.consume(mainQue, async (message) => {
+            await this.handleUserCreated(message.content);
+        });
+    }
+    async handleUserCreated(message) {
+        try {
+            const data = JSON.parse(message.toString());
+            console.log('Message received:', data);
+            const profile = this.profileRepository.create(data);
+            await this.profileRepository.save(profile);
+        }
+        catch (error) {
+            console.error('Error handling user-created message:', error);
+        }
     }
     async createProfile(data) {
         const profile = this.profileRepository.create(data);
         return this.profileRepository.save(profile);
     }
     async getProfileById(id) {
-        const profile = this.profileRepository.findOne({ where: { id } });
+        const profile = await this.profileRepository.findOne({ where: { id } });
         if (!profile) {
             throw new common_1.NotFoundException('Profile not found');
         }
         return profile;
     }
+    async getProfileByEmail(email) {
+        return this.profileRepository.findOne({ where: { email } });
+    }
     async updateProfile(id, data) {
-        const result = await this.profileRepository.update(id, data);
-        if (!result.affected) {
-            throw new common_1.NotFoundException('Profile not found');
-        }
-        return this.getProfileById(id);
+        const profile = await this.getProfileById(id);
+        Object.assign(profile, data);
+        return this.profileRepository.save(profile);
     }
     async deleteProfile(id) {
         const result = await this.profileRepository.delete(id);
         if (!result.affected) {
             throw new common_1.NotFoundException('Profile not found');
+        }
+    }
+    async uploadProfileImageToS3(id, file) {
+        const profile = await this.getProfileById(id);
+        if (!profile) {
+            throw new common_1.NotFoundException('Profile not found');
+        }
+        if (!file) {
+            throw new common_1.NotFoundException('File not found');
+        }
+        const fileKey = `profile-images/${profile.id}/profile-picture`;
+        console.log('Uploading file:', fileKey);
+        const params = {
+            Bucket: process.env.AWS_S3_BUCKET,
+            Key: fileKey,
+            Body: file.buffer,
+            ContentType: file.mimetype,
+            ServerSideEncryption: 'AES256',
+        };
+        try {
+            const uploadResult = await this.s3.upload(params).promise();
+            return {
+                imageUrl: uploadResult.Location,
+            };
+        }
+        catch (error) {
+            console.error('Error uploading file:', error);
+            throw new Error('Error uploading file');
         }
     }
 };

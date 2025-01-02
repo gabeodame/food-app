@@ -26,47 +26,32 @@ spec:
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 3000
-          readinessProbe:
-            exec:
-              command:
-                - sh
-                - -c
-                - |
-                  nc -z rabbitmq-service 5672
-            initialDelaySeconds: 5
-            periodSeconds: 10
-
           env:
+            - name: DB_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: userprofile-postgres-secret
+                  key: DB_HOST
+            - name: POSTGRES_DB
+              valueFrom:
+                secretKeyRef:
+                  name: userprofile-postgres-secret
+                  key: POSTGRES_DB
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: userprofile-postgres-secret
+                  key: POSTGRES_USER
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: userprofile-postgres-secret
+                  key: POSTGRES_PASSWORD         
             - name: DATABASE_URL
               valueFrom:
                 secretKeyRef:
                   name: userprofile-postgres-secret
                   key: DATABASE_URL
-            - name: DB_HOST
-              valueFrom:
-                secretKeyRef:
-                  name: userprofile-postgres-secret
-                  key: postgres-host
-            - name: DB_PORT
-              valueFrom:
-                secretKeyRef:
-                  name: userprofile-postgres-secret
-                  key: postgres-port
-            - name: DB_USER
-              valueFrom:
-                secretKeyRef:
-                  name: userprofile-postgres-secret
-                  key: postgres-user
-            - name: DB_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: userprofile-postgres-secret
-                  key: postgres-password
-            - name: DB_NAME
-              valueFrom:
-                secretKeyRef:
-                  name: userprofile-postgres-secret
-                  key: postgres-db
             - name: NODE_ENV
               value: "production"
             - name: RABBITMQ_URL
@@ -94,7 +79,13 @@ spec:
                 secretKeyRef:
                   name: userprofile-postgres-secret
                   key: AWS_S3_BUCKET
-
+          # resources:
+          #   requests:
+          #     memory: "512Mi"
+          #     cpu: "250m"
+          #   limits:
+          #     memory: "1Gi"
+          #     cpu: "500m"
 
 ---
 
