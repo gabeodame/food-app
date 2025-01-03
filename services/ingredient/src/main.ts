@@ -24,6 +24,12 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api/1/ingredient/swagger', app, document); // Swagger UI will be available at /api
 
+  // Expose swagger.json
+  const swaggerJsonPath = '/api/1/ingredient/swagger.json';
+  app.use(swaggerJsonPath, (req, res) => {
+    res.status(200).json(document);
+  });
+
   // Start the server
   const port = process.env.PORT ?? 3000;
   await app.listen(port, () => {
