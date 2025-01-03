@@ -22,6 +22,7 @@
   "license": "ISC",
   "dependencies": {
     "@anchordiv/broker": "^1.0.7",
+    "@anchordiv/rabbitmq-broker": "^1.0.2",
     "@azure/identity": "^4.4.1",
     "@azure/keyvault-secrets": "^4.8.0",
     "@gogittix/common": "^1.0.4",

@@ -24,6 +24,11 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api/1/profile/swagger', app, document); // Swagger UI will be available at /swagger
 
+  const swaggerJsonPath = '/api/1/profile/swagger.json';
+  app.use(swaggerJsonPath, (req, res) => {
+    res.status(200).json(document);
+  });
+
   await app.listen(3000, () => {
     console.log('Listening on port 3000');
     console.log('Swagger is available at http://localhost:3000/swagger');
