@@ -1,6 +1,6 @@
 // import { FoodItemProps } from "../../models/types/types";
 
-import { FoodItemProps } from "../models/types/types";
+import { FoodItemProps } from "../entities/recipe.entity";
 
 //recipes
 export const recipes: FoodItemProps[] = [

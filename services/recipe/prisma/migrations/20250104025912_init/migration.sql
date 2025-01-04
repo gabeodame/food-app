@@ -1,11 +1,8 @@
 -- CreateTable
 CREATE TABLE "User" (
-    "id" SERIAL NOT NULL,
+    "id" TEXT NOT NULL,
     "email" TEXT NOT NULL,
-    "password" TEXT NOT NULL,
     "name" TEXT,
-    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "User_pkey" PRIMARY KEY ("id")
 );
@@ -16,7 +13,7 @@ CREATE TABLE "Recipe" (
     "title" TEXT NOT NULL,
     "imageUrl" TEXT NOT NULL,
     "description" TEXT NOT NULL,
-    "userId" INTEGER NOT NULL,
+    "userId" TEXT NOT NULL,
     "views" INTEGER NOT NULL DEFAULT 0,
     "favoritesCount" INTEGER NOT NULL DEFAULT 0,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -28,7 +25,7 @@ CREATE TABLE "Recipe" (
 -- CreateTable
 CREATE TABLE "PinnedRecipe" (
     "id" SERIAL NOT NULL,
-    "userId" INTEGER NOT NULL,
+    "userId" TEXT NOT NULL,
     "recipeId" INTEGER NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
@@ -39,7 +36,7 @@ CREATE TABLE "PinnedRecipe" (
 CREATE TABLE "Comment" (
     "id" SERIAL NOT NULL,
     "content" TEXT NOT NULL,
-    "userId" INTEGER NOT NULL,
+    "userId" TEXT NOT NULL,
     "recipeId" INTEGER NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
@@ -52,7 +49,7 @@ CREATE TABLE "Review" (
     "id" SERIAL NOT NULL,
     "rating" INTEGER NOT NULL,
     "comment" TEXT,
-    "userId" INTEGER NOT NULL,
+    "userId" TEXT NOT NULL,
     "recipeId" INTEGER NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
@@ -63,7 +60,7 @@ CREATE TABLE "Review" (
 -- CreateTable
 CREATE TABLE "Favorite" (
     "id" SERIAL NOT NULL,
-    "userId" INTEGER NOT NULL,
+    "userId" TEXT NOT NULL,
     "recipeId" INTEGER NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
@@ -116,6 +113,7 @@ CREATE TABLE "Ingredient" (
     "name" TEXT NOT NULL,
     "quantity" TEXT NOT NULL,
     "recipeId" INTEGER NOT NULL,
+    "category" TEXT,
 
     CONSTRAINT "Ingredient_pkey" PRIMARY KEY ("id")
 );

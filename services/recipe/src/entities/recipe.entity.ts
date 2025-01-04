@@ -3,7 +3,7 @@ export type FoodItemProps = {
   title: string;
   imageUrl: string;
   description: string;
-  categories?: { id?: number; name: string }[]; // Assuming each category has an id and name
+  categories?: { id?: number; name: string }[];
   userId: string;
   ingredients: {
     id?: number;
@@ -16,8 +16,9 @@ export type FoodItemProps = {
     step: string;
     recipeId?: number;
   }[];
-  tags?: { id?: number; name: string }[]; // Assuming each tag has an id and name
+  tags?: { id?: number; name: string }[];
   cuisineTypes?: { name: string }[];
   seasonalEvent?: { name: string }[];
   specialDiets?: { name: string }[];
 };
+
