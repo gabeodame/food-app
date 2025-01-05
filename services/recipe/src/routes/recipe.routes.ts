@@ -1,10 +1,8 @@
 import { Router } from "express";
 import recipeController from "../controllers/recipe.controller";
-import {
-  validateCreateRecipe,
-  validateUpdateRecipe,
-} from "../middlewares/class.validator";
+import { validateDto } from "../middlewares/validate-dto";
 import { requireAuth, validateRequest } from "@gogittix/common";
+import { CreateRecipeDto, UpdateRecipeDto } from "../dtos";
 
 const router = Router();
 
@@ -13,14 +11,14 @@ router.get("/:id", recipeController.getRecipeById);
 router.post(
   "/",
   requireAuth,
-  validateCreateRecipe,
+  validateDto(CreateRecipeDto),
   validateRequest,
   recipeController.createRecipe
 );
 router.patch(
   "/:id",
   requireAuth,
-  validateUpdateRecipe,
+  validateDto(UpdateRecipeDto),
   validateRequest,
   recipeController.updateRecipe
 );

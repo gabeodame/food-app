@@ -33,13 +33,14 @@ function FoodList({
   useEffect(() => {
     const getFoodData = async () => {
       try {
+        console.log("url", url);
         const res = await fetch(url);
-        console.log(res.status);
 
         if (res.ok) {
-          const { data } = await res.json();
-          console.log("data", data);
-          setData(data as FoodListTypes[]);
+          const foodList = await res.json();
+
+          console.log("data", foodList);
+          setData(foodList as FoodListTypes[]);
         }
       } catch (error: any) {
         console.log("Logging Error", error);

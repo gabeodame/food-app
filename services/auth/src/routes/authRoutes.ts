@@ -11,6 +11,10 @@ router.get("/test", (req, res) => {
   res.send("You are authenticated");
 });
 
+router.get("/protected", requireAuth, (req, res) => {
+  res.send("You are authenticated");
+});
+
 // Signup route
 router.post(
   "/signup",

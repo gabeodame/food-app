@@ -111,6 +111,8 @@ class RecipeService {
   }
 
   async createRecipe(req: Request): Promise<Recipe | undefined> {
+    console.log(req.currentUser);
+
     if (!req.currentUser) throw new NotAuthorizedError();
 
     try {
@@ -140,7 +142,10 @@ class RecipeService {
   }
 
   async updateRecipe(id: number, req: Request): Promise<Recipe | undefined> {
+    console.log(req.currentUser);
     if (!req.currentUser) throw new NotAuthorizedError();
+
+    if (!req.body) throw new Error("Request body is required");
 
     const { title, description, imageUrl, ingredients, instructions } =
       req.body as UpdateRecipeDto;

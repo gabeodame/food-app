@@ -38,9 +38,8 @@ export default function RootLayout({
         >
           <ContextWrapper>
             <section className="w-full h-full">
-              <Suspense>
-                <TopNavBar />
-              </Suspense>
+              <TopNavBar />
+
               {children}
             </section>
           </ContextWrapper>

@@ -1,4 +1,5 @@
 import swaggerJsdoc from "swagger-jsdoc";
+import { swaggerSchemas } from "../src/utils/swaggerSchema";
 
 const options = {
   definition: {
@@ -14,6 +15,21 @@ const options = {
         description: "Production server",
       },
     ],
+    components: {
+      securitySchemes: {
+        bearerAuth: {
+          type: "http",
+          scheme: "bearer",
+          bearerFormat: "JWT", // Specify that it's a JWT token
+        },
+      },
+      security: [
+        {
+          bearerAuth: [], // Apply bearer auth globally
+        },
+      ],
+      schemas: swaggerSchemas,
+    },
   },
   apis: ["./src/controllers/*.ts", "./src/dtos/*.ts"], // Adjust paths if necessary
 };

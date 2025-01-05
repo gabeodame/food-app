@@ -5,18 +5,21 @@ import { Button } from "@/components/ui/Button";
 import React from "react";
 import { useRouter } from "next/navigation";
 
-function LogoutButton() {
+function LogoutButton({ onLogout }: { onLogout: () => void }) {
   const router = useRouter();
+
   function handleLogout() {
     const logout = async () => {
       const res = await fetchData("/api/users/signout", "post");
       console.log(res.data);
       if (!res.errors) {
+        onLogout(); // Call the passed `onLogout` to close the dropdown
         router.push("/");
       }
     };
     logout();
   }
+
   return (
     <Button
       onClick={handleLogout}

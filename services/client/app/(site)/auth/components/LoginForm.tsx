@@ -28,25 +28,23 @@ function LoginForm() {
   };
 
   return (
-    <Suspense fallback={<div>Loading...</div>}>
-      <Tabs value={formState} onValueChange={handleTabChange}>
-        <TabsList className="w-full h-full flex justify-evenly">
-          <TabsTrigger value="login" className="w-full">
-            Login
-          </TabsTrigger>
-          <TabsTrigger value="signup" className="w-full">
-            Signup
-          </TabsTrigger>
-        </TabsList>
-        <Separator className="bg-color-secondary h-[2px] w-full my-4" />
-        <TabsContent value="login">
-          <Login />
-        </TabsContent>
-        <TabsContent value="signup">
-          <SignUp />
-        </TabsContent>
-      </Tabs>
-    </Suspense>
+    <Tabs value={formState} onValueChange={handleTabChange}>
+      <TabsList className="w-full h-full flex justify-evenly">
+        <TabsTrigger value="login" className="w-full">
+          Login
+        </TabsTrigger>
+        <TabsTrigger value="signup" className="w-full">
+          Signup
+        </TabsTrigger>
+      </TabsList>
+      <Separator className="bg-color-secondary h-[2px] w-full my-4" />
+      <TabsContent value="login">
+        <Login />
+      </TabsContent>
+      <TabsContent value="signup">
+        <SignUp />
+      </TabsContent>
+    </Tabs>
   );
 }
 

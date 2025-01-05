@@ -1,5 +1,7 @@
+import "reflect-metadata"; // ensure to import it first
 import app from "./app";
 import MessageQueueManager from "./utils/rabbitmq";
+
 import dotenv from "dotenv";
 dotenv.config();
 

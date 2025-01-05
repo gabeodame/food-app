@@ -1,25 +1,201 @@
-import { FoodItemProps } from "../entities/recipe.entity";
+import {
+  IsNotEmpty,
+  IsString,
+  IsOptional,
+  IsArray,
+  ValidateNested,
+} from "class-validator";
+import { Type } from "class-transformer";
 
-export class CreateRecipeDto implements Omit<FoodItemProps, "id"> {
+export class CreateRecipeDto {
+  @IsNotEmpty()
+  @IsString()
   title!: string;
+
+  @IsNotEmpty()
+  @IsString()
   imageUrl!: string;
+
+  @IsNotEmpty()
+  @IsString()
   description!: string;
-  categories?: { id?: number; name: string }[];
+
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => CategoryDto)
+  categories?: CategoryDto[];
+
+  @IsNotEmpty()
+  @IsString()
   userId!: string;
-  ingredients!: {
-    id?: number;
-    name: string;
-    quantity: string;
-    recipeId?: number;
-  }[];
-  instructions!: { id?: number; step: string; recipeId?: number }[];
-  tags?: { id?: number; name: string }[];
-  cuisineTypes?: { name: string }[];
-  seasonalEvent?: { name: string }[];
-  specialDiets?: { name: string }[];
+
+  @IsNotEmpty()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => IngredientDto)
+  ingredients!: IngredientDto[];
+
+  @IsNotEmpty()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => InstructionDto)
+  instructions!: InstructionDto[];
+
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => TagDto)
+  tags?: TagDto[];
+
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => CuisineTypeDto)
+  cuisineTypes?: CuisineTypeDto[];
+
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => SeasonalEventDto)
+  seasonalEvent?: SeasonalEventDto[];
+
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => SpecialDietDto)
+  specialDiets?: SpecialDietDto[];
 }
 
-export type UpdateRecipeDto = Partial<Omit<FoodItemProps, "id">>;
+export class UpdateRecipeDto {
+  @IsNotEmpty()
+  @IsString()
+  title?: string;
+
+  @IsNotEmpty()
+  @IsString()
+  imageUrl?: string;
+
+  @IsNotEmpty()
+  @IsString()
+  description?: string;
+
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => CategoryDto)
+  categories?: CategoryDto[];
+
+  @IsNotEmpty()
+  @IsString()
+  userId?: string;
+
+  @IsNotEmpty()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => IngredientDto)
+  ingredients?: IngredientDto[];
+
+  @IsNotEmpty()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => InstructionDto)
+  instructions?: InstructionDto[];
+
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => TagDto)
+  tags?: TagDto[];
+
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => CuisineTypeDto)
+  cuisineTypes?: CuisineTypeDto[];
+
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => SeasonalEventDto)
+  seasonalEvent?: SeasonalEventDto[];
+
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => SpecialDietDto)
+  specialDiets?: SpecialDietDto[];
+}
+
+export class CategoryDto {
+  @IsOptional()
+  id?: number;
+
+  @IsNotEmpty()
+  @IsString()
+  name!: string;
+}
+
+export class IngredientDto {
+  @IsOptional()
+  id?: number;
+
+  @IsNotEmpty()
+  @IsString()
+  name!: string;
+
+  @IsNotEmpty()
+  @IsString()
+  quantity!: string;
+
+  @IsOptional()
+  recipeId?: number;
+}
+
+export class InstructionDto {
+  @IsOptional()
+  id?: number;
+
+  @IsNotEmpty()
+  @IsString()
+  step!: string;
+
+  @IsOptional()
+  recipeId?: number;
+}
+export class TagDto {
+  @IsOptional()
+  id?: number;
+
+  @IsNotEmpty()
+  @IsString()
+  name!: string;
+}
+export class CuisineTypeDto {
+  @IsNotEmpty()
+  @IsString()
+  name!: string;
+}
+export class SeasonalEventDto {
+  @IsNotEmpty()
+  @IsString()
+  name!: string;
+}
+export class SpecialDietDto {
+  @IsNotEmpty()
+  @IsString()
+  name!: string;
+}
+
+// class IngredientDto {
+//   @IsNotEmpty()
+//   @IsString()
+//   name: string;
+
+//   @IsNotEmpty()
+//   @IsString()
+//   quantity: string;
+// }
 
 export type Recipe = {
   id: number;
