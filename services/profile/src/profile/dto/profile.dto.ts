@@ -3,6 +3,14 @@ import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateProfileDto {
   @ApiProperty({
+    description: 'User Id',
+    example: '1',
+    required: true,
+  })
+  @IsString()
+  id: string;
+
+  @ApiProperty({
     description: 'The username of the user',
     example: 'johndoe',
     required: true,
@@ -20,6 +28,11 @@ export class CreateProfileDto {
 }
 
 export class UpdateProfileDto {
+  @ApiProperty({
+    description: 'User Id',
+    example: '1',
+    required: true,
+  })
   @ApiProperty({
     description: 'The first name of the user',
     example: 'John',

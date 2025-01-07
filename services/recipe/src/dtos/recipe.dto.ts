@@ -4,6 +4,7 @@ import {
   IsOptional,
   IsArray,
   ValidateNested,
+  IsEmail,
 } from "class-validator";
 import { Type } from "class-transformer";
 
@@ -26,9 +27,9 @@ export class CreateRecipeDto {
   @Type(() => CategoryDto)
   categories?: CategoryDto[];
 
-  @IsNotEmpty()
-  @IsString()
-  userId!: string;
+  // @IsNotEmpty()
+  // @IsString()
+  // userId!: string;
 
   @IsNotEmpty()
   @IsArray()
@@ -86,9 +87,9 @@ export class UpdateRecipeDto {
   @Type(() => CategoryDto)
   categories?: CategoryDto[];
 
-  @IsNotEmpty()
-  @IsString()
-  userId?: string;
+  // @IsNotEmpty()
+  // @IsString()
+  // userId?: string;
 
   @IsNotEmpty()
   @IsArray()
@@ -185,6 +186,19 @@ export class SpecialDietDto {
   @IsNotEmpty()
   @IsString()
   name!: string;
+}
+
+export class RecipeUser {
+  @IsString()
+  id!: string;
+
+  @IsNotEmpty()
+  @IsString()
+  username!: string;
+
+  @IsNotEmpty()
+  @IsEmail()
+  email!: string;
 }
 
 // class IngredientDto {

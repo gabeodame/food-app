@@ -1,73 +1,56 @@
-// import { prisma } from "@/lib/prisma";
-import FeaturedCategories from "../components/FeaturedCategories";
+import { buildClient } from "@/app/util/buildClient";
+import { cookies, headers } from "next/headers";
 import FoodList from "../components/FoodList/FoodList";
-import { FoodItemProps, FoodListTypes } from "../models/types/types";
-
-// import { foodData } from "./data/foodData";
 
 type Props = {
-  params: { id: string };
   searchParams: { [key: string]: string | string[] | null };
 };
 
-export default async function FoodListHome({ params, searchParams }: Props) {
-  const categories = searchParams.category as string;
-  const tags = searchParams.tag as string;
-  const search = searchParams.search as string;
-  const id = +params.id;
+export default async function FoodListHome({ searchParams }: Props) {
+  console.log("FoodListHome component is rendering...");
+  console.log("SearchParams received:", searchParams);
 
-  console.log("params", params);
+  const category = searchParams?.category as string | undefined;
+  console.log("Category:", category);
 
-  // Below logic will be replaced with ORM (possibly PRISMA)
-  // Function to get food data based on param
+  try {
+    const client = buildClient();
+    console.log("Client built successfully:", client);
 
-  // const recipes =  //make api call to food service to get food
-  // await prisma.recipe.findMany();
+    const url = category
+      ? `/api/1/recipes/?category=${category}`
+      : `/api/1/recipes`;
+    console.log("URL to fetch data:", url);
 
-  // Below logic will be replaced with ORM (possibly PRISMA)
-  // Function to filter food data based on categories and tags
-  // const filterFoodData = (
-  //   foodData: any[],
-  //   categories: string | string[],
-  //   tags: { name: string }[] | string,
-  //   search: string
-  // ) => {
-  //   // Helper to ensure any input is treated as an array
-  //   const ensureArray = (value: any) =>
-  //     Array.isArray(value) ? value : value ? [value] : [];
+    const res = await client.get(url);
+    // console.log("Response received:", res);
 
-  //   // Convert category and tag parameters into arrays
-  //   const inputCategories = ensureArray(categories);
-  //   const inputTags = ensureArray(tags);
+    if (!res?.data) {
+      console.log("No data found.");
+      return (
+        <section>
+          <div className="w-full h-full flex justify-center mt-4">
+            <p>No food items found.</p>
+          </div>
+        </section>
+      );
+    }
 
-  //   return foodData.filter((item) => {
-  //     // Check if item matches any of the provided categories
-  //     const matchesCategory =
-  //       inputCategories.length === 0 ||
-  //       item.categories?.some((cat: { id: number; name: string }) =>
-  //         inputCategories.includes(cat.name.toLowerCase())
-  //       );
-
-  //     // Check if item matches any of the provided tags
-  //     const matchesTag =
-  //       inputTags.length === 0 ||
-  //       item.tags?.some((tag: { id: number; name: string }) =>
-  //         inputTags?.includes(tag.name.toLowerCase())
-  //       );
-
-  //     // Include the item if it matches any of the categories and any of the tags
-  //     return matchesCategory && matchesTag;
-  //   });
-  // };
-
-  // const filteredFood = filterFoodData([], categories, tags, search);
-
-  return (
-    <section>
-      {/* <FeaturedCategories /> */}
-      <div className="w-full md:container px-4 md:px-0 mt-4">
-        <FoodList />
-      </div>
-    </section>
-  );
+    return (
+      <section>
+        <div className="w-full md:container px-4 md:px-0 mt-4">
+          <FoodList foodData={res.data} />
+        </div>
+      </section>
+    );
+  } catch (error) {
+    console.error("Error fetching food items:", error);
+    return (
+      <section>
+        <div className="w-full h-full flex justify-center mt-4">
+          <p>Failed to load food items.</p>
+        </div>
+      </section>
+    );
+  }
 }

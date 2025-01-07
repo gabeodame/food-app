@@ -2,35 +2,21 @@
 
 import { ArrowLeftIcon } from "@heroicons/react/20/solid";
 import Link from "next/link";
-import React, { useEffect, useState } from "react";
+import React from "react";
 
 import Image from "next/image";
-import { FoodListTypes } from "@/app/(site)/models/types/types";
+import { FoodItemProps, FoodListTypes } from "@/app/(site)/models/types/types";
 import FoodCardContent from "./FoodCardContent";
-import { usePathname } from "next/navigation";
 
-function FoodItemDetail({ id }: { id: number }) {
-  const [found, setFound] = useState<FoodListTypes | null>(null);
-
-  useEffect(() => {
-    const getRecipeDetial = async () => {
-      const res = await fetch(`/api/1/recipes/${id}`);
-      const { data } = await res.json();
-
-      setFound(data);
-    };
-    getRecipeDetial();
-  }, [id]);
-
+function FoodItemDetail({ food }: { food: FoodItemProps }) {
   return (
-    <div className="w-full md:max-w-7xl  h-full flex flex-col gap-4 items-center justify-center mt-2 px-2">
+    <div className="w-full md:max-w-7xl h-full flex flex-col gap-4 items-center justify-center mt-2 px-2">
       <div className="w-full h-full">
         {/* Back to All button */}
         <Link href="/foods" className="w-full flex justify-end mb-2">
           <div
             className="flex items-center gap-2 px-2 py-1 sm:px-4 sm:py-2 bg-color-secondary text-white font-semibold sm:font-bold 
-                rounded cursor-pointer transition-all duration-200 hover:bg-color-secondary-dark text-sm sm:text-base
-              "
+                rounded cursor-pointer transition-all duration-200 hover:bg-color-secondary-dark text-sm sm:text-base"
           >
             <ArrowLeftIcon className="h-3 w-3 sm:h-4 sm:w-4" />
             <span>Back to All</span>
@@ -42,8 +28,8 @@ function FoodItemDetail({ id }: { id: number }) {
           {/* Image Section */}
           <div className="w-full h-full rounded-lg overflow-hidden border-gray-200">
             <Image
-              src={found?.imageUrl ?? ""}
-              alt={found?.title ?? ""}
+              src={food?.imageUrl ?? ""}
+              alt={food?.title ?? ""}
               width="0"
               height="0"
               sizes="(min-width: 60em) 24vw, (min-width: 28em) 45vw, 100vw"
@@ -53,7 +39,7 @@ function FoodItemDetail({ id }: { id: number }) {
 
           {/* Content Section */}
           <div className="w-full h-full p-4">
-            <FoodCardContent food={found as any} />
+            <FoodCardContent food={food} />
           </div>
         </div>
       </div>

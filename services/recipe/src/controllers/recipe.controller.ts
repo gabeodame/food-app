@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { CreateRecipeDto } from "../dtos/recipe.dto";
-import recipeService from "../services/recipe.service";
+import recipeService from "../../src/services/recipe.service";
 
 /**
  * @swagger
@@ -132,7 +132,7 @@ class RecipeController {
    */
   async deleteRecipe(req: Request, res: Response) {
     const { id } = req.params;
-    const deleted = await recipeService.deleteRecipe(Number(id));
+    const deleted = await recipeService.deleteRecipe(Number(id), req);
     if (!deleted) return res.status(404).json({ message: "Recipe not found" });
     res.status(204).send({ deleted });
   }

@@ -110,18 +110,17 @@ class RecipeService {
     };
   }
 
-  async createRecipe(req: Request): Promise<Recipe | undefined> {
-    console.log(req.currentUser);
+  async createRecipe(req: Request) {
+    if (!req?.currentUser) throw new NotAuthorizedError();
 
-    if (!req.currentUser) throw new NotAuthorizedError();
+    const userId = req.currentUser.id;
 
     try {
       const { title, description, imageUrl, ingredients, instructions } =
         req.body as CreateRecipeDto;
-
       const newRecipe = await prisma.recipe.create({
         data: {
-          userId: req.currentUser.id,
+          userId,
           title,
           description,
           imageUrl,
@@ -142,13 +141,13 @@ class RecipeService {
   }
 
   async updateRecipe(id: number, req: Request): Promise<Recipe | undefined> {
-    console.log(req.currentUser);
     if (!req.currentUser) throw new NotAuthorizedError();
 
     if (!req.body) throw new Error("Request body is required");
 
     const { title, description, imageUrl, ingredients, instructions } =
       req.body as UpdateRecipeDto;
+    const userId = req.currentUser.id;
 
     const recipe = await prisma.recipe.findFirstOrThrow({
       where: { id },
@@ -161,7 +160,7 @@ class RecipeService {
       throw new NotFoundError();
     }
 
-    if (recipe.userId !== req.currentUser.id) {
+    if (recipe.userId !== userId) {
       throw new NotAuthorizedError();
     }
 
@@ -190,8 +189,27 @@ class RecipeService {
   }
 
   async deleteRecipe(
-    id: number
+    id: number,
+    req: Request
   ): Promise<{ message: string; data: Partial<FoodItemProps> }> {
+    if (!req.currentUser) throw new NotAuthorizedError();
+    const userId = req.currentUser.id;
+
+    const foundRecipe = await prisma.recipe.findFirstOrThrow({
+      where: { id },
+      select: {
+        userId: true,
+      },
+    });
+
+    if (!foundRecipe) {
+      throw new NotFoundError();
+    }
+
+    if (foundRecipe.userId !== userId) {
+      throw new NotAuthorizedError();
+    }
+
     const recipe = await prisma.recipe.delete({
       where: { id },
     });

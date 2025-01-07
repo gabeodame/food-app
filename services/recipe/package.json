@@ -14,8 +14,9 @@
   "license": "ISC",
   "dependencies": {
     "@anchordiv/rabbitmq-broker": "^1.0.2",
-    "@gogittix/common": "^1.0.11",
+    "@gogittix/common": "^1.0.13",
     "@prisma/client": "^6.1.0",
+    "axios": "^1.7.9",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.1",
     "dotenv": "^16.4.7",

@@ -11,6 +11,8 @@ import { StickyCards } from "./components/StickyCards";
 import { Metadata } from "next";
 import Footer from "./components/Footer";
 import { Suspense } from "react";
+import { buildClient } from "../util/buildClient";
+import NotFound from "./not-found";
 
 export const metadata: Metadata = {
   title: "DishShare",
@@ -19,26 +21,36 @@ export const metadata: Metadata = {
 };
 
 export default async function MainHome() {
-  return (
-    <Suspense fallback={<div>Loading...</div>}>
-      <main className="w-full flex flex-col justify-center">
-        <div className="hidden md:block">
-          <Hero />
-        </div>
-        <div className="wf-full flex flex-col justify-center">
-          <Categories />
-          <div className="w-full hidden md:block">
-            <Featured />
+  try {
+    const client = buildClient();
+    const res = await client.get("/api/1/recipes");
+
+    const data = res.data;
+
+    return (
+      <Suspense fallback={<div>Loading...</div>}>
+        <main className="w-full flex flex-col justify-center">
+          <div className="hidden md:block">
+            <Hero />
           </div>
-          <AdList />
-          <div className="container">
-            <FoodList limit={4} />
+          <div className="wf-full flex flex-col justify-center">
+            <Categories />
+            <div className="w-full hidden md:block">
+              <Featured />
+            </div>
+            <AdList />
+            <div className="container">
+              <FoodList limit={4} foodData={data} />
+            </div>
           </div>
-        </div>
-        <StickyCards />
-        <ContactUs />
-        <Footer />
-      </main>
-    </Suspense>
-  );
+          <StickyCards />
+          <ContactUs />
+          <Footer />
+        </main>
+      </Suspense>
+    );
+  } catch (error) {
+    console.error("Error fetching food items:", error);
+    NotFound();
+  }
 }
