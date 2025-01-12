@@ -1,6 +1,7 @@
 FROM node:alpine3.19
-# Install PostgreSQL client
-RUN apk add --no-cache postgresql-client
+
+# Install PostgreSQL client and essential tools
+RUN apk add --no-cache postgresql-client curl
 
 WORKDIR /app
 
@@ -24,4 +25,5 @@ RUN npx prisma generate
 
 EXPOSE 3000
 
-CMD ["sh", "-c", "npx prisma migrate deploy && npm run start"]
+# Add retry logic for database migrations
+CMD ["sh", "-c", "until npx prisma migrate deploy; do echo 'Retrying migrations...'; sleep 5; done && npm run start"]

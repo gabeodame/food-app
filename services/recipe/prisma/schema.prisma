@@ -1,3 +1,9 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
 generator client {
   provider = "prisma-client-js"
 }
@@ -7,10 +13,11 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+
 model User {
   id            String         @id
   email         String         @unique
-  name          String?
+  username      String?
   comments      Comment[]
   favorites     Favorite[]
   pinnedRecipes PinnedRecipe[]
@@ -30,7 +37,7 @@ model Recipe {
   updatedAt      DateTime            @updatedAt
   comments       Comment[]
   favoritedBy    Favorite[]          @relation("RecipeToFavorites")
-  ingredients    Ingredient[]
+  ingredients    RecipeIngredient[]  @relation("RecipeToIngredients")
   instructions   Instruction[]
   pinnedBy       PinnedRecipe[]
   user           User                @relation(fields: [userId], references: [id])
@@ -42,6 +49,26 @@ model Recipe {
   reviews        Review[]
 }
 
+model Ingredient {
+  id       Int                @id @default(autoincrement())
+  name     String
+  category String?
+  unit     String?
+  recipes  RecipeIngredient[] @relation("RecipeToIngredients")
+}
+
+model RecipeIngredient {
+  id           Int        @id @default(autoincrement())
+  recipeId     Int
+  ingredientId Int
+  quantity     Float?
+
+  recipe       Recipe     @relation("RecipeToIngredients", fields: [recipeId], references: [id], onDelete: Cascade)
+  ingredient   Ingredient @relation("RecipeToIngredients", fields: [ingredientId], references: [id], onDelete: Cascade)
+
+  @@unique([recipeId, ingredientId])
+}
+
 model PinnedRecipe {
   id        Int      @id @default(autoincrement())
   userId    String
@@ -50,6 +77,8 @@ model PinnedRecipe {
   recipe    Recipe   @relation(fields: [recipeId], references: [id])
   user      User     @relation(fields: [userId], references: [id])
 }
+
+
 
 model Comment {
   id        Int      @id @default(autoincrement())
@@ -113,13 +142,15 @@ model SpecialDiet {
   recipeSpecialDiet RecipeSpecialDiet[]
 }
 
-model Ingredient {
-  id       Int    @id @default(autoincrement())
-  name     String
-  quantity String
-  recipeId Int
-  recipe   Recipe @relation(fields: [recipeId], references: [id])
-}
+
+// model Ingredient {
+//   id       Int       @id @default(autoincrement())
+//   name     String
+//   category String?
+//   unit     String?
+//   quantity Float?
+//   recipes  Recipe[]  @relation("RecipeToIngredients")
+// }
 
 model Instruction {
   id       Int    @id @default(autoincrement())
@@ -172,3 +203,14 @@ model RecipeSpecialDiet {
 
   @@id([recipeId, specialDietId])
 }
+
+// model RecipeIngredient {
+//   recipeId    Int
+//   ingredientId Int
+//   quantity    Float?          // Optional: Store quantity specific to the recipe
+//   recipe      Recipe          @relation(fields: [recipeId], references: [id])
+//   ingredient  Ingredient      @relation(fields: [ingredientId], references: [id])
+
+//   @@id([recipeId, ingredientId]) // Composite primary key
+// }
+

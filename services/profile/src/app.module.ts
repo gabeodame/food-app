@@ -13,8 +13,9 @@ export const getOrmConfig = (
   username: configService.get<string>('POSTGRES_USER', 'default_user'),
   password: configService.get<string>('POSTGRES_PASSWORD', 'default_password'),
   database: configService.get<string>('POSTGRES_DB', 'default_db'),
-  entities: [Profile], // Add all your entities here
-  synchronize: configService.get<string>('NODE_ENV') !== 'production', // Disable in production
+  entities: [Profile],
+  // synchronize: configService.get<string>('NODE_ENV') !== 'production', // Disable in production
+  synchronize: true,
 });
 
 @Module({

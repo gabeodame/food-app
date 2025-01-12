@@ -64,7 +64,8 @@ export class ProfileController {
   @ApiResponse({ status: 400, description: 'Something went wrong' })
   async getProfileById(@Param('id') id: string): Promise<Profile> {
     try {
-      return await this.profileService.getProfileById(id);
+      const userId = id;
+      return await this.profileService.getProfileById(userId);
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }

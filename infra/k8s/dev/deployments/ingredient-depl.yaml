@@ -68,6 +68,11 @@ spec:
                 secretKeyRef:
                   name: ingredient-postgres-secret
                   key: RABBITMQ_URL
+            - name: JWT_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: jwt-secret
+                  key: JWT_KEY
           # resources:
           #   requests:
           #     memory: "512Mi"

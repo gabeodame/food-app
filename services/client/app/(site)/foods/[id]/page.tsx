@@ -1,78 +1,33 @@
-import Image from "next/image";
-import { Metadata, ResolvingMetadata } from "next";
-import "./index.css";
-
-import { Separator } from "@radix-ui/themes";
-import { ArrowLeftIcon } from "@radix-ui/react-icons";
-import Link from "next/link";
-import { ScrollArea } from "@radix-ui/react-scroll-area";
-import FoodCardContent from "./components/FoodCardContent";
-import { FoodItemProps, FoodListTypes } from "../../models/types/types";
-// import { foodData } from "../data/foodData";
-// import { prisma } from "@/lib/prisma";
-import { createSlug } from "@/app/util/helperfunctions";
+import { buildClient } from "@/app/util/buildClient";
 import FoodItemDetail from "./components/FoodItemDetail";
+import NotFound from "../../not-found";
 
 type Props = {
   params: { id: string };
-  searchParams: { [key: string]: string | string[] | null };
 };
 
 export default async function FoodDetailPage({ params }: Props) {
-  console.log(params);
-  return (
-    <div className="w-full h-full overflow-y-auto flex justify-center mt-4">
-      <FoodItemDetail id={+params.id} />
-    </div>
-  );
+  try {
+    const client = buildClient();
+    const res = await client.get(`/api/1/recipes/${params.id}`);
+
+    if (res.status !== 200) {
+      return (
+        <div className="w-full h-full flex justify-center mt-4">
+          <p>Food not found</p>
+        </div>
+      );
+    }
+
+    const { data } = res;
+
+    return (
+      <div className="w-full h-full overflow-y-auto flex justify-center mt-4">
+        <FoodItemDetail food={data} />
+      </div>
+    );
+  } catch (error) {
+    console.error("Error fetching food details:", error);
+    NotFound();
+  }
 }
-
-// export async function generateMetadata(
-//   { params, searchParams }: Props,
-//   parent: ResolvingMetadata
-// ): Promise<Metadata> {
-//   // read route params
-//   const id = +params.id;
-
-//   // fetch data
-//   const res = await fetch(`https://recipe.dev/api/1/recipes/${id}`);
-//   const { data } = await res.json();
-
-//   // optionally access and extend (rather than replace) parent metadata
-//   const previousImages = (await parent).openGraph?.images || [];
-
-//   return {
-//     title: data?.title,
-//     // openGraph: {
-//     //   images: ["/some-specific-page-image.jpg", ...previousImages],
-//     // },
-//   };
-// }
-
-// export async function generateStaticParams() {
-//   if (typeof window === "undefined") {
-//     const res = await fetch(
-//       `http://kong-kong-manager.default.svc.cluster.local/api/1/recipes`
-//     );
-//     const { data } = await res.json();
-//     console.log(data);
-
-//     return data.map((recipe: FoodListTypes) => {
-//       const slug = createSlug(recipe.title);
-//       return {
-//         slug,
-//       };
-//     });
-//   } else {
-//     const res = await fetch(`https://recipe.dev/api/1/recipes`);
-//     const { data } = await res.json();
-//     console.log(data);
-
-//     return data.map((recipe: FoodListTypes) => {
-//       const slug = createSlug(recipe.title);
-//       return {
-//         slug,
-//       };
-//     });
-//   }
-// }

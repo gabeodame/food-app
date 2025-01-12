@@ -34,13 +34,12 @@ export class ProfileService implements OnApplicationBootstrap {
     // });
 
     const exchange = 'recipe.users.profile-updates';
-    const mainQue = 'user-signup-queue';
-    const dlx = 'recipe.users.dlx';
-    const dlq = 'user-signup-dlq';
-
+    const mainQueue = 'profile-user-signup-queue';
+    const dlx = 'profile-users-dlx';
+    const dlq = 'profile-user-signup-dlq';
     const routingKey = 'users.signup.new-user';
 
-    await broker.setupDeadLetterQueue(mainQue, dlx, dlq);
+    await broker.setupDeadLetterQueue(mainQueue, dlx, dlq);
 
     // Process dead-lettered messages
     await broker.consume(dlq, async (message) => {
@@ -55,13 +54,14 @@ export class ProfileService implements OnApplicationBootstrap {
 
     // Bind Main Queue to Exchange
     await broker.assertExchange(exchange, 'topic');
-    await broker.bindQueue(mainQue, exchange, routingKey);
+    await broker.bindQueue(mainQueue, exchange, routingKey);
 
-    await broker.consume(mainQue, async (message) => {
+    await broker.consume(mainQueue, async (message) => {
       await this.handleUserCreated(message.content);
     });
   }
 
+  // could this be merged with createProfile?
   private async handleUserCreated(message: Buffer): Promise<void> {
     try {
       const data: CreateProfileDto = JSON.parse(message.toString());

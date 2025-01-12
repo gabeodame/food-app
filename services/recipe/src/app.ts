@@ -1,37 +1,34 @@
-import cookieSession from "cookie-session";
 import express from "express";
-import "express-async-errors";
-import helmet from "helmet";
-import { errorHandler, NotFoundError } from "@gogittix/common";
-import { recipeRoutes } from "./routes/recipeRoutes";
+import swaggerUi from "swagger-ui-express";
+import { swaggerSpec } from "./swagger";
+import recipeRoutes from "./routes/recipe.routes";
+import { currentUser, errorHandler } from "@gogittix/common";
+import cookieSession from "cookie-session";
 
-// Initialize the express app
 const app = express();
+app.set("trust proxy", true);
 
-app.set("trust proxy", 1); //trust traffic coming from ingress-nginx
-
-app.use(express.json()); // express.json() is a middleware that parses incoming requests with JSON payloads
-app.use(
-  helmet({
-    contentSecurityPolicy: false, // CSP can block resources
-  })
-);
-
+app.use(express.json());
 app.use(
   cookieSession({
     signed: false,
-    secure: process.env.NODE_ENV === "production", // Secure in production
+    secure: process.env.NODE_ENV !== "development",
   })
 );
 
-app.use(recipeRoutes);
+app.use(currentUser);
 
-// Catch all route handler
-app.all("*", async (req, res, next) => {
-  next(new NotFoundError());
-});
+// Swagger Documentation
+app.use(
+  "/api/1/recipes/swagger",
+  swaggerUi.serve,
+  swaggerUi.setup(swaggerSpec)
+);
 
-// Error handling middleware
+// Routes
+app.use("/api/1/recipes", recipeRoutes);
+
+// Error Handler Middleware
 app.use(errorHandler);
 
-export { app }; // Export the app for use in index.js
+export default app;

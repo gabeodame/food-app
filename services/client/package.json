@@ -9,7 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@gogittix/common": "^1.0.9",
+    "@gogittix/common": "^1.0.13",
     "@heroicons/react": "^2.1.1",
     "@hookform/resolvers": "^3.9.0",
     "@plaiceholder/next": "^3.0.0",
@@ -21,6 +21,7 @@
     "@radix-ui/react-slot": "^1.0.2",
     "@radix-ui/react-tabs": "^1.1.0",
     "@radix-ui/themes": "^2.0.3",
+    "axios": "^1.7.9",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.0",
     "framer-motion": "^11.0.5",

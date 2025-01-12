@@ -1,114 +1,103 @@
 "use client";
-import React, { useEffect, useState } from "react";
-import { CiUser } from "react-icons/ci";
-
-import fetchData from "@/app/util/fetchData";
-import {
-  DropdownMenuCheckboxes,
-  // DropdownMenuItem,
-} from "@/components/widgets/DropdownMenuCheckboxes";
-import { useRouter } from "next/navigation";
-import Image from "next/image";
-import { currentUser } from "@gogittix/common";
-import useUser from "@/app/hooks/useUser";
-import { Button } from "@/components/ui/Button";
-import { DropdownMenuCheckboxItemProps } from "@radix-ui/react-dropdown-menu";
-
-import Login from "./Login";
 
 import {
   DropdownMenu,
-  DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import Avatar from "./Avatar";
+import Link from "next/link";
+import { FiEdit2 } from "react-icons/fi";
+import { Button } from "@/components/ui/Button";
+import LogoutButton from "../../components/LogoutButton";
+import useUser from "@/app/hooks/useUser";
+import { useRouter } from "next/navigation";
+import React, { useState } from "react";
+import UserProfile from "./UserProfile";
+import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
 
-const menuItems = [
-  { trigger: "Profile" },
-  { trigger: "Settings" },
-  { trigger: "Logout" },
-];
+function UserAccount() {
+  const { user, isLoading, isError } = useUser();
+  const [isDropdownOpen, setDropdownOpen] = useState(false);
 
-type Checked = DropdownMenuCheckboxItemProps["checked"];
-
-export interface DropdownMenuItem {
-  label: string;
-  defaultChecked?: Checked;
-  disabled?: boolean;
-  component?: React.ReactNode;
-}
-
-export interface DropdownMenuComponentProps {
-  triggerComponent: React.ReactNode;
-  items: DropdownMenuItem[];
-  label?: string;
-  separator?: boolean;
-}
-
-function UserAccount({ items }: { items: DropdownMenuItem[] }) {
-  const [checkedStates, setCheckedStates] = React.useState<Checked[]>(
-    items.map((item) => item.defaultChecked ?? false)
-  );
-
-  const { user, isError, isLoading } = useUser();
-  // const currentUser = user?.currentUser;
-  console.log("isLoading", isLoading);
-
-  const handleCheckedChange = (index: number, checked: boolean) => {
-    setCheckedStates((prev) => {
-      const newCheckedStates = [...prev];
-      newCheckedStates[index] = checked;
-      return newCheckedStates;
-    });
+  const handleLogout = () => {
+    setDropdownOpen(false); // Close the dropdown after logout
   };
 
-  return (
-    <>
-      {isLoading ? (
-        <div>Loading...</div>
-      ) : user ? (
-        <div className="ml-24">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <div className="flex items-center gap-2">
-                {user ? <Avatar email={user?.email} /> : <LoginButton />}
-              </div>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent
-              className="w-56"
-              sideOffset={10}
-              alignOffset={5}
-            >
-              <DropdownMenuLabel>
-                <p>User Options</p>
-              </DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              {items.map((item, index) =>
-                item.component ? (
-                  <React.Fragment key={index}>{item.component}</React.Fragment>
-                ) : (
-                  <DropdownMenuCheckboxItem
-                    key={index}
-                    checked={checkedStates[index]}
-                    onCheckedChange={(checked) =>
-                      handleCheckedChange(index, checked)
-                    }
-                    disabled={item.disabled}
-                  >
-                    {item.label}
-                  </DropdownMenuCheckboxItem>
-                )
-              )}
-            </DropdownMenuContent>
-          </DropdownMenu>
+  type MenuItem = {
+    label: string;
+    component?: React.ReactNode;
+    defaultChecked?: boolean;
+  };
+
+  const menuItems: MenuItem[] = [
+    {
+      label: "Customize Profile",
+      component: (
+        <Link href="/auth/profile/?action=update" passHref>
+          <div className="flex items-center gap-2 p-2 hover:bg-accent hover:text-accent-foreground rounded-md cursor-pointer">
+            <FiEdit2 />
+            <span>Customize Profile</span>
+          </div>
+        </Link>
+      ),
+    },
+    { label: "My Recipes", defaultChecked: false },
+    { label: "Favorited Recipes", defaultChecked: false },
+    {
+      label: "Logout",
+      component: (
+        <div className="w-full flex flex-col">
+          <DropdownMenuSeparator className="my-4 h-[2px]" />
+          <LogoutButton onLogout={handleLogout} />
         </div>
+      ),
+    },
+  ];
+
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
+
+  if (isError) {
+    return <div>Failed to load user information.</div>;
+  }
+
+  return (
+    <div className="relative">
+      {user ? (
+        <DropdownMenu open={isDropdownOpen} onOpenChange={setDropdownOpen}>
+          <DropdownMenuTrigger asChild>
+            <div className="flex items-center gap-2 cursor-pointer">
+              <UserProfile email={user?.email} />
+            </div>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent
+            className="top-full right-0 mt-2 w-56 bg-white shadow-lg rounded-md z-50"
+            sideOffset={5}
+            alignOffset={5}
+          >
+            <DropdownMenuLabel className="px-4 py-2 text-sm font-medium">
+              User Options
+            </DropdownMenuLabel>
+            <DropdownMenuSeparator className="border-t" />
+            {menuItems.map((item, index) => (
+              <React.Fragment key={index}>
+                {item.component ? (
+                  <DropdownMenuItem>{item.component}</DropdownMenuItem>
+                ) : (
+                  <DropdownMenuItem>{item.label}</DropdownMenuItem>
+                )}
+              </React.Fragment>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
       ) : (
         <LoginButton />
       )}
-    </>
+    </div>
   );
 }
 
@@ -116,10 +105,11 @@ export default UserAccount;
 
 const LoginButton = () => {
   const router = useRouter();
+
   return (
     <Button
       variant="ghost"
-      className="w-full px-8 justify-start items-center"
+      className="w-full px-4 justify-start items-center"
       onClick={() => router.push("/auth")}
     >
       Login
