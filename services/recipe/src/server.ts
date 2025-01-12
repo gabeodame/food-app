@@ -1,9 +1,9 @@
-import "reflect-metadata"; // ensure to import it first
+import "reflect-metadata"; // Ensure it is imported first
 import app from "./app";
-import MessageQueueManager from "./utils/rabbitmq";
 import dotenv from "dotenv";
-import recipeUserService from "./services/recipe.user.service";
-import recipeService from "./services/recipe.service";
+
+import recipeIngredientService from "./services/recipe.ingredient.service";
+import { RabbitMQBroker } from "@anchordiv/rabbitmq-broker";
 
 dotenv.config();
 
@@ -11,63 +11,69 @@ const PORT = process.env.PORT || 3000;
 
 (async () => {
   try {
-    // Initialize RabbitMQ connection for Ingredient Service
-    const ingredientQueueManager = new MessageQueueManager({
-      exchange: "recipe.ingredients.inventory-updates",
-      mainQueue: "ingredient-create-queue",
-      dlx: "recipe.ingredients.dlx",
-      dlq: "ingredient-create-dlq",
-      routingKey: "recipe.ingredients.create.ingredient",
+    const broker = RabbitMQBroker.getInstance();
+    await broker.init(process.env.RABBITMQ_URL!);
+
+    const exchange = "recipe.ingredients.inventory-updates";
+    const mainQueue = "ingredient-create-queue";
+    const dlx = "recipe.ingredients.dlx";
+    const dlq = "ingredient-create-dlq";
+    const routingKey = "recipe.ingredients.create.ingredient";
+
+    // Step 1: Set up the Dead Letter Queue (DLQ)
+    await broker.setupDeadLetterQueue(mainQueue, dlx, dlq);
+
+    // Step 2: Assert the main exchange
+    await broker.assertExchange(exchange, "topic");
+
+    // Step 3: Set up the main queue and bind it to the exchange
+    await broker.setupQueue(mainQueue, {
+      durable: true,
+      arguments: {
+        "x-dead-letter-exchange": dlx, // Connect the main queue to the DLX
+      },
+    });
+    await broker.bindQueue(mainQueue, exchange, routingKey);
+
+    console.log(`RabbitMQ setup complete for queues and exchange.`);
+
+    // Step 4: Consume messages from the DLQ
+    await broker.consume(dlq, async (msg) => {
+      if (!msg) return;
+      try {
+        const data = JSON.parse(msg.content.toString());
+        console.log("[DLQ] Processing message:", data);
+
+        // Handle dead-lettered messages
+        await recipeIngredientService.handleDeadLetter(data);
+
+        console.log("[DLQ] Message processed successfully.");
+        // broker.ack(msg);
+      } catch (error) {
+        console.error("[DLQ] Error processing message:", error);
+        // broker.nack(msg, false, false); // Discard message
+      }
     });
 
-    await ingredientQueueManager.initialize(process.env.RABBITMQ_URL!);
+    // Step 5: Consume messages from the main queue
+    await broker.consume(mainQueue, async (msg) => {
+      if (!msg) return;
+      try {
+        const data = JSON.parse(msg.content.toString());
+        console.log("[Main Queue] Received message:", data);
 
-    // Start consuming messages from Ingredient DLQ
-    await ingredientQueueManager.processDLQ(async (message) => {
-      console.log(
-        "[Ingredient DLQ] Processing message:",
-        message.content.toString()
-      );
-      // Add logic to handle dead-letter messages here
+        // Handle valid ingredient messages
+        await recipeIngredientService.cacheIngredient(data);
+
+        console.log("[Main Queue] Message processed successfully.");
+        //   broker.ack(msg);
+      } catch (error) {
+        console.error("[Main Queue] Error processing message:", error);
+        // broker.nack(msg, false, true); // Requeue the message
+      }
     });
 
-    // Start consuming messages from Ingredient main queue
-    await ingredientQueueManager.processMainQueue(async (message) => {
-      console.log(
-        "[Ingredient Queue] Received message:",
-        message.content.toString()
-      );
-      // Add logic to handle main queue messages here
-      const data = JSON.parse(message.content.toString());
-      recipeService.createRecipe(data);
-    });
-
-    // Initialize RabbitMQ connection for Auth Service
-    const authQueueManager = new MessageQueueManager({
-      exchange: "recipe.users.profile-updates",
-      mainQueue: "recipe-user-signup-queue",
-      dlx: "recipe-users-dlx",
-      dlq: "recipe-user-signup-dlq",
-      routingKey: "users.signup.new-user",
-    });
-
-    await authQueueManager.initialize(process.env.RABBITMQ_URL!);
-
-    // Start consuming messages from Auth DLQ
-    await authQueueManager.processDLQ(async (message) => {
-      console.log("[Auth DLQ] Processing message:", message.content.toString());
-      // Add logic to handle dead-letter messages here
-    });
-
-    // Start consuming messages from Auth main queue
-    await authQueueManager.processMainQueue(async (message) => {
-      console.log("[Auth Queue] Received message:", message.content.toString());
-      // Add logic to handle main queue messages here
-      const data = JSON.parse(message.content.toString());
-      await recipeUserService.createUser(data);
-    });
-
-    // Start the Express server
+    // Step 6: Start the Express server
     app.listen(PORT, () => {
       console.log(`Server is running on http://localhost:${PORT}`);
     });

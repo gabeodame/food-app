@@ -5,10 +5,15 @@ import {
   IsArray,
   ValidateNested,
   IsEmail,
+  IsNumber,
 } from "class-validator";
 import { Type } from "class-transformer";
 
 export class CreateRecipeDto {
+  @IsNotEmpty()
+  @IsString()
+  id!: string;
+
   @IsNotEmpty()
   @IsString()
   title!: string;
@@ -139,18 +144,45 @@ export class CategoryDto {
 
 export class IngredientDto {
   @IsOptional()
-  id?: number;
+  id!: number;
 
   @IsNotEmpty()
   @IsString()
   name!: string;
 
-  @IsNotEmpty()
-  @IsString()
-  quantity!: string;
+  @IsOptional()
+  @IsNumber()
+  quantity?: number | null; // Accepts null
 
   @IsOptional()
-  recipeId?: number;
+  @IsArray()
+  @IsNumber({}, { each: true })
+  recipeIds?: number[]; // Represents associated recipes
+}
+
+export class CachedIngredientDto {
+  @IsNumber()
+  id!: number;
+
+  @IsString()
+  name!: string;
+
+  @IsOptional()
+  @IsString()
+  category?: string;
+
+  @IsOptional()
+  @IsString()
+  unit?: string;
+
+  @IsOptional()
+  @IsNumber()
+  quantity?: number | null; // Accepts null
+
+  @IsOptional()
+  @IsArray()
+  @IsNumber({}, { each: true })
+  recipeIds?: number[]; // Represents associated recipes
 }
 
 export class InstructionDto {
@@ -200,16 +232,6 @@ export class RecipeUser {
   @IsEmail()
   email!: string;
 }
-
-// class IngredientDto {
-//   @IsNotEmpty()
-//   @IsString()
-//   name: string;
-
-//   @IsNotEmpty()
-//   @IsString()
-//   quantity: string;
-// }
 
 export type Recipe = {
   id: number;

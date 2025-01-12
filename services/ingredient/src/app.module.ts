@@ -1,8 +1,9 @@
-import { Module } from '@nestjs/common';
+import { Module, MiddlewareConsumer, NestModule } from '@nestjs/common';
 import { IngredientModule } from './ingredient/ingredient.module';
 import { TypeOrmModule, TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { Ingredient } from './lib/ingredient.entity';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { currentUser, requireAuth } from '@gogittix/common'; // Import the middleware
 
 const getOrmConfig = (configService: ConfigService): TypeOrmModuleOptions => ({
   type: 'postgres',
@@ -31,4 +32,9 @@ const getOrmConfig = (configService: ConfigService): TypeOrmModuleOptions => ({
   ],
   providers: [],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    // Apply currentUser and requireAuth globally to all routes
+    consumer.apply(currentUser, requireAuth).forRoutes('*');
+  }
+}

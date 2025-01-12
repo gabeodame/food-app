@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Ingredient } from '../lib/ingredient.entity';
 import { RabbitMQBroker } from '@anchordiv/rabbitmq-broker';
+import { NotAuthorizedError } from '@gogittix/common';
 
 type Type = 'topic' | 'direct' | 'fanout' | 'headers';
 
@@ -16,25 +17,43 @@ export class IngredientService {
     this.rabbitMQUrl = process.env.RABBITMQ_URL!;
   }
 
-  async createIngredient(data: Partial<Ingredient>): Promise<Ingredient> {
-    const ingredient = this.ingredientRepo.create(data);
+  async createIngredient(
+    data: Partial<Ingredient>,
+    req: any,
+  ): Promise<Ingredient> {
+    if (!req.currentUser) {
+      throw new NotAuthorizedError();
+    }
+
+    const ingredientData = {
+      ...data,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      createdBy: req.currentUser.id,
+    };
+    const ingredient = this.ingredientRepo.create(ingredientData);
 
     // Publish the ingredient creation event
-    await this.handlePublishOrUpdateIngredient('create', ingredient);
 
-    return this.ingredientRepo.save(ingredient);
+    const savedIngredient = await this.ingredientRepo.save(ingredient);
+    console.log('Saved ingredient:', savedIngredient);
+    await this.handlePublishOrUpdateIngredient('create', savedIngredient);
+    return savedIngredient;
   }
 
-  async getAllIngredients(): Promise<Ingredient[]> {
+  async getAllIngredients(req: any): Promise<Ingredient[]> {
+    if (req.currentUser) {
+      throw new NotAuthorizedError();
+    }
     return this.ingredientRepo.find();
   }
 
-  async getIngredientById(id: string): Promise<Ingredient> {
+  async getIngredientById(id: number): Promise<Ingredient> {
     return this.ingredientRepo.findOne({ where: { id } });
   }
 
   async updateIngredient(
-    id: string,
+    id: number,
     data: Partial<Ingredient>,
   ): Promise<Ingredient> {
     await this.ingredientRepo.update({ id }, data);
@@ -44,7 +63,7 @@ export class IngredientService {
     return this.getIngredientById(id);
   }
 
-  async deleteIngredient(id: string): Promise<void> {
+  async deleteIngredient(id: number): Promise<void> {
     await this.ingredientRepo.delete({ id });
   }
 

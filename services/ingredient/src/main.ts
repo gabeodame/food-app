@@ -1,10 +1,13 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
-import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { SwaggerModule } from '@nestjs/swagger';
+import { swaggerConfig } from './swagger';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+
+  // Enable global validation pipes
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
@@ -14,27 +17,27 @@ async function bootstrap() {
   );
 
   // Swagger Configuration
-  const config = new DocumentBuilder()
-    .setTitle('Ingredient Service API') // Update the title as needed
-    .setDescription('API documentation for managing ingredients and inventory')
-    .setVersion('1.0') // Version of your API
-    .addTag('ingredients') // Tags to group endpoints in Swagger UI
-    .build();
-
-  const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api/1/ingredient/swagger', app, document); // Swagger UI will be available at /api
+  const document = SwaggerModule.createDocument(app, swaggerConfig);
+  SwaggerModule.setup('api/1/ingredient/swagger', app, document);
 
   // Expose swagger.json
   const swaggerJsonPath = '/api/1/ingredient/swagger.json';
   app.use(swaggerJsonPath, (req, res) => {
-    res.status(200).json(document);
+    console.log('Serving Swagger JSON');
+    console.log('req', req);
+    res.status(200).json(document); // Serve the Swagger document as JSON
   });
 
   // Start the server
   const port = process.env.PORT ?? 3000;
   await app.listen(port, () => {
     console.log(`Listening on port ${port}`);
-    console.log(`Swagger is available at http://localhost:${port}/swagger`);
+    console.log(
+      `Swagger UI available at http://localhost:${port}/api/1/ingredient/swagger`,
+    );
+    console.log(
+      `Swagger JSON available at http://localhost:${port}/api/1/ingredient/swagger.json`,
+    );
   });
 }
 bootstrap();

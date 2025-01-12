@@ -1,4 +1,4 @@
-import { RabbitMQBroker } from "@anchordiv/rabbitmq-broker";
+import { RabbitMQBroker, Message } from "@anchordiv/rabbitmq-broker";
 
 class MessageQueueManager {
   private broker: RabbitMQBroker;
@@ -35,14 +35,20 @@ class MessageQueueManager {
     console.log(`Dead letter queue (${this.dlq}) setup complete.`);
 
     // Bind Main Queue to Exchange
-    await this.broker.assertExchange(this.exchange, "topic");
+    await this.broker.assertExchange(this.exchange, "topic", { durable: true });
+    console.log(`Exchange (${this.exchange}) asserted.`);
+
+    // Bind Main Queue to Exchange
+    await this.broker.setupQueue(this.mainQueue, { durable: true });
     await this.broker.bindQueue(this.mainQueue, this.exchange, this.routingKey);
     console.log(
       `Queue (${this.mainQueue}) bound to exchange (${this.exchange}) with routing key (${this.routingKey}).`
     );
   }
 
-  async processDLQ(handler: (message: any) => Promise<void>): Promise<void> {
+  async processDLQ(
+    handler: (message: Message) => Promise<void>
+  ): Promise<void> {
     await this.broker.consume(this.dlq, async (message) => {
       console.log(`[DLQ] Received message: ${message.content.toString()}`);
       try {
@@ -55,7 +61,7 @@ class MessageQueueManager {
   }
 
   async processMainQueue(
-    handler: (message: any) => Promise<void>
+    handler: (message: Message) => Promise<void>
   ): Promise<void> {
     await this.broker.consume(this.mainQueue, async (message) => {
       console.log(

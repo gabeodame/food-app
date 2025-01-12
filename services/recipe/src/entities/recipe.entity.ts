@@ -6,10 +6,10 @@ export type FoodItemProps = {
   categories?: { id?: number; name: string }[];
   userId: string;
   ingredients: {
-    id?: number;
+    id: number;
     name: string;
-    quantity: string;
-    recipeId?: number;
+    quantity: number | null; // Allow null values
+    recipeId: number | null; // Allow null values
   }[];
   instructions: {
     id?: number;
@@ -21,4 +21,3 @@ export type FoodItemProps = {
   seasonalEvent?: { name: string }[];
   specialDiets?: { name: string }[];
 };
-

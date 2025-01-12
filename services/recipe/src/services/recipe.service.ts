@@ -5,86 +5,55 @@ import { Request } from "express";
 import { NotAuthorizedError, NotFoundError } from "@gogittix/common";
 
 class RecipeService {
-  // private recipes: FoodItemProps[] = [];
-
   async getAllRecipes(): Promise<Recipe[]> {
-    const recipes = await prisma.recipe.findMany();
-    return recipes;
+    const recipes = await prisma.recipe.findMany({
+      include: {
+        ingredients: {
+          include: {
+            ingredient: true, // Join RecipeIngredient with Ingredient
+          },
+        },
+        instructions: true,
+        categories: { include: { category: true } },
+        tags: { include: { tag: true } },
+        cuisineTypes: { include: { cuisineType: true } },
+        seasons: { include: { season: true } },
+        specialDiets: { include: { specialDiet: true } },
+      },
+    });
+
+    return recipes.map((recipe) => ({
+      ...recipe,
+      ingredients: recipe.ingredients.map((ri) => ({
+        id: ri.ingredient.id,
+        name: ri.ingredient.name,
+        category: ri.ingredient.category,
+        unit: ri.ingredient.unit,
+        quantity: ri.quantity,
+        recipeId: recipe.id, // Include the recipeId explicitly
+      })),
+      categories: recipe.categories.map((cat) => ({
+        id: cat.category.id,
+        name: cat.category.name,
+      })),
+    }));
   }
 
   async getRecipeById(id: number): Promise<Partial<FoodItemProps>> {
     const recipe = await prisma.recipe.findFirstOrThrow({
       where: { id },
-      select: {
-        id: true,
-        title: true,
-        imageUrl: true,
-        description: true,
-        userId: true,
-        createdAt: true,
-        updatedAt: true,
+      include: {
         ingredients: {
-          select: {
-            id: true,
-            name: true,
-            quantity: true,
-            recipeId: true,
+          include: {
+            ingredient: true, // Join RecipeIngredient with Ingredient
           },
         },
-        instructions: {
-          select: {
-            id: true,
-            step: true,
-            recipeId: true,
-          },
-        },
-        categories: {
-          select: {
-            category: {
-              select: {
-                id: true,
-                name: true,
-              },
-            },
-          },
-        },
-        tags: {
-          select: {
-            tag: {
-              select: {
-                id: true,
-                name: true,
-              },
-            },
-          },
-        },
-        cuisineTypes: {
-          select: {
-            cuisineType: {
-              select: {
-                name: true,
-              },
-            },
-          },
-        },
-        seasons: {
-          select: {
-            season: {
-              select: {
-                name: true,
-              },
-            },
-          },
-        },
-        specialDiets: {
-          select: {
-            specialDiet: {
-              select: {
-                name: true,
-              },
-            },
-          },
-        },
+        instructions: true,
+        categories: { include: { category: true } },
+        tags: { include: { tag: true } },
+        cuisineTypes: { include: { cuisineType: true } },
+        seasons: { include: { season: true } },
+        specialDiets: { include: { specialDiet: true } },
       },
     });
 
@@ -94,18 +63,21 @@ class RecipeService {
       imageUrl: recipe.imageUrl,
       description: recipe.description,
       userId: recipe.userId,
-      ingredients: recipe.ingredients,
-      instructions: recipe.instructions,
-      categories: recipe.categories.map((cat) => cat.category),
-      tags: recipe.tags.map((tag) => tag.tag),
-      cuisineTypes: recipe.cuisineTypes.map((ct) => ({
-        name: ct.cuisineType.name,
+      ingredients: recipe.ingredients.map((ri) => ({
+        id: ri.ingredient.id,
+        name: ri.ingredient.name,
+        category: ri.ingredient.category,
+        unit: ri.ingredient.unit,
+        quantity: ri.quantity,
+        recipeId: recipe.id, // Include the recipeId explicitly
       })),
-      seasonalEvent: recipe.seasons.map((season) => ({
-        name: season.season.name,
+      instructions: recipe.instructions.map((instruction) => ({
+        id: instruction.id,
+        step: instruction.step,
       })),
-      specialDiets: recipe.specialDiets.map((diet) => ({
-        name: diet.specialDiet.name,
+      categories: recipe.categories.map((cat) => ({
+        id: cat.category.id,
+        name: cat.category.name,
       })),
     };
   }
@@ -118,6 +90,7 @@ class RecipeService {
     try {
       const { title, description, imageUrl, ingredients, instructions } =
         req.body as CreateRecipeDto;
+
       const newRecipe = await prisma.recipe.create({
         data: {
           userId,
@@ -125,7 +98,10 @@ class RecipeService {
           description,
           imageUrl,
           ingredients: {
-            create: ingredients,
+            create: ingredients.map((ingredient) => ({
+              ingredientId: ingredient.id,
+              quantity: ingredient.quantity,
+            })),
           },
           instructions: {
             create: instructions,
@@ -133,7 +109,7 @@ class RecipeService {
           createdAt: new Date(),
         },
       });
-      // Send message to RabbitMQ
+
       return newRecipe;
     } catch (error: any) {
       throw new Error(`Error creating recipe: ${error.message}`);
@@ -142,11 +118,11 @@ class RecipeService {
 
   async updateRecipe(id: number, req: Request): Promise<Recipe | undefined> {
     if (!req.currentUser) throw new NotAuthorizedError();
-
     if (!req.body) throw new Error("Request body is required");
 
     const { title, description, imageUrl, ingredients, instructions } =
       req.body as UpdateRecipeDto;
+
     const userId = req.currentUser.id;
 
     const recipe = await prisma.recipe.findFirstOrThrow({
@@ -165,24 +141,28 @@ class RecipeService {
     }
 
     try {
-      const recipe = await prisma.recipe.update({
+      const updatedRecipe = await prisma.recipe.update({
         where: { id },
         data: {
           title,
           description,
           imageUrl,
           ingredients: {
-            deleteMany: {},
-            create: ingredients,
+            deleteMany: {}, // Clear previous associations
+            create: ingredients?.map((ingredient) => ({
+              ingredientId: ingredient.id,
+              quantity: ingredient.quantity,
+            })),
           },
           instructions: {
-            deleteMany: {},
+            deleteMany: {}, // Clear previous associations
             create: instructions,
           },
           updatedAt: new Date(),
         },
       });
-      return recipe;
+
+      return updatedRecipe;
     } catch (error: any) {
       throw new Error(`Error updating recipe: ${error.message}`);
     }
@@ -193,6 +173,7 @@ class RecipeService {
     req: Request
   ): Promise<{ message: string; data: Partial<FoodItemProps> }> {
     if (!req.currentUser) throw new NotAuthorizedError();
+
     const userId = req.currentUser.id;
 
     const foundRecipe = await prisma.recipe.findFirstOrThrow({
@@ -213,6 +194,7 @@ class RecipeService {
     const recipe = await prisma.recipe.delete({
       where: { id },
     });
+
     return {
       message: "Recipe deleted successfully",
       data: recipe,
