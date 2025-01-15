@@ -6,10 +6,12 @@ export const buildClient = (): AxiosInstance => {
   const allCookies = cookies(); // Access all cookies
   const sessionCookie = allCookies.get("session")?.value; // Get the session cookie
 
+  console.log("sessionCookie:", sessionCookie);
+
   const headers = {
     "Content-Type": "application/json",
     Host: process.env.HOST_NAME || "recipe.dev",
-    Cookie: sessionCookie ? `session=${sessionCookie}` : undefined, // Pass session cookie explicitly
+    Authorization: sessionCookie ? `Bearer ${sessionCookie}` : undefined, // Pass session cookie explicitly
   };
 
   console.log("Authorization Header:", headers);

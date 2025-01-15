@@ -27,19 +27,21 @@ const TopNavBar = () => {
         { "bg-slate-100": isSticky }
       )}
     >
-      <div className="max-w-7xl mx-auto flex items-center justify-between px-4">
+      <div className="w-full flex items-center justify-between px-4">
         {/* Left Section */}
-        <div className="flex items-center gap-4">
-          <Logo />
-          <div className="hidden md:block">
-            {" "}
-            <NavigationMenu />{" "}
-          </div>
-        </div>
 
-        {/* Center Section */}
-        <div className="hidden md:block flex-grow max-w-lg">
-          <CustomSearchBar />
+        <Logo />
+
+        <div className="max-w-7xl p-2 md:p-4 lg:p-6 md:gap-4 md:container sm:px-2 md:px-4">
+          <div className="w-full flex justify-between items-center gap-4">
+            <div className="hidden md:block">
+              <NavigationMenu />{" "}
+            </div>
+            {/* Center Section */}
+            <div className="hidden md:block flex-grow max-w-lg">
+              <CustomSearchBar />
+            </div>
+          </div>
         </div>
 
         {/* Right Section */}

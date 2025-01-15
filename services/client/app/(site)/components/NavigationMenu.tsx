@@ -120,7 +120,7 @@ function TopNavBar() {
       )}
     >
       <div
-        className={`max-w-7xl p-2 md:p-4 lg:p-6 flex gap-2 md:gap-4 md:container justify-center items-center sm:px-2 md:px-4`} // Center on mobile, right-align on larger screens
+        className={`w-full p-2 md:p-4 lg:p-6 flex gap-2 md:gap-4 md:container justify-center items-center sm:px-2 md:px-4`} // Center on mobile, right-align on larger screens
       >
         {/* <div className="flex-shrink-0">
           <Logo />

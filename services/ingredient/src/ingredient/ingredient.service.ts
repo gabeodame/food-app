@@ -21,6 +21,7 @@ export class IngredientService {
     data: Partial<Ingredient>,
     req: any,
   ): Promise<Ingredient> {
+    console.log('Create ingredient req:', req);
     if (!req.currentUser) {
       throw new NotAuthorizedError();
     }

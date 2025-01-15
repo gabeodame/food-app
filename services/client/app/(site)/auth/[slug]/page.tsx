@@ -27,14 +27,14 @@ function UserDashboard({
   if (isError) return <div>Error loading user data.</div>;
 
   return (
-    <div className="max-w-7xl p-2 md:p-4 lg:p-6 md:gap-4 md:container  sm:px-2 md:px-4">
+    <div className="max-w-7xl p-2 md:p-4 lg:p-6 md:gap-4 md:container sm:px-2 md:px-4">
       <Header />
       <Separator className="my-4 h-[2px] bg-color-primary" />
       {searchParams.action === "update" && (
         <UpdateProfile email={user?.email} />
       )}
       {/* <h1>Welcome back {profile?.firstName}</h1> */}
-      <p>Here are some of your recent activities:</p>
+      {!params.slug && <p>Here are some of your recent activities:</p>}
     </div>
   );
 }
