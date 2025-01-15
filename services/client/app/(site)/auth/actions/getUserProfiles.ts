@@ -24,3 +24,27 @@ export async function getUserProfile(email: string): Promise<User | null> {
     return null;
   }
 }
+
+export async function updateUserProfile(
+  id: string,
+  data: Partial<User>
+): Promise<User | null> {
+  try {
+    const response = await fetch(`/api/1/profile/${id}`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data),
+    });
+    if (response.ok) {
+      return await response.json();
+    } else {
+      console.error("Failed to update user profile");
+      return null;
+    }
+  } catch (error) {
+    console.error("Error updating user profile:", error);
+    return null;
+  }
+}
