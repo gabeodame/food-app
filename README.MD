@@ -1,5 +1,5 @@
 
-# Food Sharing App - Comprehensive Overview and README
+# Food Sharing App - Comprehensive Overview
 
 ## Project Overview
 
