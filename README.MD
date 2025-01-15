@@ -101,7 +101,7 @@ The Food Sharing Application is a modern, microservices-based platform designed 
 
 ## Shared Library
 
-**Name**: `[@gogittix/common](https://www.npmjs.com/package/@gogittix/common?activeTab=code)`
+**Name**: [@gogittix/common](https://www.npmjs.com/package/@gogittix/common?activeTab=code)
 
 - **Purpose**: Centralized repository for reusable patterns across services.
 - **Key Features**:
@@ -109,7 +109,7 @@ The Food Sharing Application is a modern, microservices-based platform designed 
   - Custom Error Handling (e.g., `BadRequestError`, `NotAuthorizedError`).
   - RabbitMQ Broker Wrapper for message queue operations.
 
-**Name**: `[@anchordiv/rabbitmq-broker](https://www.npmjs.com/package/@anchordiv/rabbitmq-broker)`
+**Name**: [@anchordiv/rabbitmq-broker](https://www.npmjs.com/package/@anchordiv/rabbitmq-broker)
 
 - **Purpose**: Simplifies RabbitMQ operations via a singleton wrapper.
 - **Key Features**:
