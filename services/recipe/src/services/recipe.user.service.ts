@@ -13,6 +13,14 @@ class RecipeUserService {
 
     return user;
   }
+
+  async handleDeadLetter(data: any): Promise<void> {
+    // Logic to handle dead-lettered messages
+    console.log("Handling dead-lettered ingredient message:", data);
+    await this.createUser(data);
+
+    console.log("User created from dead-lettered message.");
+  }
 }
 
 export default new RecipeUserService();

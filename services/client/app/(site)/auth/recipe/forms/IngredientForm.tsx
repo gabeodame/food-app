@@ -1,8 +1,8 @@
 "use client";
 
 import CustomDialog from "@/components/widgets/CustomDialog";
-import React, { useState, useMemo } from "react";
-import { useForm, Controller } from "react-hook-form";
+import { useMemo, useState } from "react";
+import { Controller, useForm } from "react-hook-form";
 import { Ingredient } from "../types/types";
 
 import { AddNewIngredient } from "../actions/actions";
@@ -35,8 +35,11 @@ const IngredientForm = () => {
       if (res.error) {
         console.error("Failed to add new ingredient:", res.error);
       }
-      console.log("New ingredient added:", res.data);
+
       reset(); // Reset the form after submission
+      setOpen(false); // Close the dialog
+
+      // Refresh the ingredient list (via a global state or context)
     } catch (error: any) {
       console.error("Error adding new ingredient:", error);
       return {
@@ -65,7 +68,7 @@ const IngredientForm = () => {
       open={open}
       setOpen={() => setOpen(!open)}
       trigger={
-        <div className="flex bg-blue-500 w-fit text-white px-4 py-2 rounded self-end">
+        <div className="flex bg-color-tertiary-alt w-fit text-white px-4 py-2 rounded self-end">
           Add New Ingredient
         </div>
       }
@@ -219,7 +222,7 @@ const IngredientForm = () => {
           {/* Submit Button */}
           <button
             type="submit"
-            className="w-full py-2 px-4 bg-blue-500 text-white font-semibold rounded hover:bg-blue-600 transition duration-300"
+            className="w-full py-2 px-4 bg-color-tertiary-alt text-white font-semibold rounded hover:bg-blue-600 transition duration-300"
           >
             Submit
           </button>

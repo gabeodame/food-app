@@ -3,6 +3,7 @@ import { CreateRecipeDto, Recipe, UpdateRecipeDto } from "../dtos";
 import { prisma } from "../utils/prisma";
 import { Request } from "express";
 import { NotAuthorizedError, NotFoundError } from "@gogittix/common";
+import slugify from "slugify";
 
 class RecipeService {
   async getAllRecipes(): Promise<Recipe[]> {
@@ -86,15 +87,16 @@ class RecipeService {
     if (!req?.currentUser) throw new NotAuthorizedError();
 
     const userId = req.currentUser.id;
+    const { title, description, imageUrl, ingredients, instructions } =
+      req.body as CreateRecipeDto;
+    const slug = slugify(title, { lower: true, strict: true });
 
     try {
-      const { title, description, imageUrl, ingredients, instructions } =
-        req.body as CreateRecipeDto;
-
       const newRecipe = await prisma.recipe.create({
         data: {
           userId,
           title,
+          slug,
           description,
           imageUrl,
           ingredients: {

@@ -29,6 +29,13 @@ export class Ingredient {
   unit?: string;
 
   @ApiProperty({
+    example: 'https://example.com/image.jpg',
+    description: 'URL to an image of the ingredient',
+  })
+  @Column({ nullable: true })
+  imageUrl?: string;
+
+  @ApiProperty({
     example: 20.5,
     description: 'Calories per unit of the ingredient',
   })

@@ -28,6 +28,7 @@ const config = {
         "color-primary-light": "var(--color-primary-light)",
         "color-secondary": "var(--color-secondary)",
         "color-secondary-alt": "var(--color-secondary-alt)",
+        "color-secondary-light": "var(--color-secondary-light)",
         "color-green": "var(--color-green)",
         "color-red": "var(--color-red)",
         "color-tertiary": "var(--color-tertiary)",

@@ -1,11 +1,15 @@
 "use client";
 
-import React, { Suspense } from "react";
+import React, { ChangeEvent, Suspense, useEffect, useState } from "react";
 import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import IngredientForm from "./IngredientForm";
 import CustomDialog from "@/components/widgets/CustomDialog";
+import { Ingredient } from "../types/types";
+import { BadRequestError } from "@gogittix/common";
+import { useDebounce } from "use-debounce";
+import { SearchIngredient } from "../actions/actions";
 
 const recipeSchema = z.object({
   title: z.string().min(1, "Title is required"),
@@ -26,6 +30,10 @@ type RecipeFormData = z.infer<typeof recipeSchema>;
 
 const NewRecipeForm = () => {
   const [open, setOpen] = React.useState(false);
+  const [options, setOptions] = useState<Ingredient[]>([]);
+  const [search, setSearch] = useState("");
+  const [debouncedSearch] = useDebounce(search, 300);
+
   const {
     control,
     register,
@@ -39,6 +47,7 @@ const NewRecipeForm = () => {
       description: "",
       ingredients: [{ name: "", quantity: 0, unit: "" }],
     },
+    mode: "onChange",
   });
 
   const { fields, append, remove } = useFieldArray({
@@ -50,18 +59,51 @@ const NewRecipeForm = () => {
     console.log("Submitted data:", data);
   };
 
+  const handleOnOptionSelect = (value: string) => {
+    console.log("Selected option:", value);
+    setSearch(value);
+    setOpen(false);
+  };
+
+  useEffect(() => {
+    if (debouncedSearch) {
+      // Fetch ingredients based on the search query
+      const fetchIngredients = async () => {
+        try {
+          const data = await SearchIngredient(debouncedSearch);
+
+          console.log("Fetched ingredients:", data);
+          setOptions(data);
+        } catch (error: any) {
+          throw new BadRequestError(
+            `Error fetching ingredients: ${error.message}`
+          );
+        }
+      };
+      fetchIngredients();
+    }
+  }, [debouncedSearch]);
+
+  useEffect(() => {
+    !!options.length ? setOpen(true) : setOpen(false);
+  }, [options]);
+
   return (
-    <div className="p-6 bg-white shadow rounded-md">
-      <h2 className="text-xl font-bold mb-4">Create Recipe</h2>
+    <div className="max-w-2xl mx-auto p-6 rounded-md space-y-6 shadow-md">
+      <h2 className="text-xl font-bold mb-4 text-color-primary">
+        Create Recipe
+      </h2>
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-        {/* Title */}
         <div>
-          <label className="block text-sm font-medium mb-1">Title</label>
+          <label className="block text-sm font-medium mb-1 text-color-primary">
+            Title
+          </label>
           <input
             type="text"
             {...register("title")}
-            className="w-full border border-gray-300 rounded p-2"
+            className="w-full p-2  bg-color-secondary-light rounded border focus:outline-none"
           />
+
           {errors.title && (
             <p className="text-red-500 text-sm h-5">{errors.title.message}</p>
           )}
@@ -69,11 +111,13 @@ const NewRecipeForm = () => {
 
         {/* Image URL */}
         <div>
-          <label className="block text-sm font-medium mb-1">Image URL</label>
+          <label className="block text-sm font-medium mb-1 text-color-primary">
+            Image URL
+          </label>
           <input
             type="text"
             {...register("imageUrl")}
-            className="w-full border border-gray-300 rounded p-2"
+            className="w-full p-2  bg-color-secondary-light rounded border focus:outline-none"
           />
           {errors.imageUrl && (
             <p className="text-red-500 text-sm h-5">
@@ -84,10 +128,12 @@ const NewRecipeForm = () => {
 
         {/* Description */}
         <div>
-          <label className="block text-sm font-medium mb-1">Description</label>
+          <label className="block text-sm font-medium mb-1 text-color-primary">
+            Description
+          </label>
           <textarea
             {...register("description")}
-            className="w-full border border-gray-300 rounded p-2"
+            className="w-full p-2  bg-color-secondary-light rounded border focus:outline-none"
             rows={4}
           />
           {errors.description && (
@@ -99,16 +145,29 @@ const NewRecipeForm = () => {
 
         {/* Ingredients */}
         <div>
-          <label className="block text-sm font-medium mb-1">Ingredients</label>
+          <label className="block text-sm font-medium mb-1 text-color-primary">
+            Ingredients
+          </label>
           {fields.map((field, index) => (
             <div key={field.id} className="flex space-x-2 items-start mb-4">
-              <div className="w-1/3">
+              <div className="relative">
                 <input
                   type="text"
                   {...register(`ingredients.${index}.name` as const)}
-                  placeholder="Name"
-                  className="w-full border border-gray-300 rounded p-2"
+                  placeholder="Ingredient Name"
+                  className="w-full p-2 bg-color-secondary-light rounded border focus:outline-none"
+                  value={search}
+                  onChange={(e: ChangeEvent<HTMLInputElement>) => {
+                    console.log(e.currentTarget.value);
+                    setSearch(e.currentTarget.value);
+                  }}
                 />
+                {open && (
+                  <AutoComplete
+                    options={options}
+                    onSelect={handleOnOptionSelect}
+                  />
+                )}
                 {errors.ingredients?.[index]?.name && (
                   <p className="text-red-500 text-sm h-5">
                     {errors.ingredients[index].name?.message}
@@ -123,7 +182,7 @@ const NewRecipeForm = () => {
                     valueAsNumber: true, // Ensure numeric input is cast to a number
                   })}
                   placeholder="Quantity"
-                  className="w-full border border-gray-300 rounded p-2"
+                  className="w-full p-2  bg-color-secondary-light rounded border focus:outline-none"
                 />
                 {errors.ingredients?.[index]?.quantity && (
                   <p className="text-red-500 text-sm h-5">
@@ -137,7 +196,7 @@ const NewRecipeForm = () => {
                   type="text"
                   {...register(`ingredients.${index}.unit` as const)}
                   placeholder="Unit"
-                  className="w-full border border-gray-300 rounded p-2"
+                  className="w-full p-2  bg-color-secondary-light rounded border focus:outline-none"
                 />
                 {errors.ingredients?.[index]?.unit && (
                   <p className="text-red-500 text-sm h-5">
@@ -150,7 +209,7 @@ const NewRecipeForm = () => {
                 <button
                   type="button"
                   onClick={() => remove(index)}
-                  className="text-white bg-red-500 px-4 py-2 rounded"
+                  className="px-4 py-2 rounded text-white border border-color-secondary-alt bg-color-secondary hover:bg-color-secondary-alt hover:text-color-tertiary"
                 >
                   -
                 </button>
@@ -158,7 +217,7 @@ const NewRecipeForm = () => {
                   <button
                     type="button"
                     onClick={() => append({ name: "", quantity: 0, unit: "" })}
-                    className="bg-blue-500 text-white px-4 py-2 rounded"
+                    className="px-4 py-2 rounded text-white bg-color-red border border-color-secondary hover:bg-color-secondary-alt hover:text-color-tertiary"
                   >
                     +
                   </button>
@@ -169,10 +228,10 @@ const NewRecipeForm = () => {
         </div>
 
         {/* Submit */}
-        <div className="flex w-full justify-between">
+        <div className="flex w-full gap-4 justify-between">
           <button
             type="submit"
-            className="bg-green-500 text-white px-4 py-2 rounded text-nowrap"
+            className="bg-color-primary text-white px-4 py-2 rounded text-nowrap"
           >
             Submit Recipe
           </button>
@@ -187,3 +246,30 @@ const NewRecipeForm = () => {
 };
 
 export default NewRecipeForm;
+
+const AutoComplete = ({
+  options,
+  onSelect,
+}: {
+  options: Ingredient[];
+  onSelect: (value: string) => void;
+}) => {
+  return (
+    <div className="absolute z-10 bg-white border-color-primary-alt border border-primary-color-alt rounded shadow-md w-64 max-h-48 overflow-auto">
+      <ul className="w-full p-2 list-none text-sm focus:outline-none text-color-primary bg-color-primary-light">
+        {options.map((option: Ingredient) => (
+          <li
+            key={option.id}
+            onClick={() => onSelect(option.name)}
+            className="truncate text-color-primary bg-color-primary-light"
+          >
+            <div className="">
+              {/* <span> {option.}</span> */}
+              <span> {option.name}</span>
+            </div>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+};

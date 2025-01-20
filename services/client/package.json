@@ -9,7 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@gogittix/common": "^1.0.14",
+    "@gogittix/common": "^1.0.15",
     "@heroicons/react": "^2.1.1",
     "@hookform/resolvers": "^3.9.0",
     "@plaiceholder/next": "^3.0.0",
