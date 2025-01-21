@@ -12,14 +12,16 @@ const ingredient_service_1 = require("./ingredient.service");
 const ingredient_controller_1 = require("./ingredient.controller");
 const typeorm_1 = require("@nestjs/typeorm");
 const ingredient_entity_1 = require("../lib/ingredient.entity");
+const ingredient_search_service_1 = require("./ingredient-search.service");
+const ingredient_search_controller_1 = require("./ingredient-search.controller");
 let IngredientModule = class IngredientModule {
 };
 exports.IngredientModule = IngredientModule;
 exports.IngredientModule = IngredientModule = __decorate([
     (0, common_1.Module)({
         imports: [typeorm_1.TypeOrmModule.forFeature([ingredient_entity_1.Ingredient])],
-        providers: [ingredient_service_1.IngredientService],
-        controllers: [ingredient_controller_1.IngredientController],
+        providers: [ingredient_service_1.IngredientService, ingredient_search_service_1.IngredientSearchService],
+        controllers: [ingredient_search_controller_1.IngredientSearchController, ingredient_controller_1.IngredientController],
     })
 ], IngredientModule);
 //# sourceMappingURL=ingredient.module.js.map

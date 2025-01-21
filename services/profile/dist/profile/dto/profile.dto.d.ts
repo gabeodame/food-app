@@ -1,4 +1,5 @@
 export declare class CreateProfileDto {
+    id: string;
     username: string;
     email: string;
 }

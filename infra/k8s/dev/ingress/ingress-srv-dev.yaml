@@ -39,6 +39,13 @@ spec:
                 name: ingredient-service
                 port:
                   number: 3000
+          - path: /api/1/uploads/?(.*)
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: uploads-service
+                port:
+                  number: 3000
           - path: /?(.*)
             pathType: ImplementationSpecific
             backend:

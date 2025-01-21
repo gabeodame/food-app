@@ -87,44 +87,56 @@ function UpdateProfile({ email }: { email: string }) {
     const formData = new FormData();
     const fileInput = data.imageUrl as unknown as FileList;
     const file = fileInput && fileInput[0];
-    console.log(file);
-    if (file) {
-      formData.append("file", file);
-    }
+
     try {
-      const imageResponse = await fetch(`/api/1/profile/${profile?.id}/image`, {
-        method: "POST",
-        body: formData,
-      });
+      let imageUrl = null;
 
-      if (imageResponse.ok) {
-        const res = await imageResponse.json();
-        console.log(res);
-        const url = `/api/1/profile/${profile?.id}`;
+      // Step 1: Upload the image via the uploads-service
+      if (file) {
+        formData.append("file", file);
+        formData.append("service", "userprofile"); // Specify the service name
+        formData.append("entityId", profile?.id || ""); // Specify the user ID
+        formData.append("fileType", "profile-image"); // Specify the file type
 
-        const { firstName, lastName, bio } = data;
-        const response = await fetch(url, {
-          method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            firstName,
-            lastName,
-            bio,
-            imageUrl: res?.imageUrl,
-          }),
+        const imageResponse = await fetch(`/api/1/uploads/upload`, {
+          method: "POST",
+          body: formData,
         });
 
-        if (response.ok) {
-          const res = await response.json();
-          reset();
-          router.push("/auth/profile");
+        if (imageResponse.ok) {
+          const res = await imageResponse.json();
+          console.log("Image uploaded:", res);
+          imageUrl = res?.fileUrl; // Extract the uploaded image URL
         } else {
-          console.error("Failed to update profile");
+          console.error("Failed to upload image");
+          return;
         }
+      }
+
+      // Step 2: Update the user profile
+      const url = `/api/1/profile/${profile?.id}`;
+      const { firstName, lastName, bio } = data;
+
+      const response = await fetch(url, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          firstName,
+          lastName,
+          bio,
+          imageUrl, // Include the uploaded image URL
+        }),
+      });
+
+      if (response.ok) {
+        const res = await response.json();
+        console.log("Profile updated:", res);
+        reset(); // Reset the form after successful submission
+        router.push("/auth/profile"); // Redirect to the profile page
       } else {
-        console.error("Failed to upload image");
+        console.error("Failed to update profile");
       }
     } catch (error) {
       console.error("Error updating profile:", error);

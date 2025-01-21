@@ -17,13 +17,12 @@ const common_1 = require("@nestjs/common");
 const typeorm_1 = require("@nestjs/typeorm");
 const typeorm_2 = require("typeorm");
 const ingredient_entity_1 = require("../lib/ingredient.entity");
+const rabbitmq_broker_1 = require("@anchordiv/rabbitmq-broker");
+const common_2 = require("@gogittix/common");
 let IngredientService = class IngredientService {
     constructor(ingredientRepo) {
         this.ingredientRepo = ingredientRepo;
-    }
-    async createIngredient(data) {
-        const ingredient = this.ingredientRepo.create(data);
-        return this.ingredientRepo.save(ingredient);
+        this.rabbitMQUrl = process.env.RABBITMQ_URL;
     }
     async getAllIngredients() {
         return this.ingredientRepo.find();
@@ -31,12 +30,107 @@ let IngredientService = class IngredientService {
     async getIngredientById(id) {
         return this.ingredientRepo.findOne({ where: { id } });
     }
-    async updateIngredient(id, data) {
-        await this.ingredientRepo.update({ id }, data);
-        return this.getIngredientById(id);
+    async createIngredient(data, req) {
+        console.log('Create ingredient req:', req);
+        const ingredientData = {
+            ...data,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+            createdBy: req.currentUser.id,
+        };
+        try {
+            const isExistingIngredient = await this.ingredientRepo.findOne({
+                where: { name: ingredientData.name },
+            });
+            if (isExistingIngredient) {
+                throw new Error('Ingredient already exists');
+            }
+            const ingredient = this.ingredientRepo.create(ingredientData);
+            const savedIngredient = await this.ingredientRepo.save(ingredient);
+            console.log('Saved ingredient:', savedIngredient);
+            await this.handlePublishOrUpdateIngredient('create', savedIngredient);
+            return savedIngredient;
+        }
+        catch (error) {
+            console.log('Error creating ingredient:', error.message);
+            throw new Error(`Error creating ingredient: ${error.message}`);
+        }
     }
-    async deleteIngredient(id) {
-        await this.ingredientRepo.delete({ id });
+    async updateIngredient(id, data, req) {
+        try {
+            const ingredient = await this.ingredientRepo.findOne({ where: { id } });
+            if (!ingredient) {
+                throw new Error('Ingredient not found');
+            }
+            if (ingredient.createdBy !== req.currentUser.id) {
+                throw new Error('Not authorized to update ingredient');
+            }
+            await this.ingredientRepo.update({ id }, data);
+            await this.handlePublishOrUpdateIngredient('update', data);
+            return this.getIngredientById(id);
+        }
+        catch (error) {
+            throw new Error(`Error updating ingredient: ${error.message}`);
+        }
+    }
+    async deleteIngredient(id, req) {
+        try {
+            const ingredient = await this.ingredientRepo.findOne({ where: { id } });
+            if (!ingredient) {
+                throw new Error('Ingredient not found');
+            }
+            if (ingredient.createdBy !== req.currentUser.id) {
+                throw new common_2.NotAuthorizedError();
+            }
+            const isAttachedToRecipe = await this.isIngredientAttachedToRecipe(id);
+            if (isAttachedToRecipe) {
+                throw new common_2.BadRequestError('Ingredient is attached to a recipe');
+            }
+            await this.ingredientRepo.delete({ id });
+        }
+        catch (error) {
+            throw new common_2.BadRequestError(`Error deleting ingredient: ${error.message}`);
+        }
+    }
+    async isIngredientAttachedToRecipe(id) {
+        const baseUrl = 'http://recipe-service.recipe.svc.cluster.local:3000';
+        console.log('Checking ingredient attachment to recipe');
+        const url = `${baseUrl}/api/1/recipes/search?ingredientId=1
+=${id}`;
+        console.log('URL:', url);
+        try {
+            const response = await fetch(url, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${process.env.SERVICE_API_KEY}`,
+                },
+            });
+            console.log('Response:', response.status);
+            if (!response.ok) {
+                if (response.status === 404) {
+                    return false;
+                }
+                throw new common_2.BadRequestError(`Error checking ingredient attachment ${response.statusText}`);
+            }
+            return true;
+        }
+        catch (error) {
+            console.error('Error checking ingredient attachment to recipe:', error.message);
+            throw new Error('Unable to verify ingredient attachment');
+        }
+    }
+    async handlePublishOrUpdateIngredient(action = 'create', data, exchange = 'recipe.ingredients.inventory-updates', routingKey = 'ingredients.create.ingredient', type = 'topic') {
+        const broker = rabbitmq_broker_1.RabbitMQBroker.getInstance();
+        await broker.init(this.rabbitMQUrl);
+        const message = JSON.stringify(data);
+        if (action) {
+            routingKey = `recipe.ingredients.${action}.ingredient`;
+        }
+        await broker.publishToExchange(exchange, routingKey, message, {
+            type,
+            persitence: true,
+        });
     }
 };
 exports.IngredientService = IngredientService;
