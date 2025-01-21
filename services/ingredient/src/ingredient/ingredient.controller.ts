@@ -9,6 +9,7 @@ import {
   // UseGuards,
   Req,
   Request,
+  // Query,
 } from '@nestjs/common';
 import { IngredientService } from './ingredient.service';
 import { CreateIngredientDto, UpdateIngredientDto } from './dto';
@@ -20,6 +21,7 @@ import {
   ApiBody,
   ApiBearerAuth,
 } from '@nestjs/swagger';
+import { IngredientSearchService } from './ingredient-search.service';
 
 // import { requireAuth } from '@gogittix/common';
 
@@ -27,7 +29,10 @@ import {
 @ApiBearerAuth('bearerAuth') // Apply bearer auth
 @Controller('api/1/ingredient')
 export class IngredientController {
-  constructor(private readonly ingredientService: IngredientService) {}
+  constructor(
+    private readonly ingredientService: IngredientService,
+    private readonly searchService: IngredientSearchService,
+  ) {}
 
   @Post()
   @ApiOperation({ summary: 'Create a new ingredient' })
@@ -41,7 +46,6 @@ export class IngredientController {
     @Req() req: Request,
     @Body() data: CreateIngredientDto,
   ): Promise<Ingredient> {
-    console.log('Create ingredient req:', req);
     return this.ingredientService.createIngredient(data, req);
   }
 
@@ -53,11 +57,11 @@ export class IngredientController {
     type: [Ingredient],
   })
   @ApiResponse({ status: 400, description: 'Something went wrong' })
-  async getAllIngredients(@Req() req: any): Promise<Ingredient[]> {
+  async getAllIngredients(): Promise<Ingredient[]> {
     try {
       // requireAuth(req);
 
-      return this.ingredientService.getAllIngredients(req);
+      return this.ingredientService.getAllIngredients();
     } catch (error) {
       console.log('[Ingredeint Get Route]: ', error.message);
       return error;
@@ -106,8 +110,9 @@ export class IngredientController {
   async updateIngredient(
     @Param('id') id: number,
     @Body() data: UpdateIngredientDto,
+    @Req() req: Request,
   ): Promise<Ingredient> {
-    return this.ingredientService.updateIngredient(id, data);
+    return this.ingredientService.updateIngredient(id, data, req);
   }
 
   @Delete(':id')
@@ -117,7 +122,10 @@ export class IngredientController {
     description: 'The ingredient has been successfully deleted.',
   })
   @ApiResponse({ status: 400, description: 'Something went wrong' })
-  async deleteIngredient(@Param('id') id: number): Promise<void> {
-    return this.ingredientService.deleteIngredient(id);
+  async deleteIngredient(
+    @Param('id') id: number,
+    @Req() req: Request,
+  ): Promise<void> {
+    return this.ingredientService.deleteIngredient(id, req);
   }
 }

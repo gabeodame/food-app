@@ -3,3 +3,4 @@
 archive/
 secrets/
 **/secrets/
+/node_modules/

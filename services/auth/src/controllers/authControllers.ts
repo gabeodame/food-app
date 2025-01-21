@@ -31,7 +31,7 @@ export class AuthController {
 
     const id = savedUser.id;
 
-    console.log("User created successfully", savedUser);
+    // console.log("User created successfully", savedUser);
 
     // Initialize RabbitMQ broker and publish user-created event
     const broker = RabbitMQBroker.getInstance();
@@ -43,7 +43,8 @@ export class AuthController {
     const routingKey = "users.signup.new-user";
     const message = JSON.stringify({ username, email, id });
     const type = "topic";
-    await broker.publishToExchange(exchange, routingKey, message, type, {
+    await broker.publishToExchange(exchange, routingKey, message, {
+      type,
       persistent: true,
     });
 

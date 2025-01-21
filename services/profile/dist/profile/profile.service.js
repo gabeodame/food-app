@@ -32,11 +32,11 @@ let ProfileService = class ProfileService {
         const broker = rabbitmq_broker_1.RabbitMQBroker.getInstance();
         await broker.init(process.env.RABBITMQ_URL);
         const exchange = 'recipe.users.profile-updates';
-        const mainQue = 'user-signup-queue';
-        const dlx = 'recipe.users.dlx';
-        const dlq = 'user-signup-dlq';
+        const mainQueue = 'profile-user-signup-queue';
+        const dlx = 'profile-users-dlx';
+        const dlq = 'profile-user-signup-dlq';
         const routingKey = 'users.signup.new-user';
-        await broker.setupDeadLetterQueue(mainQue, dlx, dlq);
+        await broker.setupDeadLetterQueue(mainQueue, dlx, dlq);
         await broker.consume(dlq, async (message) => {
             try {
                 console.log('Dead-lettered message:', message.content.toString());
@@ -47,8 +47,8 @@ let ProfileService = class ProfileService {
             }
         });
         await broker.assertExchange(exchange, 'topic');
-        await broker.bindQueue(mainQue, exchange, routingKey);
-        await broker.consume(mainQue, async (message) => {
+        await broker.bindQueue(mainQueue, exchange, routingKey);
+        await broker.consume(mainQueue, async (message) => {
             await this.handleUserCreated(message.content);
         });
     }

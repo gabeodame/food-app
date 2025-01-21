@@ -20,6 +20,15 @@ export class CreateIngredientDto {
   category?: string; // Optional field, e.g., "Spices", "Vegetables"
 
   @ApiProperty({
+    description: 'URL to an image of the ingredient',
+    example: 'https://example.com/image.jpg',
+    required: false,
+  })
+  @IsOptional()
+  @IsString()
+  imageUrl?: string;
+
+  @ApiProperty({
     description: 'The unit of measurement for the ingredient',
     example: 'grams',
     required: false,

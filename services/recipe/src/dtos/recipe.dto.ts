@@ -10,13 +10,16 @@ import {
 import { Type } from "class-transformer";
 
 export class CreateRecipeDto {
-  @IsNotEmpty()
-  @IsString()
-  id!: string;
+  // @IsNotEmpty()
+  // @IsString()
+  // id!: string;
 
   @IsNotEmpty()
   @IsString()
   title!: string;
+
+  // @IsString()
+  // slug!: string;
 
   @IsNotEmpty()
   @IsString()

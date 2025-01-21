@@ -7,4 +7,5 @@ export type Ingredient = {
   fat: number;
   carbohydrates: number;
   allergens: string;
+  id?: string;
 };

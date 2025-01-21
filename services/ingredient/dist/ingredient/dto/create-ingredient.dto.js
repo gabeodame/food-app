@@ -36,6 +36,16 @@ __decorate([
 ], CreateIngredientDto.prototype, "category", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)({
+        description: 'URL to an image of the ingredient',
+        example: 'https://example.com/image.jpg',
+        required: false,
+    }),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
+], CreateIngredientDto.prototype, "imageUrl", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({
         description: 'The unit of measurement for the ingredient',
         example: 'grams',
         required: false,

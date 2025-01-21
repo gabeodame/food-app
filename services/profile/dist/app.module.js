@@ -16,11 +16,11 @@ const getOrmConfig = (configService) => ({
     type: 'postgres',
     host: configService.get('DB_HOST', 'localhost'),
     port: configService.get('DB_PORT', 5432),
-    username: configService.get('DB_USER', 'default_user'),
-    password: configService.get('DB_PASSWORD', 'default_password'),
-    database: configService.get('DB_NAME', 'default_db'),
+    username: configService.get('POSTGRES_USER', 'default_user'),
+    password: configService.get('POSTGRES_PASSWORD', 'default_password'),
+    database: configService.get('POSTGRES_DB', 'default_db'),
     entities: [profile_entity_1.Profile],
-    synchronize: configService.get('DB_SYNCHRONIZE', true),
+    synchronize: true,
 });
 exports.getOrmConfig = getOrmConfig;
 let AppModule = class AppModule {

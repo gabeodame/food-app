@@ -1,29 +1,53 @@
 import axios, { AxiosInstance } from "axios";
-import { cookies } from "next/headers";
+import base64url from "base64url";
+
+// Helper function to extract the JWT from the session cookie
+const extractJwtFromSession = (sessionCookie: string): string | null => {
+  try {
+    const decoded = base64url.decode(sessionCookie);
+    const sessionData = JSON.parse(decoded);
+    return sessionData.jwt || null;
+  } catch (error: any) {
+    console.error("Failed to extract JWT from session cookie:", error?.message);
+    return null;
+  }
+};
 
 export const buildClient = (): AxiosInstance => {
-  console.log("Building client...");
-  const allCookies = cookies(); // Access all cookies
-  const sessionCookie = allCookies.get("session")?.value; // Get the session cookie
-
-  console.log("sessionCookie:", sessionCookie);
-
-  const headers = {
+  let headers: Record<string, string | undefined> = {
     "Content-Type": "application/json",
     Host: process.env.HOST_NAME || "recipe.dev",
-    Authorization: sessionCookie ? `Bearer ${sessionCookie}` : undefined, // Pass session cookie explicitly
   };
 
-  console.log("Authorization Header:", headers);
   if (typeof window === "undefined") {
-    // Server-side
+    ("use server");
+    // Server-side logic
+    const { cookies } = require("next/headers"); // Dynamically import to avoid client-side issues
+    const allCookies = cookies();
+    const sessionCookie = allCookies.get("session")?.value;
+    const jwt = sessionCookie ? extractJwtFromSession(sessionCookie) : null;
+
+    headers.Cookie = sessionCookie ? `session=${sessionCookie}` : undefined;
+    headers.Authorization = jwt ? `Bearer ${jwt}` : undefined;
+
     return axios.create({
       baseURL:
         "http://ingress-nginx-controller.ingress-nginx.svc.cluster.local",
       headers,
     });
   } else {
-    // Client-side
+    // Client-side logic
+    console.log(document.cookie);
+    const sessionCookie = document.cookie
+      .split("; ")
+      .find((row) => row.startsWith("session="))
+      ?.split("=")[1];
+    const jwt = sessionCookie ? extractJwtFromSession(sessionCookie) : null;
+
+    console.log("Session cookie:", sessionCookie);
+
+    headers.Authorization = jwt ? `Bearer ${jwt}` : undefined;
+
     return axios.create({
       baseURL: "/",
       headers,
