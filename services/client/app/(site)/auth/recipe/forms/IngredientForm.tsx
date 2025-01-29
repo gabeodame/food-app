@@ -51,14 +51,14 @@ const IngredientForm = () => {
   // Units for metric and imperial systems
   const units = useMemo(() => {
     return {
-      metric: ["milliliters (ml)", "liters (l)", "grams (g)", "kilograms (kg)"],
+      metric: ["milliliters", "liters", "grams", "kilograms"],
       imperial: [
-        "teaspoons (tsp)",
-        "tablespoons (tbsp)",
+        "teaspoons",
+        "tablespoons",
         "cups",
-        "fluid ounces (fl oz)",
-        "pounds (lb)",
-        "ounces (oz)",
+        "fluid ounces",
+        "pounds",
+        "ounces",
       ],
     };
   }, []);
@@ -162,6 +162,7 @@ const IngredientForm = () => {
             <input
               id="calories"
               type="number"
+              step={0.1}
               {...register("calories", { valueAsNumber: true })}
               className="p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
             />
@@ -175,6 +176,7 @@ const IngredientForm = () => {
             <input
               id="protein"
               type="number"
+              step={0.1}
               {...register("protein", { valueAsNumber: true })}
               className="p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
             />
@@ -188,6 +190,7 @@ const IngredientForm = () => {
             <input
               id="fat"
               type="number"
+              step={0.1}
               {...register("fat", { valueAsNumber: true })}
               className="p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
             />
@@ -201,6 +204,7 @@ const IngredientForm = () => {
             <input
               id="carbohydrates"
               type="number"
+              step={0.1}
               {...register("carbohydrates", { valueAsNumber: true })}
               className="p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
             />
