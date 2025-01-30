@@ -1,31 +1,31 @@
 "use client";
 
-// TODO: need to be refactored to be more modular
-
-import React, { useState, useEffect, use } from "react";
+import React, { useState, useEffect } from "react";
 import { useForm, useFieldArray, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { useDebounce } from "use-debounce";
 import { SearchIngredient } from "../actions/actions";
-
 import { Ingredient } from "../types/types";
-import IngredientForm from "./IngredientForm";
 import { BadRequestError } from "@gogittix/common";
 import sluggify from "slugify";
 import { useRouter } from "next/navigation";
-import CategoryForm from "./StepsForm";
-import DynamicFormArray from "./DynamicFormArray";
-import StepsForm from "./StepsForm";
-import VerticalDragAndDrop from "./StepsForm";
 
-// Validation schema
+import IngredientForm from "./IngredientForm";
+
+import StepsForm from "./StepsForm";
+import DynamicFormArray from "./DynamicFormArray";
+import CustomDialog from "@/components/widgets/CustomDialog";
+import IngredientsForm from "./IngredientForm";
+
+// Validation schema for recipe
 const recipeSchema = z.object({
   title: z.string().min(1, "Title is required"),
   imageUrl: z.any().optional().nullable(),
   description: z.string().min(1, "Description is required"),
   ingredients: z.array(
     z.object({
+      id: z.number().optional(),
       name: z.string().min(1, "Ingredient name is required"),
       quantity: z
         .number({ invalid_type_error: "Quantity must be a number" })
@@ -54,25 +54,13 @@ const recipeSchema = z.object({
 type RecipeFormData = z.infer<typeof recipeSchema>;
 
 const NewRecipeForm = () => {
-  const [searchTerm, setSearchTerm] = useState<string>("");
-  const [options, setOptions] = useState<Ingredient[]>([]);
-  const [debouncedSearchTerm] = useDebounce(searchTerm, 300);
-  const [currentIndex, setCurrentIndex] = useState<number>(0);
-  const [searchError, setSearchError] = useState<{
-    errorMessage: string;
-    index: number;
-  }>({
-    errorMessage: "",
-    index: 0,
-  });
-
   const router = useRouter();
 
   const defaultValues = {
     title: "",
     imageUrl: "",
     description: "",
-    ingredients: [{ name: "", quantity: 0, unit: "" }],
+    ingredients: [],
     categories: [],
     tags: [],
     instructions: [],
@@ -81,30 +69,22 @@ const NewRecipeForm = () => {
     specialDiets: [],
   };
 
-  const methods = useForm<RecipeFormData>({
-    resolver: zodResolver(recipeSchema),
-    defaultValues,
-  });
-
+  // Initialize form with validation
   const {
     control,
     register,
     handleSubmit,
     setValue,
     formState: { errors },
-  } = methods;
-
-  const { fields, append, remove } = useFieldArray({
-    control,
-    name: "ingredients",
+  } = useForm<RecipeFormData>({
+    resolver: zodResolver(recipeSchema),
+    defaultValues,
   });
 
-  useEffect(() => {
-    console.log(errors);
-  }, [errors]);
-
+  // Handle form submission
   const onSubmit = async (data: RecipeFormData) => {
-    console.log(data);
+    console.log("Submitting form data..............");
+    console.log("Form data:", data);
 
     const formData = new FormData();
     const fileInput = data.imageUrl as unknown as FileList;
@@ -114,9 +94,9 @@ const NewRecipeForm = () => {
       let imageUrl = null;
       if (file) {
         formData.append("file", file);
-        formData.append("service", "userprofile"); // Specify the service name
-        formData.append("entityId", sluggify(data.title, "_")); // Specify the user ID
-        formData.append("fileType", "recipe-image"); // Specify the file type
+        formData.append("service", "userprofile"); // Specify service
+        formData.append("entityId", sluggify(data.title, "_")); // Use title slug as entityId
+        formData.append("fileType", "recipe-image"); // Define file type
       }
 
       const fileUploadRes = await fetch("/api/1/uploads/upload", {
@@ -127,51 +107,31 @@ const NewRecipeForm = () => {
       if (fileUploadRes.ok) {
         const resData = await fileUploadRes.json();
         imageUrl = resData?.fileUrl;
-        const res = await fetch("/api/1/recipes/", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            ...data,
-            imageUrl,
-          }),
-        });
-
-        if (res.ok) {
-          console.log("Recipe created successfully");
-        } else {
-          throw new Error("Failed to create recipe");
-        }
       }
-    } catch (error) {
-      throw new BadRequestError("Failed to create recipe");
+
+      // Submit recipe data to API
+      const res = await fetch("/api/1/recipes/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          ...data,
+          imageUrl,
+        }),
+      });
+
+      if (res.ok) {
+        console.log("Recipe created successfully");
+      } else {
+        throw new BadRequestError("Failed to create recipe");
+      }
+    } catch (error: any) {
+      console.error("Error creating recipe:", error);
     }
   };
 
-  // Fetch ingredients when search term changes
-  useEffect(() => {
-    const fetchIngredients = async () => {
-      // for (const index in debouncedSearchTerms) {
-      //   const searchTerm = debouncedSearchTerms[index];
-      if (debouncedSearchTerm.length > 3) {
-        try {
-          const data = await SearchIngredient(debouncedSearchTerm);
-          setOptions(data);
-        } catch (error) {
-          console.error(
-            `Error no ingredient found for ${debouncedSearchTerm}:`,
-            error
-          );
-        }
-      } else {
-        setOptions([]);
-      }
-      // }
-    };
-
-    fetchIngredients();
-  }, [debouncedSearchTerm]);
+  console.log("Errors:", errors);
 
   return (
     <div className="max-w-2xl mx-auto p-6 rounded-md space-y-6 shadow-md">
@@ -197,7 +157,7 @@ const NewRecipeForm = () => {
         {/* Image URL */}
         <div>
           <label className="block text-sm font-medium mb-1 text-color-primary">
-            Image URL
+            Image
           </label>
           <input
             type="file"
@@ -228,149 +188,56 @@ const NewRecipeForm = () => {
           )}
         </div>
 
-        {/* Ingredients */}
-        <div>
-          <label className="block text-sm font-medium mb-1 text-color-primary">
-            Ingredients
-          </label>
-          {fields.map((field, index) => (
-            <div key={field.id} className="mb-4">
-              <div className="flex space-x-2 items-start">
-                {/* Name */}
-                <div className="relative w-1/2">
-                  <Controller
-                    control={control}
-                    name={`ingredients.${index}.name`}
-                    render={({ field: { onChange, value } }) => (
-                      <AutoComplete
-                        value={value || ""}
-                        options={options || []}
-                        placeholder="Ingredient Name"
-                        onInputChange={(newInputValue) => {
-                          setSearchTerm(newInputValue);
-                          onChange(newInputValue);
-                          setCurrentIndex(index);
-                        }}
-                        onSelect={(ingredient) => {
-                          onChange(ingredient.name);
-                          setValue(
-                            `ingredients.${index}.unit`,
-                            ingredient.unit
-                          );
-                        }}
-                      />
-                    )}
-                  />
+        {/* Ingredients Form Component */}
+        <IngredientsForm
+          control={control}
+          errors={errors}
+          setValue={setValue}
+          // onSubmit={handleIngredientAdd}
+        />
 
-                  {errors.ingredients?.[index]?.name && (
-                    <p className="text-red-500 text-sm h-5">
-                      {errors.ingredients[index].name?.message}
-                    </p>
-                  )}
-                </div>
+        {/* Categories */}
+        <DynamicFormArray
+          label="Categories"
+          fieldName="categories"
+          placeholder="Category Name"
+          control={control}
+        />
 
-                {/* Quantity */}
-                <div className="w-1/4">
-                  <input
-                    type="number"
-                    {...register(`ingredients.${index}.quantity`, {
-                      valueAsNumber: true,
-                    })}
-                    placeholder="Quantity"
-                    className="w-full p-2 bg-color-secondary-light rounded border focus:outline-none"
-                  />
-                  {errors.ingredients?.[index]?.quantity && (
-                    <p className="text-red-500 text-sm h-5">
-                      {errors.ingredients[index].quantity?.message}
-                    </p>
-                  )}
-                </div>
+        {/* Tags */}
+        <DynamicFormArray
+          label="Tags"
+          fieldName="tags"
+          placeholder="Tag Name"
+          control={control}
+        />
 
-                {/* Unit */}
-                <div className="w-1/4">
-                  <input
-                    type="text"
-                    {...register(`ingredients.${index}.unit`)}
-                    placeholder="Unit"
-                    className="w-full p-2 bg-color-secondary-light rounded border focus:outline-none"
-                  />
-                  {errors.ingredients?.[index]?.unit && (
-                    <p className="text-red-500 text-sm h-5">
-                      {errors.ingredients[index].unit?.message}
-                    </p>
-                  )}
-                </div>
+        {/* Instructions */}
+        <StepsForm control={control} />
 
-                {/* Remove Button */}
-                <button
-                  type="button"
-                  onClick={() => remove(index)}
-                  className="px-4 py-2 rounded text-white bg-color-secondary hover:bg-color-secondary-alt"
-                >
-                  -
-                </button>
+        {/* Cuisine Types */}
+        <DynamicFormArray
+          label="Cuisine Types"
+          fieldName="cuisineTypes"
+          placeholder="Cuisine Type"
+          control={control}
+        />
 
-                {/* Add Button */}
-                {index === fields.length - 1 && (
-                  <button
-                    type="button"
-                    onClick={() => append({ name: "", quantity: 0, unit: "" })}
-                    className="px-4 py-2 rounded text-white bg-color-primary hover:bg-color-secondary-alt"
-                  >
-                    +
-                  </button>
-                )}
-              </div>
-              {debouncedSearchTerm.length > 3 &&
-                options.length === 0 &&
-                currentIndex === index && <IngredientForm />}
-            </div>
-          ))}
-          {/* Categories */}
-          <DynamicFormArray
-            label="Categories"
-            fieldName="categories"
-            placeholder="Category Name"
-            control={control}
-          />
+        {/* Seasonal Events */}
+        <DynamicFormArray
+          label="Seasonal Events"
+          fieldName="seasonalEvent"
+          placeholder="Seasonal Event"
+          control={control}
+        />
 
-          {/* Tags */}
-          {/* Tags */}
-          <DynamicFormArray
-            label="Tags"
-            fieldName="tags"
-            placeholder="Tag Name"
-            control={control}
-          />
-
-          {/* Instructions */}
-          {/* <StepsForm /> */}
-          <StepsForm control={control} />
-
-          {/* Cuisine Types */}
-          <DynamicFormArray
-            label="Cuisine Types"
-            fieldName="cuisineTypes"
-            placeholder="Cuisine Type"
-            control={control}
-          />
-
-          {/* Seasonal Events */}
-          <DynamicFormArray
-            label="Seasonal Events"
-            fieldName="seasonalEvents"
-            placeholder="Seasonal Event"
-            control={control}
-          />
-
-          {/* Special Diets */}
-          <DynamicFormArray
-            label="Special Diets"
-            fieldName="specialDiets"
-            placeholder="Special Diet"
-            control={control}
-          />
-        </div>
+        {/* Special Diets */}
+        <DynamicFormArray
+          label="Special Diets"
+          fieldName="specialDiets"
+          placeholder="Special Diet"
+          control={control}
+        />
 
         {/* Submit Button */}
         <button
@@ -385,100 +252,3 @@ const NewRecipeForm = () => {
 };
 
 export default NewRecipeForm;
-
-interface AutoCompleteProps {
-  options: Ingredient[];
-  value: string;
-  placeholder?: string;
-  onInputChange: (value: string) => void;
-  onSelect: (ingredient: Ingredient) => void;
-}
-
-const AutoComplete: React.FC<AutoCompleteProps> = ({
-  options,
-  value,
-  placeholder,
-  onInputChange,
-  onSelect,
-}) => {
-  const [isOpen, setIsOpen] = useState(false);
-
-  return (
-    <div className="relative w-full">
-      <input
-        type="text"
-        value={value}
-        placeholder={placeholder}
-        onChange={(e) => {
-          onInputChange(e.target.value);
-          setIsOpen(true);
-        }}
-        onBlur={() => setTimeout(() => setIsOpen(false), 200)} // Delay closing to allow click selection
-        className="w-full p-2 bg-color-secondary-light rounded border focus:outline-none"
-      />
-      {isOpen && options.length > 0 && (
-        <div className="absolute z-10 bg-white border rounded shadow-md w-full max-h-48 overflow-auto">
-          <ul className="list-none">
-            {options.map((option) => (
-              <li
-                key={option.id}
-                onClick={() => {
-                  onSelect(option);
-                  setIsOpen(false);
-                }}
-                className="p-2 cursor-pointer hover:bg-gray-200"
-              >
-                {option.name}
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
-
-      {/* {isOpen && options.length === 0 && (
-        <div className="absolute w-full h-9 flex justify-center items-center z-10 bg-white border rounded shadow-md max-h-48 overflow-auto">
-          <IngredientForm />
-        </div>
-      )} */}
-    </div>
-  );
-};
-
-// {
-//     "title": "One-Pot Spanish Chicken and Potatoes",
-//     "imageUrl": {
-//         "0": {}
-//     },
-//     "description": "A flavorful dish where chicken and potatoes are simmered in a homemade tomato and olive oil sauce, infused with fresh herbs and spices.",
-//     "ingredients": [
-//         {
-//             "name": "Chicken Breast",
-//             "quantity": 1,
-//             "unit": "grams"
-//         },
-//         {
-//             "name": "Tomato",
-//             "quantity": 5,
-//             "unit": "grams (g)"
-//         }
-//     ],
-//     "categories": [],
-//     "tags": [],
-//     "instructions": [
-//         {
-//             "step": "Sauce: Heat the olive oil in a large, deep skillet over medium high heat. Add the onions and garlic. Scoop the juices, seeds, and flesh out of the tomatoes into the pan. Add the eggplant pieces and simmer the mixture for 5 minutes or until everything is soupy-like and softened and very good smelling. Place the scooped out tomato halves over the sauce, open side down. Simmer for a few minutes until the tomatoes have steamed and softened. Break them up in the pan and simmer for another 5-10 minutes to get all the flavors real nice and yummy."
-//         },
-//         {
-//             "step": "Blend: Transfer to a blender or food processor, puree until mixture reaches your desired consistency, and stir in the salt. Taste and adjust to you liki"
-//         },
-//         {
-//             "step": "Chicken and Potatoes: In the same pan, add one more quick drizzle of olive oil and add the chicken and potato slices. Sprinkle with salt and pepper and seasoning. Saute for a few minutes on each side until they are browned."
-//         },
-//         {
-//             "step": "Chicken and Potatoes: In the same pan, add one more quick drizzle of olive oil and add the chicken and potato slices. Sprinkle with salt and pepper and seasoning. Saute for a few minutes on each side until they are browned."
-//         }
-//     ],
-//     "cuisineTypes": [],
-//     "seasonalEvent": [],
-//     "specialDiets": []
-// }
