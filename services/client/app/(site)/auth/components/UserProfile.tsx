@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react";
 import Avatar, { User } from "./Avatar";
 import { getUserProfile } from "../actions/getUserProfiles";
+import { CiUser } from "react-icons/ci";
 
 const UserProfile = ({ email }: { email: string }) => {
   const [profile, setProfile] = useState<User | null>(null);
@@ -17,7 +18,7 @@ const UserProfile = ({ email }: { email: string }) => {
   }, [email]);
 
   if (!profile) {
-    return <div>Loading...</div>;
+    return <CiUser size={24} />;
   }
 
   return <Avatar profile={profile} />;

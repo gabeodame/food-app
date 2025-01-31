@@ -1,5 +1,4 @@
-import React, { useState } from "react";
-
+import React from "react";
 import {
   Dialog,
   DialogContent,
@@ -12,8 +11,8 @@ import {
 interface DialogProps {
   trigger?: string | React.ReactNode;
   title?: string;
-  open?: boolean;
-  setOpen?: () => void;
+  open: boolean; // Ensure boolean value
+  setOpen: (value: boolean) => void; // Fix: Accept boolean setter
   description?: string;
   children: React.ReactNode;
 }
@@ -29,7 +28,7 @@ function CustomDialog({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       {trigger && <DialogTrigger className="w-full">{trigger}</DialogTrigger>}
-      <DialogContent className="max-w-[85%] md:w-full h-[65%] min-h-[280px] flex flex-col items-center">
+      <DialogContent className="max-w-[85%] md:w-full h-[65%] min-h-[280px] flex flex-col items-center bg-white shadow-lg backdrop:bg-black/20">
         <DialogHeader className="flex">
           {title && <DialogTitle>{title}</DialogTitle>}
           <DialogDescription className="">{description}</DialogDescription>

@@ -2,7 +2,11 @@ import { FoodItemProps } from "../entities/recipe.entity";
 import { CreateRecipeDto, Recipe, UpdateRecipeDto } from "../dtos";
 import { prisma } from "../utils/prisma";
 import { Request } from "express";
-import { NotAuthorizedError, NotFoundError } from "@gogittix/common";
+import {
+  BadRequestError,
+  NotAuthorizedError,
+  NotFoundError,
+} from "@gogittix/common";
 import slugify from "slugify";
 
 class RecipeService {
@@ -86,6 +90,8 @@ class RecipeService {
   async createRecipe(req: Request) {
     if (!req?.currentUser) throw new NotAuthorizedError();
 
+    console.log(req.body);
+
     const userId = req.currentUser.id;
     const { title, description, imageUrl, ingredients, instructions } =
       req.body as CreateRecipeDto;
@@ -101,7 +107,7 @@ class RecipeService {
           imageUrl,
           ingredients: {
             create: ingredients.map((ingredient) => ({
-              ingredientId: ingredient.id,
+              ingredient: { connect: { id: ingredient.id } },
               quantity: ingredient.quantity,
             })),
           },
@@ -114,7 +120,8 @@ class RecipeService {
 
       return newRecipe;
     } catch (error: any) {
-      throw new Error(`Error creating recipe: ${error.message}`);
+      console.error("Error creating recipe:", error);
+      throw new BadRequestError(`Error creating recipe: ${error.message}`);
     }
   }
 
@@ -152,7 +159,7 @@ class RecipeService {
           ingredients: {
             deleteMany: {}, // Clear previous associations
             create: ingredients?.map((ingredient) => ({
-              ingredientId: ingredient.id,
+              ingredient: { connect: { id: ingredient.id } },
               quantity: ingredient.quantity,
             })),
           },
@@ -166,7 +173,8 @@ class RecipeService {
 
       return updatedRecipe;
     } catch (error: any) {
-      throw new Error(`Error updating recipe: ${error.message}`);
+      console.error("Error updating recipe:", error);
+      throw new BadRequestError(`Error updating recipe: ${error.message}`);
     }
   }
 

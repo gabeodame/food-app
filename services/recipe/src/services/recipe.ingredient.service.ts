@@ -3,6 +3,30 @@ import { CachedIngredientDto } from "../dtos";
 import { prisma } from "../utils/prisma";
 
 class RecipeIngredientService {
+  async searchIngredients(term: string) {
+    try {
+      console.log("Searching ingredients in Recipe Service:", term);
+
+      const ingredients = await prisma.ingredient.findMany({
+        where: {
+          name: {
+            contains: term,
+            mode: "insensitive",
+          },
+        },
+        orderBy: {
+          name: "asc",
+        },
+        take: 20, // ✅ Limit to avoid performance issues
+      });
+
+      return ingredients;
+    } catch (error: any) {
+      console.error("Error searching ingredients:", error);
+      throw new BadRequestError(`Search failed: ${error.message}`);
+    }
+  }
+
   async cacheIngredient(data: CachedIngredientDto) {
     const { id, name, category, unit, recipeIds } = data;
     console.log("Caching ingredient:", data);

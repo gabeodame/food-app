@@ -29,7 +29,7 @@ function Login() {
     const userData = await fetchData("/api/users/signin", "post", data);
 
     if (!userData.errors || userData.errors === null) {
-      router.push(`${pathname}/${data.username}`);
+      router.push(`/auth/dashboard`);
     } else {
       console.log(userData.errors);
     }

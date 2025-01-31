@@ -2,9 +2,13 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { ValidationPipe } from '@nestjs/common';
+import * as bodyParser from 'body-parser';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  app.use(bodyParser.json({ limit: '4mb' }));
+  app.use(bodyParser.urlencoded({ limit: '4mb', extended: true }));
+
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
@@ -12,6 +16,7 @@ async function bootstrap() {
       forbidNonWhitelisted: true,
     }),
   );
+
   // Swagger Configuration
   const config = new DocumentBuilder()
     .setTitle('Uploads Service API')

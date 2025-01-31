@@ -10,6 +10,7 @@ import {
   HttpStatus,
   UseInterceptors,
   UploadedFile,
+  Req,
 } from '@nestjs/common';
 import { ProfileService } from './profile.service';
 import { CreateProfileDto, UpdateProfileDto } from './dto';
@@ -54,6 +55,25 @@ export class ProfileController {
     }
   }
 
+  @Get('/')
+  @ApiOperation({ summary: 'Get a profile by ID' })
+  @ApiResponse({
+    status: 200,
+    description: 'Return a profile by ID.',
+    type: Profile,
+  })
+  @ApiResponse({ status: 400, description: 'Something went wrong' })
+  async getProfileBycurrentUser(
+    // @Param('id') id: string,
+    @Req() req: any,
+  ): Promise<Profile> {
+    try {
+      // const userId = id;
+      return await this.profileService.getProfileCurrentUser(req);
+    } catch (error) {
+      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
   @Get(':id')
   @ApiOperation({ summary: 'Get a profile by ID' })
   @ApiResponse({

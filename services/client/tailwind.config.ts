@@ -24,7 +24,7 @@ const config = {
       },
       colors: {
         "color-primary": "var(--color-primary)",
-        "color-primary-alt": "var(--primary-color-alt)",
+        "color-primary-alt": "var(--color-primary-alt)",
         "color-primary-light": "var(--color-primary-light)",
         "color-secondary": "var(--color-secondary)",
         "color-secondary-alt": "var(--color-secondary-alt)",

@@ -7,7 +7,7 @@ import {
   IsEmail,
   IsNumber,
 } from "class-validator";
-import { Type } from "class-transformer";
+import { Type, Transform } from "class-transformer";
 
 export class CreateRecipeDto {
   // @IsNotEmpty()
@@ -145,22 +145,47 @@ export class CategoryDto {
   name!: string;
 }
 
+// export class IngredientDto {
+//   @IsOptional()
+//   id!: number;
+
+//   @IsNotEmpty()
+//   @IsString()
+//   name!: string;
+
+//   @IsOptional()
+//   @IsNumber()
+//   quantity?: number | null; // Accepts null
+
+//   @IsOptional()
+//   @IsArray()
+//   @IsNumber({}, { each: true })
+//   recipeIds?: number[]; // Represents associated recipes
+// }
+
 export class IngredientDto {
   @IsOptional()
-  id!: number;
+  @Transform(({ value }) => (value ? Number(value) : undefined)) // Ensure it's a number
+  @IsNumber()
+  id?: number;
 
   @IsNotEmpty()
   @IsString()
   name!: string;
 
   @IsOptional()
+  @Transform(({ value }) => (value === null ? null : Number(value))) // Ensure number or null
   @IsNumber()
-  quantity?: number | null; // Accepts null
+  quantity?: number | null;
+
+  @IsOptional()
+  @IsString()
+  unit?: string; // ✅ Add if required
 
   @IsOptional()
   @IsArray()
   @IsNumber({}, { each: true })
-  recipeIds?: number[]; // Represents associated recipes
+  recipeIds?: number[];
 }
 
 export class CachedIngredientDto {
