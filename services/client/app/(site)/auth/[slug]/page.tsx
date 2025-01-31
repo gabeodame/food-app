@@ -1,40 +1,45 @@
-"use client";
-
 import useUser from "@/app/hooks/useUser";
-import { useEffect, useState } from "react";
-import { User } from "../components/Avatar";
-import { IoCreateOutline } from "react-icons/io5";
 import { Separator } from "@radix-ui/themes";
-import Link from "next/link";
+import { getUserRecipes } from "../actions/getUserRecipes";
 import Header from "./components/Header";
 import UpdateProfile from "./forms/UpdateProfile";
+import FoodList from "../../components/FoodList/FoodList";
 
 type Params = { slug: string };
 type SearchParams = { [key: string]: string | string[] | undefined };
 
-function UserDashboard({
+async function UserDashboard({
   params,
   searchParams,
 }: {
   params: Params;
   searchParams: SearchParams;
 }) {
-  const { user, isLoading, isError } = useUser();
+  // const { user, isLoading, isError } = useUser();
   console.log(params);
   console.log(searchParams);
 
-  if (isLoading) return <div>Loading...</div>;
-  if (isError) return <div>Error loading user data.</div>;
+  // if (isLoading) return <div>Loading...</div>;
+  // if (isError) return <div>Error loading user data.</div>;
+
+  const userRecipes = await getUserRecipes();
+
+  console.log(userRecipes);
 
   return (
     <div className="max-w-7xl p-2 md:p-4 lg:p-6 md:gap-4 md:container sm:px-2 md:px-4">
       <Header />
       <Separator className="my-4 h-[2px] bg-color-primary" />
-      {searchParams.action === "update" && (
-        <UpdateProfile email={user?.email} />
-      )}
+      {searchParams.action === "update" && <UpdateProfile />}
       {/* <h1>Welcome back {profile?.firstName}</h1> */}
-      {!params.slug && <p>Here are some of your recent activities:</p>}
+      {params.slug === "dashboard" && (
+        <div className="">
+          <p className="text-color-primary">
+            Here are some of your recent activities:
+          </p>
+          <FoodList foodData={userRecipes} />
+        </div>
+      )}
     </div>
   );
 }

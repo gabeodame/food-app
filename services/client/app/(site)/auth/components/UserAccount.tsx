@@ -17,13 +17,16 @@ import { useRouter } from "next/navigation";
 import React, { useState } from "react";
 import UserProfile from "./UserProfile";
 import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
+import { CiUser } from "react-icons/ci";
 
 function UserAccount() {
   const { user, isLoading, isError } = useUser();
   const [isDropdownOpen, setDropdownOpen] = useState(false);
+  const router = useRouter();
 
   const handleLogout = () => {
     setDropdownOpen(false); // Close the dropdown after logout
+    router.push("/");
   };
 
   type MenuItem = {
@@ -56,14 +59,6 @@ function UserAccount() {
       ),
     },
   ];
-
-  if (isLoading) {
-    return <div>Loading...</div>;
-  }
-
-  if (isError) {
-    return <div>Failed to load user information.</div>;
-  }
 
   return (
     <div className="relative">

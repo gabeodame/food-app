@@ -2,61 +2,118 @@ import { BadRequestError } from "@gogittix/common";
 import { prisma } from "../utils/prisma";
 
 class RecipeSearchService {
-  async search(query: Record<string, string | string[]>) {
-    const filters: Record<string, any> = {};
+  async searchBySlug(query: Record<string, string | string[]>, req: any) {
+    try {
+      const filters: Record<string, any> = {};
 
-    // Map query parameters to Prisma filters dynamically
-    if (query.ingredientName) {
-      filters.ingredients = {
-        some: {
-          name: {
-            contains: query.ingredientName as string,
-            mode: "insensitive",
+      // ✅ Validate filters before querying
+      const hasValidFilters = Object.keys(query).some((key) =>
+        [
+          "ingredientName",
+          "ingredientId",
+          "category",
+          "slug",
+          "currentUserId",
+        ].includes(key)
+      );
+
+      if (!hasValidFilters) {
+        throw new BadRequestError(
+          "Invalid search query. No valid filters provided."
+        );
+      }
+
+      // ✅ Ensure currentUserId is correctly handled
+      if (query.currentUserId) {
+        if (!req?.currentUser?.id) {
+          throw new BadRequestError(
+            `Authentication required for user-based filtering. req.currentUser.id ${req.currentUser.id}`
+          );
+        }
+        const userId = req.currentUser.id;
+        console.log("Current User ID:", userId);
+
+        // ✅ Filter by user ID who created the recipe
+        filters.userId = userId;
+      }
+
+      // ✅ Search by ingredient name
+      if (query.ingredientName) {
+        filters.ingredients = {
+          some: {
+            ingredient: {
+              name: {
+                contains: query.ingredientName as string,
+                mode: "insensitive",
+              },
+            },
           },
-        },
-      };
-    }
+        };
+      }
 
-    if (query.ingredientId) {
-      filters.ingredients = {
-        some: {
-          ingredientId: parseInt(query.ingredientId as string, 10),
-        },
-      };
-    }
+      // ✅ Search by ingredient ID
+      if (query.ingredientId) {
+        filters.ingredients = {
+          some: {
+            ingredientId: parseInt(query.ingredientId as string, 10),
+          },
+        };
+      }
 
-    if (query.category) {
-      filters.categories = {
-        some: {
-          category: {
-            name: {
-              contains: query.category as string,
-              mode: "insensitive",
+      // ✅ Search by category via `RecipeIngredient`
+      if (query.category) {
+        filters.ingredients = {
+          some: {
+            ingredient: {
+              category: {
+                contains: query.category as string,
+                mode: "insensitive",
+              },
+            },
+          },
+        };
+      }
+
+      // ✅ Search by slug
+      if (query.slug) {
+        filters.slug = {
+          contains: query.slug as string,
+          mode: "insensitive",
+        };
+      }
+
+      console.log("Generated Prisma Filters:", filters);
+
+      // ✅ Fetch recipes based on filtered ingredients
+      const recipes = await prisma.recipe.findMany({
+        where: filters,
+        include: {
+          ingredients: {
+            include: {
+              ingredient: true,
+            },
+          },
+          categories: {
+            include: {
+              category: true,
             },
           },
         },
-      };
-    }
+        take: 20, // Limit results
+      });
 
-    if (query.slug) {
-      filters.slug = query.slug as string;
-    }
+      return recipes;
+    } catch (error: any) {
+      console.error("Error searching recipes:", error);
 
-    // Throw an error if no valid filters were constructed
-    if (Object.keys(filters).length === 0) {
-      throw new BadRequestError(
-        "Invalid search query. No valid filters provided."
-      );
-    }
+      // ✅ Handle known Prisma errors gracefully
+      if (error.code === "P2025") {
+        throw new BadRequestError("No matching recipes found.");
+      }
 
-    // Execute the query with dynamic filters
-    return prisma.recipe.findMany({
-      where: filters,
-      include: {
-        ingredients: true,
-        categories: true,
-      },
-    });
+      // ✅ Fallback to generic error
+      throw new BadRequestError(`Search failed: ${error.message}`);
+    }
   }
 }
 

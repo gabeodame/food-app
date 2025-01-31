@@ -1,7 +1,8 @@
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react";
 import Image from "next/image";
+import { CiUser } from "react-icons/ci";
 
 export type User = {
   id: string;
@@ -14,22 +15,35 @@ export type User = {
 };
 
 const Avatar = ({ profile }: { profile: User }) => {
+  const [userProfile, setUserProfile] = React.useState<User | null>(null);
+
+  useEffect(() => {
+    if (profile) {
+      setUserProfile(profile);
+    }
+  }, [profile]);
+
+  if (!userProfile) return <CiUser size={24} />;
+
   return (
     <div className="flex items-center gap-2">
-      {profile.imageUrl ? (
-        <div className="relative w-10 h-10 rounded-full overflow-hidden">
-          <Image
-            src={profile.imageUrl}
-            alt={profile.username}
-            className="w-full h-auto object-cover"
-            layout="responsive"
-            sizes="(min-width: 60em) 24vw, (min-width: 28em) 45vw, 100vw"
-            width={32}
-            height={32}
-          />
+      <div className="text-nowrap">{`${userProfile?.firstName} ${userProfile?.lastName}`}</div>
+      {userProfile.imageUrl ? (
+        <div className="flex gap-2">
+          <div className="relative w-10 h-10 rounded-full overflow-hidden">
+            <Image
+              src={userProfile.imageUrl}
+              alt={userProfile.username}
+              className="w-full h-auto object-cover"
+              layout="responsive"
+              sizes="(min-width: 60em) 24vw, (min-width: 28em) 45vw, 100vw"
+              width={32}
+              height={32}
+            />
+          </div>
         </div>
       ) : (
-        <UserInitialsAvatar profile={profile} />
+        <UserInitialsAvatar profile={userProfile} />
       )}
     </div>
   );

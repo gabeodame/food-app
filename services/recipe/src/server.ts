@@ -2,7 +2,6 @@ import dotenv from "dotenv";
 import "reflect-metadata"; // Ensure it is imported first
 import app from "./app";
 
-import { RabbitMQBroker } from "@anchordiv/rabbitmq-broker";
 import { consumeIngredient } from "./utils/consumeIngredient";
 import { consumeUser } from "./utils/consumeUser";
 

@@ -23,7 +23,9 @@ export const AddNewIngredient = async (ingredient: Ingredient) => {
 export const SearchIngredient = async (search: string) => {
   try {
     const client = buildClient();
-    const res = await client.get(`/api/1/ingredient/search?name=${search}`);
+    const res = await client.get(
+      `api/1/recipes/ingredient/search?slug=${search}`
+    );
     if (!res?.data) {
       throw new Error("Failed to add new ingredient");
     }

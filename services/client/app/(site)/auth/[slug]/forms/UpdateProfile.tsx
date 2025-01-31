@@ -32,7 +32,7 @@ const schema = z.object({
   imageUrl: z.any().optional(),
 });
 
-function UpdateProfile({ email }: { email: string }) {
+function UpdateProfile() {
   const [profile, setProfile] = useState<User>();
   //   const [initalProfile, setInitialProfile] =
   //     useState<formProps>(InitialProfile);
@@ -42,19 +42,17 @@ function UpdateProfile({ email }: { email: string }) {
   useEffect(() => {
     const getProfile = async () => {
       try {
-        if (email) {
-          const url = `/api/1/profile/email/${email}`;
-          const response = await fetch(url);
-          const data = await response.json();
-          setProfile(data);
-        }
+        const url = `/api/1/profile`;
+        const response = await fetch(url);
+        const data = await response.json();
+        setProfile(data);
       } catch (error) {
         console.error("Error fetching profile:", error);
       }
     };
 
     getProfile();
-  }, [email]);
+  }, []);
 
   useEffect(() => {
     reset({
@@ -80,8 +78,6 @@ function UpdateProfile({ email }: { email: string }) {
       // imageUrl: profile?.imageUrl,
     },
   });
-
-  console.log(watch("imageUrl"));
 
   const onSubmit: SubmitHandler<formProps> = async (data) => {
     const formData = new FormData();
@@ -134,7 +130,7 @@ function UpdateProfile({ email }: { email: string }) {
         const res = await response.json();
         console.log("Profile updated:", res);
         reset(); // Reset the form after successful submission
-        router.push("/auth/profile"); // Redirect to the profile page
+        router.push("/auth/dashboard"); // Redirect to the profile page
       } else {
         console.error("Failed to update profile");
       }

@@ -7,7 +7,7 @@ const options = {
     info: {
       title: "Recipe Service API",
       version: "1.0.0",
-      description: "API for managing recipes, ingredients, and more.",
+      description: "API for managing recipes",
     },
     servers: [
       {
