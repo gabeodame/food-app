@@ -88,8 +88,10 @@ export class ProfileService implements OnApplicationBootstrap {
     }
     return profile;
   }
+
   async getProfileCurrentUser(req: any): Promise<Profile> {
     const id = req.currentUser.id;
+    console.log('Current User ID:', id);
     const profile = await this.profileRepository.findOne({ where: { id } });
     if (!profile) {
       throw new NotFoundException('Profile not found');

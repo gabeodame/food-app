@@ -75,6 +75,7 @@ const NewRecipeForm = () => {
     register,
     handleSubmit,
     setValue,
+    watch,
     formState: { errors },
   } = useForm<RecipeFormData>({
     resolver: zodResolver(recipeSchema),
@@ -97,6 +98,7 @@ const NewRecipeForm = () => {
         formData.append("service", "userprofile"); // Specify service
         formData.append("entityId", sluggify(data.title, "_")); // Use title slug as entityId
         formData.append("fileType", "recipe-image"); // Define file type
+        // formData.append("slug", sluggify(data.title, "_")); // Define slug
       }
 
       const fileUploadRes = await fetch("/api/1/uploads/upload", {
@@ -122,9 +124,9 @@ const NewRecipeForm = () => {
       });
 
       if (res.ok) {
-        console.log("Recipe created successfully");
+        router.push("/auth/dashboard");
       } else {
-        throw new BadRequestError("Failed to create recipe");
+        console.error("Failed to create recipe", res.status);
       }
     } catch (error: any) {
       console.error("Error creating recipe:", error);
@@ -134,7 +136,7 @@ const NewRecipeForm = () => {
   console.log("Errors:", errors);
 
   return (
-    <div className="max-w-2xl mx-auto p-6 rounded-md space-y-6 shadow-md">
+    <div className="w-full  p-6 rounded-md space-y-6 shadow-md">
       <h2 className="text-xl font-bold mb-4 text-color-primary">
         Create Recipe
       </h2>
@@ -193,6 +195,7 @@ const NewRecipeForm = () => {
           control={control}
           errors={errors}
           setValue={setValue}
+          watch={watch}
           // onSubmit={handleIngredientAdd}
         />
 

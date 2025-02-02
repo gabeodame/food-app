@@ -15,6 +15,7 @@ function FoodList({
   limit?: number;
 }) {
   const router = useRouter();
+  console.log("foodData", foodData);
 
   return (
     <Suspense fallback={<div>Loading...</div>}>
@@ -33,10 +34,11 @@ function FoodList({
 
         {/* Grid Layout */}
         <div className="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 auto-rows-auto gap-4">
-          {foodData?.map((item, index) => {
-            if (limit && index >= limit) return null;
-            return <FoodItem key={index} item={item} />;
-          })}
+          {foodData &&
+            foodData?.map((item, index) => {
+              if (limit && index >= limit) return null;
+              return <FoodItem key={index} item={item} />;
+            })}
         </div>
       </div>
     </Suspense>

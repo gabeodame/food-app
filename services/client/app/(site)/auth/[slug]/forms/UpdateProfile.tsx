@@ -6,6 +6,8 @@ import { SubmitHandler, useForm } from "react-hook-form";
 import { z } from "zod";
 import { User } from "../../components/Avatar";
 import { useRouter } from "next/navigation";
+import useUser from "@/app/hooks/useUser";
+import { cn } from "@/lib/utils";
 
 type formProps = {
   firstName: string;
@@ -34,25 +36,16 @@ const schema = z.object({
 
 function UpdateProfile() {
   const [profile, setProfile] = useState<User>();
-  //   const [initalProfile, setInitialProfile] =
-  //     useState<formProps>(InitialProfile);
+  const { user } = useUser();
+
   const router = useRouter();
 
   // this can be a custom hook as it is used in multiple components
   useEffect(() => {
-    const getProfile = async () => {
-      try {
-        const url = `/api/1/profile`;
-        const response = await fetch(url);
-        const data = await response.json();
-        setProfile(data);
-      } catch (error) {
-        console.error("Error fetching profile:", error);
-      }
-    };
+    setProfile(user);
+  }, [user]);
 
-    getProfile();
-  }, []);
+  console.log(profile?.id);
 
   useEffect(() => {
     reset({
@@ -87,6 +80,11 @@ function UpdateProfile() {
     try {
       let imageUrl = null;
 
+      if (!profile?.id) {
+        console.error("Profile ID not found");
+        return;
+      }
+
       // Step 1: Upload the image via the uploads-service
       if (file) {
         formData.append("file", file);
@@ -111,6 +109,8 @@ function UpdateProfile() {
 
       // Step 2: Update the user profile
       const url = `/api/1/profile/${profile?.id}`;
+
+      console.log(url);
       const { firstName, lastName, bio } = data;
 
       const response = await fetch(url, {

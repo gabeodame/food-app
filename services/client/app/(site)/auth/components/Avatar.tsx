@@ -27,7 +27,9 @@ const Avatar = ({ profile }: { profile: User }) => {
 
   return (
     <div className="flex items-center gap-2">
-      <div className="text-nowrap">{`${userProfile?.firstName} ${userProfile?.lastName}`}</div>
+      {profile?.firstName && profile.lastName && (
+        <div className="text-nowrap">{`${userProfile?.firstName} ${userProfile?.lastName}`}</div>
+      )}
       {userProfile.imageUrl ? (
         <div className="flex gap-2">
           <div className="relative w-10 h-10 rounded-full overflow-hidden">

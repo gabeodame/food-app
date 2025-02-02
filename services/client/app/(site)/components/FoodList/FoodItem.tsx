@@ -55,7 +55,7 @@ function FoodItem({ item }: { item: FoodListTypes }) {
               <span className="dark:text-white">{item.title}</span>
               <FavoriteHeart onFavorited={handleFavorited} />
             </h1>
-            <p className="text-xs md:text-sm text-gray-400 text-center">
+            <p className="line-clamp-4 text-xs md:text-sm text-gray-400 text-center">
               {item.description}
             </p>
           </div>

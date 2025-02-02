@@ -18,6 +18,7 @@ import React, { useState } from "react";
 import UserProfile from "./UserProfile";
 import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { CiUser } from "react-icons/ci";
+import { PiBowlFoodDuotone } from "react-icons/pi";
 
 function UserAccount() {
   const { user, isLoading, isError } = useUser();
@@ -47,7 +48,18 @@ function UserAccount() {
         </Link>
       ),
     },
-    { label: "My Recipes", defaultChecked: false },
+    {
+      label: "My Recipes",
+      defaultChecked: false,
+      component: (
+        <Link href="/auth/dashboard" passHref>
+          <div className="flex items-center gap-2 p-2 hover:bg-accent hover:text-accent-foreground rounded-md cursor-pointer">
+            <PiBowlFoodDuotone />
+            <span> My Recipes</span>
+          </div>
+        </Link>
+      ),
+    },
     { label: "Favorited Recipes", defaultChecked: false },
     {
       label: "Logout",
