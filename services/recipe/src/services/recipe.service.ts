@@ -15,7 +15,7 @@ class RecipeService {
       include: {
         ingredients: {
           include: {
-            ingredient: true, // Join RecipeIngredient with Ingredient
+            ingredient: true,
           },
         },
         instructions: true,
@@ -33,9 +33,9 @@ class RecipeService {
         id: ri.ingredient.id,
         name: ri.ingredient.name,
         category: ri.ingredient.category,
-        unit: ri.ingredient.unit,
+        unit: ri.ingredient?.unit || "", // ✅ Correctly retrieve the unit from `RecipeIngredient`
         quantity: ri.quantity,
-        recipeId: recipe.id, // Include the recipeId explicitly
+        recipeId: recipe.id,
       })),
       categories: recipe.categories.map((cat) => ({
         id: cat.category.id,
@@ -72,7 +72,7 @@ class RecipeService {
         id: ri.ingredient.id,
         name: ri.ingredient.name,
         category: ri.ingredient.category,
-        unit: ri.ingredient.unit,
+        unit: ri.ingredient?.unit || "",
         quantity: ri.quantity,
         recipeId: recipe.id, // Include the recipeId explicitly
       })),

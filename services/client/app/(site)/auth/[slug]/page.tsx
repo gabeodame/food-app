@@ -1,9 +1,8 @@
-import useUser from "@/app/hooks/useUser";
 import { Separator } from "@radix-ui/themes";
+import FoodList from "../../components/FoodList/FoodList";
 import { getUserRecipes } from "../actions/getUserRecipes";
 import Header from "./components/Header";
 import UpdateProfile from "./forms/UpdateProfile";
-import FoodList from "../../components/FoodList/FoodList";
 
 type Params = { slug: string };
 type SearchParams = { [key: string]: string | string[] | undefined };
@@ -25,6 +24,7 @@ async function UserDashboard({
   const userRecipes = await getUserRecipes();
 
   console.log(userRecipes);
+  console.log("slug", params.slug);
 
   return (
     <div className="max-w-7xl p-2 md:p-4 lg:p-6 md:gap-4 md:container sm:px-2 md:px-4">
@@ -37,7 +37,11 @@ async function UserDashboard({
           <p className="text-color-primary">
             Here are some of your recent activities:
           </p>
-          <FoodList foodData={userRecipes} />
+          {userRecipes.length > 0 ? (
+            <FoodList foodData={userRecipes} />
+          ) : (
+            <p>You currently do not have any Recipes</p>
+          )}
         </div>
       )}
     </div>

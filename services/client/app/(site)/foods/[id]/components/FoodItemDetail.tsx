@@ -24,7 +24,7 @@ function FoodItemDetail({ food }: { food: FoodItemProps }) {
         </Link>
 
         {/* Food Card */}
-        <div className="w-svw h-full md:max-w-7xl max-h-screen grid grid-cols-1 lg:grid-cols-[1fr,_400px] gap-4 border border-gray-100 shadow-md rounded-lg p-2 sm:p-4">
+        <div className="w-svw h-full md:max-w-7xl gap-4 border border-gray-100 shadow-md rounded-lg p-2 sm:p-4">
           {/* Image Section */}
           <div className="w-full h-full rounded-lg overflow-hidden border-gray-200">
             <Image

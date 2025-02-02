@@ -38,13 +38,13 @@ class RecipeIngredientService {
         update: {
           name,
           category,
-          unit,
+          // unit,
         },
         create: {
           id,
           name,
           category,
-          unit,
+          // unit,
         },
       });
 

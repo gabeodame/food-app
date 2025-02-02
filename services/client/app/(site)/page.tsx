@@ -24,7 +24,6 @@ export default async function MainHome() {
   try {
     const client = buildClient();
     const res = await client.get("/api/1/recipes");
-
     const data = res.data;
 
     return (
@@ -40,7 +39,11 @@ export default async function MainHome() {
             </div>
             <AdList />
             <div className="container">
-              <FoodList limit={4} foodData={data} />
+              {data.length ? (
+                <FoodList foodData={data} limit={4} />
+              ) : (
+                <div>No Recipes found</div>
+              )}
             </div>
           </div>
           <StickyCards />

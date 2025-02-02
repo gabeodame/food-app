@@ -1,34 +1,27 @@
 import React, { useState, useEffect } from "react";
-import { useFieldArray, Control, Controller, useForm } from "react-hook-form";
+import { useFieldArray, Control, Controller } from "react-hook-form";
 import { SearchIngredient, AddNewIngredient } from "../actions/actions";
 import { useDebounce } from "use-debounce";
 import CustomDialog from "@/components/widgets/CustomDialog";
 import { AutoComplete } from "../components/AutoComplete";
 import AddIngredientForm from "./AddIngredientForm";
 import { Pencil, Trash } from "lucide-react";
-
-export type Ingredient = {
-  id?: string;
-  name: string;
-  category?: string;
-  unit: string;
-  calories?: number;
-  protein?: number;
-  fat?: number;
-  carbohydrates?: number;
-  allergens?: string;
-};
+import UnitSelector from "./UnitSelector";
+import { Ingredient } from "../types/types";
+import { cn } from "@/lib/utils";
 
 interface IngredientsFormProps {
   control: Control<any>;
   errors: any;
   setValue: any;
+  watch: any;
 }
 
 const IngredientsForm = ({
   control,
   errors,
   setValue,
+  watch,
 }: IngredientsFormProps) => {
   const { fields, append, remove, update } = useFieldArray({
     control,
@@ -50,38 +43,33 @@ const IngredientsForm = ({
     unit?: string;
   }>({});
 
-  // Fetch ingredients when search term changes
-  useEffect(() => {
-    const fetchIngredients = async () => {
-      if (debouncedSearchTerm.length > 2) {
-        try {
-          const data = await SearchIngredient(debouncedSearchTerm);
-          setOptions(data);
-          setShowAddPrompt(data.length === 0);
+  const fetchIngredients = async (query: string) => {
+    if (query.length > 2) {
+      try {
+        const data = await SearchIngredient(query);
+        setOptions(data);
+        setShowAddPrompt(data.length === 0);
 
-          // ✅ Ensure quantity fields are only toggled based on selection
-          if (!control._formValues.selectedIngredient) {
-            setShowQuantityFields(data.length > 0);
-          }
-        } catch (error) {
-          console.error(`Error fetching ingredients:`, error);
-          setOptions([]);
-          setShowAddPrompt(true);
-          setShowQuantityFields(false);
-        }
-      } else {
+        // ✅ If ingredient was found, don't reset quantity fields
+        // if (!control._formValues.selectedIngredient) {
+        //   setShowQuantityFields(data.length > 0);
+        // }
+      } catch (error) {
+        console.error(`Error fetching ingredients:`, error);
         setOptions([]);
-        setShowAddPrompt(false);
-
-        // ✅ Keep showQuantityFields true if ingredient was manually added
-        if (!control._formValues.selectedIngredient) {
-          setShowQuantityFields(false);
-        }
+        setShowAddPrompt(true);
+        setShowQuantityFields(false);
       }
-    };
+    } else {
+      setOptions([]);
+      setShowAddPrompt(false);
 
-    fetchIngredients();
-  }, [debouncedSearchTerm, control]);
+      // ✅ Keep quantity fields visible if an ingredient was already selected
+      if (!control._formValues.selectedIngredient) {
+        setShowQuantityFields(false);
+      }
+    }
+  };
 
   // Handle new ingredient addition from modal form
   const handleAddIngredient = async (ingredient: Ingredient) => {
@@ -98,7 +86,7 @@ const IngredientsForm = ({
       setOpenModal(false);
       setSearchTerm("");
 
-      // ✅ Ensure unit input is fully editable
+      // ✅ Persist selected ingredient in the form state
       setValue("selectedIngredient", res);
       setValue("newIngredient", res.name);
       setValue("ingredientUnit", res.unit ?? "", {
@@ -106,14 +94,14 @@ const IngredientsForm = ({
         shouldValidate: true,
       });
 
-      // ✅ Keep quantity field visible
+      // ✅ Keep quantity field visible after adding a new ingredient
       setShowQuantityFields(true);
     } catch (error: any) {
-      console.error("Error adding new ingredient:", error);
+      console.error("Error adding new ingredient: ", error);
     }
   };
 
-  // console.log("show quantity field", showQuantityFields);
+  console.log("show quantity field", showQuantityFields);
 
   const handleUpdateIngredient = (index: number) => {
     const existingIngredient = fields[index] as Partial<
@@ -127,27 +115,42 @@ const IngredientsForm = ({
       unit: editedIngredient.unit ?? existingIngredient.unit ?? "",
     };
 
+    console.log("updated ingredient", updatedData);
+
     update(index, updatedData); // Update the ingredient in the form state
     setEditingIndex(null); // Exit edit mode
     setEditedIngredient({}); // Reset temp state
+    setShowAddPrompt(false);
+  };
+
+  const handleUnitSelection = (unit: string) => {
+    console.log("Selected unit:", unit);
+    setEditedIngredient((prev) => ({ ...prev, unit }));
   };
 
   return (
     <div>
-      <label className="block text-sm font-medium mb-2 text-color-primary">
+      <label className="w-full block text-sm font-medium mb-2 text-color-primary">
         Ingredients
       </label>
 
       {/* Display added ingredients as pills */}
-      <div className="flex flex-wrap gap-2 mb-3">
+      {/* Display added ingredients as pills */}
+      <div className="w-full flex flex-wrap gap-2 mb-3">
         {fields.map(
           (field: Partial<Ingredient & { quantity: number }>, index) => (
             <div
               key={field.id}
-              className="flex items-center bg-color-secondary text-white px-3 py-1 rounded-full text-sm"
+              className={cn(
+                "flex items-center  text-white px-4 py-2  text-sm shadow-sm transition-all",
+                editingIndex === index
+                  ? "bg-gray-300 border border-gray-400 rounded"
+                  : "bg-color-secondary rounded-full"
+              )}
             >
               {editingIndex === index ? (
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-3">
+                  {/* Quantity Input */}
                   <input
                     type="number"
                     value={editedIngredient.quantity ?? field.quantity}
@@ -158,42 +161,52 @@ const IngredientsForm = ({
                       }))
                     }
                     placeholder="Qty"
-                    className="w-16 p-1 rounded border focus:outline-none"
+                    className="w-16 p-2 bg-color-secondary-light text-white rounded border focus:outline-none"
                   />
-                  <input
-                    type="text"
-                    value={editedIngredient.unit ?? field.unit}
-                    onChange={(e) =>
-                      setEditedIngredient((prev) => ({
-                        ...prev,
-                        unit: e.target.value,
-                      }))
-                    }
-                    placeholder="Unit"
-                    className="w-16 p-1 rounded border focus:outline-none"
+
+                  {/* Unit Selector */}
+                  <Controller
+                    control={control}
+                    name={`ingredients.${index}.unit`}
+                    render={({ field }) => (
+                      <UnitSelector
+                        control={control}
+                        name={field.name}
+                        onSelection={handleUnitSelection}
+                        setValue={setValue}
+                      />
+                    )}
                   />
+
+                  {/* Save Button */}
                   <button
                     type="button"
                     onClick={() => handleUpdateIngredient(index)}
-                    className="text-green-600 hover:text-green-800"
+                    className="text-green-600 hover:text-green-800 transition-all"
                   >
                     ✔
                   </button>
                 </div>
               ) : (
-                <div className="flex items-center gap-2">
-                  {field.name} | {field.quantity} {field.unit}
+                <div className="flex items-center gap-3">
+                  <span className="font-semibold">{field.name}</span>
+                  <span className="text-white">{field.quantity}</span>
+                  <span className="text-white font-medium">{field.unit}</span>
+
+                  {/* Edit Button */}
                   <button
                     type="button"
                     onClick={() => setEditingIndex(index)}
-                    className="ml-2 text-gray-200 hover:text-color-primary-alt"
+                    className="ml-2 text-color-primary hover:text-color-primary-alt transition-all"
                   >
                     <Pencil size={14} />
                   </button>
+
+                  {/* Delete Button */}
                   <button
                     type="button"
                     onClick={() => remove(index)}
-                    className="ml-2 text-red-600 hover:text-red-800"
+                    className="ml-2 text-red-600 hover:text-red-800 transition-all"
                   >
                     <Trash size={14} />
                   </button>
@@ -217,53 +230,74 @@ const IngredientsForm = ({
               onInputChange={(newValue) => {
                 onChange(newValue);
                 setSearchTerm(newValue);
+                fetchIngredients(newValue); // 🔥 Explicitly call search function
               }}
               onSelect={(ingredient) => {
-                setValue("selectedIngredient", ingredient); // ✅ Ensure this is set
+                setValue("selectedIngredient", ingredient);
                 setValue("newIngredient", ingredient.name);
                 setValue("ingredientUnit", ingredient.unit);
                 setShowQuantityFields(true);
+                setSearchTerm("");
               }}
             />
           )}
         />
         {showQuantityFields && (
-          <div className="flex gap-2 items-center">
-            <Controller
-              control={control}
-              name="ingredientQuantity"
-              render={({ field }) => (
-                <input
-                  {...field}
-                  type="number"
-                  placeholder="Quantity"
-                  value={control._formValues.ingredientQuantity}
-                  className="w-20 p-2 rounded border focus:outline-none"
-                />
-              )}
-            />
-            <Controller
-              control={control}
-              name="ingredientUnit"
-              render={({ field }) => (
-                <input
-                  {...field}
-                  type="text"
-                  placeholder="Unit"
-                  // disabled
-                  value={control._formValues.selectedIngredient?.unit}
-                  className="w-20 p-2 rounded border bg-gray-100"
-                />
-              )}
-            />
+          <div className="w-full flex items-center gap-4 p-2 rounded-lg shadow-sm">
+            {/* Quantity Input */}
+            <div className="flex flex-col">
+              <label
+                htmlFor="ingredientQuantity"
+                className="text-sm font-medium"
+              >
+                Quantity
+              </label>
+              <Controller
+                control={control}
+                name="ingredientQuantity"
+                render={({ field }) => (
+                  <input
+                    {...field}
+                    type="number"
+                    placeholder="Enter quantity"
+                    className="w-24 p-2 bg-color-secondary-light rounded border focus:outline-none"
+                  />
+                )}
+              />
+            </div>
+
+            {/* Unit Selector */}
+            <div className="flex flex-col">
+              {/* <label htmlFor="ingredientUnit" className="text-sm font-medium">
+                Unit
+              </label> */}
+              <Controller
+                control={control}
+                name="ingredientUnit"
+                render={({ field }) => (
+                  <UnitSelector
+                    control={control}
+                    name={field.name}
+                    setValue={setValue}
+                  />
+                )}
+              />
+            </div>
+
+            {/* Add Ingredient Button */}
             <button
               type="button"
               onClick={() => {
+                const selectedIngredient = watch("selectedIngredient");
+                const newIngredient = watch("newIngredient");
+                const ingredientUnit = watch("ingredientUnit");
+                const ingredientQuantity = watch("ingredientQuantity");
+
                 append({
-                  id: control._formValues.selectedIngredient?.id,
-                  name: control._formValues.newIngredient,
-                  unit: control._formValues.ingredientUnit,
-                  quantity: Number(control._formValues.ingredientQuantity) || 0,
+                  id: selectedIngredient?.id,
+                  name: newIngredient,
+                  unit: ingredientUnit,
+                  quantity: Number(ingredientQuantity) || 0,
                 });
 
                 setValue("newIngredient", "");
@@ -271,8 +305,9 @@ const IngredientsForm = ({
                 setValue("ingredientUnit", "");
                 setSearchTerm("");
                 setShowQuantityFields(false);
+                setShowAddPrompt(false);
               }}
-              className="px-4 py-2 text-white bg-color-primary hover:bg-color-secondary rounded flex items-center"
+              className="mt-6 px-4 py-2 text-white bg-color-primary hover:bg-color-primary-alt rounded flex items-center transition-all duration-200"
             >
               +
             </button>
@@ -284,13 +319,13 @@ const IngredientsForm = ({
       {showAddPrompt && (
         <div className="flex flex-col items-center mt-2 gap-2">
           <div className="text-red-500 text-xs">
-            {`${searchTerm} not found. Needs to be added before use`}
+            {`${debouncedSearchTerm} not found. Needs to be added before use`}
           </div>
           <button
             type="button"
             className="px-4 py-2 text-white bg-color-primary hover:bg-color-secondary rounded"
             onClick={() => {
-              setNewIngredientName(searchTerm);
+              setNewIngredientName(debouncedSearchTerm);
               setOpenModal(true);
             }}
           >
