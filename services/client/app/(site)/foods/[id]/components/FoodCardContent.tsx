@@ -7,6 +7,8 @@ import { Separator } from "@radix-ui/themes";
 import { CheckCircledIcon } from "@radix-ui/react-icons";
 import Tags from "@/app/(site)/components/FoodList/Tags";
 import useUpdateQueryParams from "@/app/hooks/useUpdateQueryParams";
+import ViewsCounter from "@/app/(site)/components/FoodList/ViewsCounter";
+import FavoriteHeart from "@/components/widgets/FavoriteHeart";
 
 interface FoodContentProps {
   food: FoodItemProps;
@@ -25,10 +27,14 @@ function FoodCardContent({ food }: FoodContentProps) {
   return (
     <ScrollArea className="md:container w-full h-full overflow-hidden flex justify-center">
       <div className="w-full flex flex-col items-center gap-3 p-5">
-        <div className="flex flex-col w-full sticky">
+        <div className="flex  w-full sticky justify-between items-center top-0 bg-gray-200 p-2">
           <p className="font-bold text-3xl text-gray-600">{food?.title}</p>
-          <Separator className="bg-color-secondary h-[2px] w-full my-1" />
+          <div className="w-full flex gap-2 items-center justify-end">
+            <ViewsCounter views={food.views} />
+            <FavoriteHeart recipeId={food.id!} />
+          </div>
         </div>
+        <Separator className="bg-color-secondary h-[2px] w-full my-1" />
         <div className="w-full flex flex-col gap-2 items-center  bg-gray-200 p-2">
           <span className=" text-gray-500"> Category(s):</span>
           <ScrollArea className="w-full h-full">

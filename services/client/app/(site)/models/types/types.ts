@@ -4,6 +4,7 @@ export type FoodItemProps = {
   imageUrl: string;
   description: string;
   categories?: { id?: number; name: string }[]; // Assuming each category has an id and name
+  views: number;
   userId: number;
   ingredients: {
     id?: number;
@@ -29,6 +30,7 @@ export type FoodListTypes = {
   description: string;
   views: number;
   favoritesCount: number;
+  isFavoritedByCurrentUser?: boolean;
   categories?: any[];
   tags?: any[];
   season?: any[];

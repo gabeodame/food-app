@@ -2,13 +2,27 @@
 
 import { ArrowLeftIcon } from "@heroicons/react/20/solid";
 import Link from "next/link";
-import React from "react";
 
+import { FoodItemProps } from "@/app/(site)/models/types/types";
 import Image from "next/image";
-import { FoodItemProps, FoodListTypes } from "@/app/(site)/models/types/types";
 import FoodCardContent from "./FoodCardContent";
+import { buildClient } from "@/app/util/buildClient";
+import { useEffect } from "react";
 
 function FoodItemDetail({ food }: { food: FoodItemProps }) {
+  useEffect(() => {
+    const updateViewCount = async () => {
+      try {
+        const client = buildClient();
+        await client.post(`/api/1/recipes/${food.id}/view`);
+      } catch (error) {
+        console.error("Error updating views:", error);
+      }
+    };
+
+    updateViewCount();
+  }, [food.id]);
+
   return (
     <div className="w-full md:max-w-7xl h-full flex flex-col gap-4 items-center justify-center mt-2 px-2">
       <div className="w-full h-full">

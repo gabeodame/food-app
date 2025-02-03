@@ -7,6 +7,8 @@ import UpdateProfile from "./forms/UpdateProfile";
 type Params = { slug: string };
 type SearchParams = { [key: string]: string | string[] | undefined };
 
+export const dynamic = "force-dynamic";
+
 async function UserDashboard({
   params,
   searchParams,

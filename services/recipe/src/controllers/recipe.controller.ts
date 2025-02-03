@@ -3,23 +3,23 @@ import { CreateRecipeDto } from "../dtos/recipe.dto";
 import recipeService from "../../src/services/recipe.service";
 import { BadRequestError } from "@gogittix/common";
 
-/**
- * @swagger
- * /:
- *   get:
- *     summary: Retrieve all recipes
- *     tags: [Recipes]
- *     responses:
- *       200:
- *         description: Successfully retrieved recipes.
- *       404:
- *        description: No recipes found.
- *       500:
- *         description: Internal server error.
- */
 class RecipeController {
+  /**
+   * @swagger
+   * /:
+   *   get:
+   *     summary: Retrieve all recipes
+   *     tags: [Recipes]
+   *     responses:
+   *       200:
+   *         description: Successfully retrieved recipes.
+   *       404:
+   *        description: No recipes found.
+   *       500:
+   *         description: Internal server error.
+   */
   async getAllRecipes(req: Request, res: Response) {
-    const recipes = await recipeService.getAllRecipes();
+    const recipes = await recipeService.getAllRecipes(req);
     res.status(200).json(recipes);
   }
 
@@ -44,7 +44,7 @@ class RecipeController {
    */
   async getRecipeById(req: Request, res: Response) {
     const { id } = req.params;
-    const recipe = await recipeService.getRecipeById(Number(id));
+    const recipe = await recipeService.getRecipeById(Number(id), req);
     if (!recipe) return res.status(404).json({ message: "Recipe not found" });
     res.status(200).json(recipe);
   }

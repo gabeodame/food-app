@@ -1,26 +1,17 @@
 "use client";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import FavoriteHeart from "@/components/widgets/FavoriteHeart";
 import { useRouter } from "next/navigation";
-import { FoodItemProps, FoodListTypes } from "../../models/types/types";
+import { FoodListTypes } from "../../models/types/types";
+import { buildClient } from "@/app/util/buildClient";
+import ViewsCounter from "./ViewsCounter";
 
 function FoodItem({ item }: { item: FoodListTypes }) {
-  const router = useRouter();
-  const imageVariants = {
-    initial: {
-      opacity: 0,
-    },
-    visible: {
-      opacity: 1,
-      transition: { duration: 0.3, ease: "easeOut" },
-    },
-  };
+  // ✅ Initialize state with the correct prop value
 
-  const handleFavorited = () => {
-    console.log(item.title);
-  };
+  const router = useRouter();
 
   const handleClicked = () => {
     router.push(`/foods/${item.id}`);
@@ -30,8 +21,11 @@ function FoodItem({ item }: { item: FoodListTypes }) {
     <div className="relative" onClick={handleClicked}>
       <div className="w-full h-auto bg-white dark:bg-gray-700 flex flex-col items-end gap-2 md:gap-4 rounded-xl shadow-lg p-4 md:p-6 overflow-hidden cursor-pointer relative">
         <motion.div
-          initial="initial"
-          animate="visible"
+          initial={{ opacity: 0 }}
+          animate={{
+            opacity: 1,
+            transition: { duration: 0.3, ease: "easeOut" },
+          }}
           whileHover={{
             scale: 1.05,
             transition: { duration: 0.3, ease: "backInOut" },
@@ -53,7 +47,8 @@ function FoodItem({ item }: { item: FoodListTypes }) {
           <div className="w-full flex flex-col gap-1 md:gap-2 items-center justify-center z-10 relative">
             <h1 className="w-full font-bold text-base md:text-lg text-gray-900 uppercase flex justify-between items-center">
               <span className="dark:text-white">{item.title}</span>
-              <FavoriteHeart onFavorited={handleFavorited} />
+              <ViewsCounter views={item.views} />
+              <FavoriteHeart recipeId={item.id} />
             </h1>
             <p className="line-clamp-4 text-xs md:text-sm text-gray-400 text-center">
               {item.description}

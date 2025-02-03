@@ -1,7 +1,8 @@
 import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { SwaggerModule } from '@nestjs/swagger';
+import { swaggerConfig } from './swagger';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -14,18 +15,13 @@ async function bootstrap() {
   );
 
   // Swagger Configuration
-  const config = new DocumentBuilder()
-    .setTitle('Profile Service API')
-    .setDescription('API documentation for managing user profiles')
-    .setVersion('1.0')
-    .addTag('profiles')
-    .build();
 
-  const document = SwaggerModule.createDocument(app, config);
+  const document = SwaggerModule.createDocument(app, swaggerConfig);
   SwaggerModule.setup('api/1/profile/swagger', app, document); // Swagger UI will be available at /swagger
 
   const swaggerJsonPath = '/api/1/profile/swagger.json';
   app.use(swaggerJsonPath, (req, res) => {
+    console.log('Serving swagger.json');
     res.status(200).json(document);
   });
 

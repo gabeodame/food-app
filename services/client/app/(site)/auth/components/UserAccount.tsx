@@ -25,6 +25,8 @@ function UserAccount() {
   const [isDropdownOpen, setDropdownOpen] = useState(false);
   const router = useRouter();
 
+  console.log("User:", user);
+
   const handleLogout = () => {
     setDropdownOpen(false); // Close the dropdown after logout
     router.push("/");
@@ -78,7 +80,7 @@ function UserAccount() {
         <DropdownMenu open={isDropdownOpen} onOpenChange={setDropdownOpen}>
           <DropdownMenuTrigger asChild>
             <div className="flex items-center gap-2 cursor-pointer">
-              <UserProfile email={user?.email} />
+              {user && <UserProfile email={user?.email} />}
             </div>
           </DropdownMenuTrigger>
           <DropdownMenuContent

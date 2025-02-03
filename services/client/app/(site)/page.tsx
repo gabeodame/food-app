@@ -20,6 +20,8 @@ export const metadata: Metadata = {
     "DishShare is your ultimate destination for culinary inspiration and collaboration. Explore a diverse array of mouthwatering recipes shared by food enthusiasts just like you. Whether you're craving savory dishes, decadent desserts, or delightful snacks, DishShare brings together a community of passionate cooks and foodies to share their favorite recipes and culinary creations. Join us to discover new flavors, connect with fellow food lovers, and embark on a delicious journey of exploration and sharing.",
 };
 
+export const dynamic = "force-dynamic";
+
 export default async function MainHome() {
   try {
     const client = buildClient();

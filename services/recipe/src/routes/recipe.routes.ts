@@ -2,12 +2,15 @@ import { Router } from "express";
 import recipeController from "../controllers/recipe.controller";
 import recipeIngredientController from "../controllers/recipe.ingredient.controller";
 import recipeSearchController from "../controllers/recipe.search.controller";
+
 import { validateDto } from "../middlewares/validate-dto";
 import { requireAuth, validateRequest } from "@gogittix/common";
 import { CreateRecipeDto, UpdateRecipeDto } from "../dtos";
+import recipeFavoriteController from "../controllers/recipe.favorite.controller";
+import recipeViewController from "../controllers/recipe.views.controller";
 
 const router = Router();
-
+// TODO: Separate routes into separate files
 //  General recipe listing (Most generic)
 router.get("/", recipeController.getAllRecipes);
 
@@ -17,8 +20,34 @@ router.get(
   validateRequest,
   recipeIngredientController.searchIngredients
 );
+
+router.get(
+  "/:id/favorite",
+  requireAuth,
+  recipeFavoriteController.getFavoriteStatus // ✅ Check favorite status
+);
+
+router.post(
+  "/:id/favorite",
+  requireAuth,
+  recipeFavoriteController.favoriteRecipe // ✅ Add to favorites
+);
+
+router.delete(
+  "/:id/favorite",
+  requireAuth,
+  recipeFavoriteController.unfavoriteRecipe // ✅ Remove from favorites
+);
+
 // router.get("/search", validateRequest, recipeSearchService.searchBySlug);
 router.get("/search", validateRequest, recipeSearchController.search);
+
+// Increment recipe view count
+router.post(
+  "/:id/views",
+  validateRequest,
+  recipeViewController.incrementRecipeView
+);
 
 // Get recipe by ID (Dynamic route `/:id` should come after static routes)
 router.get("/:id", recipeController.getRecipeById);

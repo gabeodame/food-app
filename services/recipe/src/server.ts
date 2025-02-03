@@ -1,7 +1,6 @@
 import dotenv from "dotenv";
 import "reflect-metadata"; // Ensure it is imported first
 import app from "./app";
-
 import { consumeIngredient } from "./utils/consumeIngredient";
 import { consumeUser } from "./utils/consumeUser";
 
@@ -9,20 +8,19 @@ dotenv.config();
 
 const PORT = process.env.PORT || 3000;
 
-(async () => {
-  try {
-    // const broker = RabbitMQBroker.getInstance();
-    // await broker.init(process.env.RABBITMQ_URL!);
+if (process.env.NODE_ENV !== "test") {
+  (async () => {
+    try {
+      await consumeIngredient();
+      await consumeUser();
 
-    await consumeIngredient();
+      app.listen(PORT, () => {
+        console.log(`Server is running on http://localhost:${PORT}`);
+      });
+    } catch (error) {
+      console.error("Failed to start the server:", error);
+    }
+  })();
+}
 
-    await consumeUser();
-
-    // Step 6: Start the Express server
-    app.listen(PORT, () => {
-      console.log(`Server is running on http://localhost:${PORT}`);
-    });
-  } catch (error) {
-    console.error("Failed to start the server:", error);
-  }
-})();
+export default app; // ✅ Export app for Jest to use

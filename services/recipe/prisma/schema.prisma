@@ -32,7 +32,6 @@ model Recipe {
   imageUrl       String
   description    String
   userId         String
-  views          Int                 @default(0)
   favoritesCount Int                 @default(0)
   createdAt      DateTime            @default(now())
   updatedAt      DateTime            @updatedAt
@@ -48,7 +47,9 @@ model Recipe {
   specialDiets   RecipeSpecialDiet[]
   tags           RecipeTag[]
   reviews        Review[]
+  views          RecipeView[]        // ✅ Ensure this relation exists
 }
+
 
 model Ingredient {
   id       Int                @id @default(autoincrement())
@@ -206,13 +207,12 @@ model RecipeSpecialDiet {
   @@id([recipeId, specialDietId])
 }
 
-// model RecipeIngredient {
-//   recipeId    Int
-//   ingredientId Int
-//   quantity    Float?          // Optional: Store quantity specific to the recipe
-//   recipe      Recipe          @relation(fields: [recipeId], references: [id])
-//   ingredient  Ingredient      @relation(fields: [ingredientId], references: [id])
+model RecipeView {
+  id        Int      @id @default(autoincrement())
+  recipeId  Int
+  userId    String?  // Optional user tracking
+  viewedAt  DateTime @default(now())
 
-//   @@id([recipeId, ingredientId]) // Composite primary key
-// }
+  recipe    Recipe   @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+}
 

@@ -8,18 +8,19 @@ import {
   NotFoundError,
 } from "@gogittix/common";
 import slugify from "slugify";
+import { formatRecipeResponse } from "../utils/formatRecipeRespons";
 
 class RecipeService {
-  async getAllRecipes(): Promise<Recipe[]> {
+  async getAllRecipes(req: any): Promise<Recipe[]> {
+    const currentUserId = req?.currentUser?.id || "0";
+
     const recipes = await prisma.recipe.findMany({
       include: {
-        ingredients: {
-          include: {
-            ingredient: true,
-          },
-        },
+        ingredients: { include: { ingredient: true } },
+        favoritedBy: { select: { userId: true } },
         instructions: true,
         categories: { include: { category: true } },
+        views: true,
         tags: { include: { tag: true } },
         cuisineTypes: { include: { cuisineType: true } },
         seasons: { include: { season: true } },
@@ -28,53 +29,24 @@ class RecipeService {
     });
 
     return recipes.map((recipe) => ({
-      ...recipe,
-      ingredients: recipe.ingredients.map((ri) => ({
-        id: ri.ingredient.id,
-        name: ri.ingredient.name,
-        category: ri.ingredient.category,
-        unit: ri.ingredient?.unit || "", // ✅ Correctly retrieve the unit from `RecipeIngredient`
-        quantity: ri.quantity,
-        recipeId: recipe.id,
-      })),
-      categories: recipe.categories.map((cat) => ({
-        id: cat.category.id,
-        name: cat.category.name,
-      })),
-    }));
-  }
-
-  async getRecipeById(id: number): Promise<Partial<FoodItemProps>> {
-    const recipe = await prisma.recipe.findFirstOrThrow({
-      where: { id },
-      include: {
-        ingredients: {
-          include: {
-            ingredient: true, // Join RecipeIngredient with Ingredient
-          },
-        },
-        instructions: true,
-        categories: { include: { category: true } },
-        tags: { include: { tag: true } },
-        cuisineTypes: { include: { cuisineType: true } },
-        seasons: { include: { season: true } },
-        specialDiets: { include: { specialDiet: true } },
-      },
-    });
-
-    return {
       id: recipe.id,
       title: recipe.title,
+      slug: recipe.slug,
       imageUrl: recipe.imageUrl,
       description: recipe.description,
       userId: recipe.userId,
+      views: recipe.views.length,
+      favoritesCount: recipe.favoritedBy.length,
+      isFavoritedByCurrentUser: recipe.favoritedBy.some(
+        (fav) => fav.userId === currentUserId
+      ),
       ingredients: recipe.ingredients.map((ri) => ({
         id: ri.ingredient.id,
         name: ri.ingredient.name,
         category: ri.ingredient.category,
         unit: ri.ingredient?.unit || "",
         quantity: ri.quantity,
-        recipeId: recipe.id, // Include the recipeId explicitly
+        recipeId: recipe.id,
       })),
       instructions: recipe.instructions.map((instruction) => ({
         id: instruction.id,
@@ -84,7 +56,40 @@ class RecipeService {
         id: cat.category.id,
         name: cat.category.name,
       })),
-    };
+      createdAt: recipe.createdAt,
+      updatedAt: recipe.updatedAt,
+    }));
+  }
+
+  async getRecipeById(
+    id: number,
+    req: any
+  ): Promise<
+    (Partial<FoodItemProps> & { isFavoritedByCurrentUser: boolean }) | undefined
+  > {
+    let currentUserId = req?.currentUser?.id || "0";
+
+    try {
+      const recipe = await prisma.recipe.findFirstOrThrow({
+        where: { id },
+        include: {
+          ingredients: { include: { ingredient: true } },
+          instructions: true,
+          favoritedBy: { select: { userId: true } },
+          categories: { include: { category: true } },
+          tags: { include: { tag: true } },
+          views: true,
+          cuisineTypes: { include: { cuisineType: true } },
+          seasons: { include: { season: true } },
+          specialDiets: { include: { specialDiet: true } },
+        },
+      });
+
+      return formatRecipeResponse(recipe, currentUserId);
+    } catch (error) {
+      console.error("Error fetching recipe:", error);
+      throw new NotFoundError();
+    }
   }
 
   async createRecipe(req: Request) {
@@ -125,7 +130,12 @@ class RecipeService {
     }
   }
 
-  async updateRecipe(id: number, req: Request): Promise<Recipe | undefined> {
+  async updateRecipe(
+    id: number,
+    req: Request
+  ): Promise<
+    (Partial<FoodItemProps> & { isFavoritedByCurrentUser: boolean }) | undefined
+  > {
     if (!req.currentUser) throw new NotAuthorizedError();
     if (!req.body) throw new Error("Request body is required");
 
@@ -140,10 +150,6 @@ class RecipeService {
         userId: true,
       },
     });
-
-    if (!recipe) {
-      throw new NotFoundError();
-    }
 
     if (recipe.userId !== userId) {
       throw new NotAuthorizedError();
@@ -169,9 +175,20 @@ class RecipeService {
           },
           updatedAt: new Date(),
         },
+        include: {
+          ingredients: { include: { ingredient: true } },
+          instructions: true,
+          favoritedBy: { select: { userId: true } },
+          categories: { include: { category: true } },
+          tags: { include: { tag: true } },
+          cuisineTypes: { include: { cuisineType: true } },
+          seasons: { include: { season: true } },
+          specialDiets: { include: { specialDiet: true } },
+          views: true, // ✅ Ensure views are included
+        },
       });
 
-      return updatedRecipe;
+      return formatRecipeResponse(updatedRecipe, userId);
     } catch (error: any) {
       console.error("Error updating recipe:", error);
       throw new BadRequestError(`Error updating recipe: ${error.message}`);
