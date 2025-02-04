@@ -89,13 +89,16 @@ export class ProfileService implements OnApplicationBootstrap {
     return profile;
   }
 
-  async getProfileCurrentUser(req: any): Promise<Profile> {
-    const id = req.currentUser.id;
-    console.log('Current User ID:', id);
-    const profile = await this.profileRepository.findOne({ where: { id } });
+  async getProfileCurrentUser(userId: string): Promise<Profile> {
+    console.log('Current User ID:', userId);
+    const profile = await this.profileRepository.findOne({
+      where: { id: userId },
+    });
+
     if (!profile) {
       throw new NotFoundException('Profile not found');
     }
+
     return profile;
   }
 
@@ -116,42 +119,42 @@ export class ProfileService implements OnApplicationBootstrap {
     }
   }
 
-  async uploadProfileImageToS3(
-    id: string,
-    file: Express.Multer.File,
-  ): Promise<{ imageUrl: string }> {
-    const profile = await this.getProfileById(id);
+  // async uploadProfileImageToS3(
+  //   id: string,
+  //   file: Express.Multer.File,
+  // ): Promise<{ imageUrl: string }> {
+  //   const profile = await this.getProfileById(id);
 
-    if (!profile) {
-      throw new NotFoundException('Profile not found');
-    }
+  //   if (!profile) {
+  //     throw new NotFoundException('Profile not found');
+  //   }
 
-    if (!file) {
-      throw new NotFoundException('File not found');
-    }
+  //   if (!file) {
+  //     throw new NotFoundException('File not found');
+  //   }
 
-    const fileKey = `profile-images/${profile.id}/profile-picture`;
+  //   const fileKey = `profile-images/${profile.id}/profile-picture`;
 
-    console.log('Uploading file:', fileKey);
+  //   console.log('Uploading file:', fileKey);
 
-    const params = {
-      Bucket: process.env.AWS_S3_BUCKET!,
-      Key: fileKey,
-      Body: file.buffer,
-      ContentType: file.mimetype,
-      ServerSideEncryption: 'AES256',
-    };
+  //   const params = {
+  //     Bucket: process.env.AWS_S3_BUCKET!,
+  //     Key: fileKey,
+  //     Body: file.buffer,
+  //     ContentType: file.mimetype,
+  //     ServerSideEncryption: 'AES256',
+  //   };
 
-    try {
-      // Upload and overwrite the existing file
-      const uploadResult = await this.s3.upload(params).promise();
+  //   try {
+  //     // Upload and overwrite the existing file
+  //     const uploadResult = await this.s3.upload(params).promise();
 
-      return {
-        imageUrl: uploadResult.Location,
-      };
-    } catch (error) {
-      console.error('Error uploading file:', error);
-      throw new Error('Error uploading file');
-    }
-  }
+  //     return {
+  //       imageUrl: uploadResult.Location,
+  //     };
+  //   } catch (error) {
+  //     console.error('Error uploading file:', error);
+  //     throw new Error('Error uploading file');
+  //   }
+  // }
 }

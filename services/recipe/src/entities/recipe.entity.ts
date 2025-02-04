@@ -3,8 +3,12 @@ export type FoodItemProps = {
   title: string;
   imageUrl: string;
   description: string;
+  slug: string;
   categories?: { id?: number; name: string }[];
   userId: string;
+  favoritedBy?: { id: string }[];
+  favoritesCount?: number;
+  views: number;
   ingredients: {
     id: number;
     name: string;

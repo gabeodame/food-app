@@ -1,3 +1,7 @@
+"use server";
+
+import { buildClient } from "@/app/util/buildClient";
+
 type User = {
   id: string;
   username: string;
@@ -8,17 +12,26 @@ type User = {
   imageUrl: string;
 };
 
-export async function getUserProfile(email: string): Promise<User | null> {
+export async function getUserProfile({
+  email,
+}: {
+  email: string;
+}): Promise<User | null> {
+  const client = buildClient();
   try {
-    const response = await fetch(`/api/1/profile/email/${email}`, {
-      cache: "no-cache",
-    });
-    if (response.ok) {
-      return await response.json();
-    } else {
-      console.error("Failed to fetch user profile");
-      return null;
-    }
+    const res = await client.get(`/api/1/profile/by-email/${email}`);
+    // const response = await fetch(`/api/1/profile/me`, {
+    //   next: { revalidate: 60 },
+    // });
+    // if (response.ok) {
+    //   return await response.json();
+    // } else {
+    //   console.error("Failed to fetch user profile");
+    //   return null;
+    // }
+    // console.log("User profile:", res.data);
+
+    return res.data;
   } catch (error) {
     console.error("Error fetching user profile:", error);
     return null;
@@ -31,6 +44,8 @@ export async function updateUserProfile(
 ): Promise<User | null> {
   try {
     const response = await fetch(`/api/1/profile/${id}`, {
+      cache: "no-cache",
+      next: { revalidate: 60 },
       method: "PATCH",
       headers: {
         "Content-Type": "application/json",

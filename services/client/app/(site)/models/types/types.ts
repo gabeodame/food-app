@@ -1,9 +1,10 @@
-export type FoodItemProps = {
+export type DishItemProps = {
   id?: number;
   title: string;
   imageUrl: string;
   description: string;
   categories?: { id?: number; name: string }[]; // Assuming each category has an id and name
+  views: number;
   userId: number;
   ingredients: {
     id?: number;
@@ -22,13 +23,14 @@ export type FoodItemProps = {
   specialDiets?: { name: string }[];
 };
 
-export type FoodListTypes = {
+export type DishListTypes = {
   id: number;
   title: string;
   imageUrl: string;
   description: string;
   views: number;
   favoritesCount: number;
+  isFavoritedByCurrentUser?: boolean;
   categories?: any[];
   tags?: any[];
   season?: any[];

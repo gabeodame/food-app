@@ -10,7 +10,7 @@ export default function Header() {
           <h1 className="text-4xl font-bold text-color-primary">Dashboard</h1>
         </Link>
         <Link
-          href="/auth/recipe/?action=create"
+          href="/auth/create-dish"
           className="flex gap-2 py-2 px-4 rounded-sm bg-color-secondary text-white justify-center items-center"
         >
           <IoCreateOutline className="w-4 h-4" />
