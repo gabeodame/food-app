@@ -1,6 +1,6 @@
 "use client";
 
-import { SearchProvider, initialState } from "@/context/SearchContext";
+import { SearchProvider, initialState } from "@/context/AppContext";
 import React, { ReactElement } from "react";
 
 function ContextWrapper({ children }: { children: ReactElement }) {

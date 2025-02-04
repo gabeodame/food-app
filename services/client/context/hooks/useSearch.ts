@@ -1,8 +1,9 @@
-import { ChangeEvent, useContext } from "react";
-import { SearchContext, StateType } from "../SearchContext";
+import { useContext } from "react";
+import { useAppContext } from "@/context/AppContext"; // Now using AppContext
+import { SearchState } from "@/context/AppContext";
 
 type UseSearchHookType = {
-  state: StateType;
+  state: SearchState;
   add: (term: string) => void;
   deleteSearch: (term: string) => void;
   clearSearch: () => void;
@@ -13,16 +14,16 @@ type UseSearchHookType = {
 export const useSearch = (): UseSearchHookType => {
   const {
     state,
-    add,
+    addSearch,
     deleteSearch,
     clearSearch,
     setFilteredItems,
     toggleFiltered,
-  } = useContext(SearchContext);
+  } = useAppContext();
 
   return {
-    state,
-    add,
+    state: state.search, // Extracting only the search-related state
+    add: addSearch,
     deleteSearch,
     clearSearch,
     setFilteredItems,

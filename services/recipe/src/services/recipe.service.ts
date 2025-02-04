@@ -11,54 +11,59 @@ import slugify from "slugify";
 import { formatRecipeResponse } from "../utils/formatRecipeRespons";
 
 class RecipeService {
-  async getAllRecipes(req: any): Promise<Recipe[]> {
-    const currentUserId = req?.currentUser?.id || "0";
+  async getAllRecipes(req: any): Promise<Recipe[] | Error> {
+    try {
+      const currentUserId = req?.currentUser?.id || "0";
+      console.log("Current User ID from recipe service:", currentUserId);
 
-    const recipes = await prisma.recipe.findMany({
-      include: {
-        ingredients: { include: { ingredient: true } },
-        favoritedBy: { select: { userId: true } },
-        instructions: true,
-        categories: { include: { category: true } },
-        views: true,
-        tags: { include: { tag: true } },
-        cuisineTypes: { include: { cuisineType: true } },
-        seasons: { include: { season: true } },
-        specialDiets: { include: { specialDiet: true } },
-      },
-    });
+      const recipes = await prisma.recipe.findMany({
+        include: {
+          ingredients: { include: { ingredient: true } },
+          favoritedBy: { select: { userId: true } },
+          instructions: true,
+          categories: { include: { category: true } },
+          views: true,
+          tags: { include: { tag: true } },
+          cuisineTypes: { include: { cuisineType: true } },
+          seasons: { include: { season: true } },
+          specialDiets: { include: { specialDiet: true } },
+        },
+      });
 
-    return recipes.map((recipe) => ({
-      id: recipe.id,
-      title: recipe.title,
-      slug: recipe.slug,
-      imageUrl: recipe.imageUrl,
-      description: recipe.description,
-      userId: recipe.userId,
-      views: recipe.views.length,
-      favoritesCount: recipe.favoritedBy.length,
-      isFavoritedByCurrentUser: recipe.favoritedBy.some(
-        (fav) => fav.userId === currentUserId
-      ),
-      ingredients: recipe.ingredients.map((ri) => ({
-        id: ri.ingredient.id,
-        name: ri.ingredient.name,
-        category: ri.ingredient.category,
-        unit: ri.ingredient?.unit || "",
-        quantity: ri.quantity,
-        recipeId: recipe.id,
-      })),
-      instructions: recipe.instructions.map((instruction) => ({
-        id: instruction.id,
-        step: instruction.step,
-      })),
-      categories: recipe.categories.map((cat) => ({
-        id: cat.category.id,
-        name: cat.category.name,
-      })),
-      createdAt: recipe.createdAt,
-      updatedAt: recipe.updatedAt,
-    }));
+      return recipes.map((recipe) => ({
+        id: recipe.id,
+        title: recipe.title,
+        slug: recipe.slug,
+        imageUrl: recipe.imageUrl,
+        description: recipe.description,
+        userId: recipe.userId,
+        views: recipe.views.length,
+        favoritesCount: recipe.favoritedBy.length,
+        isFavoritedByCurrentUser: recipe.favoritedBy.some(
+          (fav) => fav.userId === currentUserId
+        ),
+        ingredients: recipe.ingredients.map((ri) => ({
+          id: ri.ingredient.id,
+          name: ri.ingredient.name,
+          category: ri.ingredient.category,
+          unit: ri.ingredient?.unit || "",
+          quantity: ri.quantity,
+          recipeId: recipe.id,
+        })),
+        instructions: recipe.instructions.map((instruction) => ({
+          id: instruction.id,
+          step: instruction.step,
+        })),
+        categories: recipe.categories.map((cat) => ({
+          id: cat.category.id,
+          name: cat.category.name,
+        })),
+        createdAt: recipe.createdAt,
+        updatedAt: recipe.updatedAt,
+      }));
+    } catch (error: any) {
+      return new BadRequestError(`Error fetching recipes: ${error.message}`);
+    }
   }
 
   async getRecipeById(
@@ -114,6 +119,7 @@ class RecipeService {
             create: ingredients.map((ingredient) => ({
               ingredient: { connect: { id: ingredient.id } },
               quantity: ingredient.quantity,
+              unit: ingredient?.unit,
             })),
           },
           instructions: {

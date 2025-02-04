@@ -1,4 +1,4 @@
-export type FoodItemProps = {
+export type DishItemProps = {
   id?: number;
   title: string;
   imageUrl: string;
@@ -23,7 +23,7 @@ export type FoodItemProps = {
   specialDiets?: { name: string }[];
 };
 
-export type FoodListTypes = {
+export type DishListTypes = {
   id: number;
   title: string;
   imageUrl: string;

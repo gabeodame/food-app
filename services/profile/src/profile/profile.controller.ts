@@ -8,8 +8,8 @@ import {
   Post,
   HttpException,
   HttpStatus,
-  UseInterceptors,
-  UploadedFile,
+  // UseInterceptors,
+  // UploadedFile,
   Req,
 
   // UseGuards,
@@ -18,15 +18,15 @@ import { ProfileService } from './profile.service';
 import { CreateProfileDto, UpdateProfileDto } from './dto';
 
 import { Profile } from './profile.entity';
-import { FileInterceptor } from '@nestjs/platform-express';
+// import { FileInterceptor } from '@nestjs/platform-express';
 
 import {
   ApiTags,
   ApiOperation,
   ApiResponse,
   ApiBody,
-  ApiConsumes,
-  ApiParam,
+  // ApiConsumes,
+  // ApiParam,
   ApiBearerAuth,
 } from '@nestjs/swagger';
 // import { currentUser, requireAuth } from '@gogittix/common';
@@ -184,59 +184,59 @@ export class ProfileController {
     return { message: 'Profile deleted successfully' };
   }
 
-  @Post(':id/image')
-  @UseInterceptors(FileInterceptor('file'))
-  @ApiOperation({ summary: 'Upload a profile image' })
-  @ApiConsumes('multipart/form-data')
-  @ApiParam({
-    name: 'id',
-    description: 'Profile ID',
-    example: '550e8400-e29b-41d4-a716-446655440000',
-  })
-  @ApiBody({
-    description: 'Profile image file',
-    required: true,
-    schema: {
-      type: 'object',
-      properties: {
-        file: {
-          type: 'string',
-          format: 'binary',
-        },
-      },
-    },
-  })
-  @ApiResponse({
-    status: HttpStatus.CREATED,
-    description: 'File uploaded successfully',
-  })
-  @ApiResponse({
-    status: HttpStatus.BAD_REQUEST,
-    description: 'Invalid file upload request',
-  })
-  async uploadProfileImage(
-    @Param('id') id: string,
-    @UploadedFile() file: Express.Multer.File,
-  ): Promise<{ imageUrl: string }> {
-    if (!file) {
-      throw new HttpException('No file uploaded', HttpStatus.BAD_REQUEST);
-    }
+  // @Post(':id/image')
+  // @UseInterceptors(FileInterceptor('file'))
+  // @ApiOperation({ summary: 'Upload a profile image' })
+  // @ApiConsumes('multipart/form-data')
+  // @ApiParam({
+  //   name: 'id',
+  //   description: 'Profile ID',
+  //   example: '550e8400-e29b-41d4-a716-446655440000',
+  // })
+  // @ApiBody({
+  //   description: 'Profile image file',
+  //   required: true,
+  //   schema: {
+  //     type: 'object',
+  //     properties: {
+  //       file: {
+  //         type: 'string',
+  //         format: 'binary',
+  //       },
+  //     },
+  //   },
+  // })
+  // @ApiResponse({
+  //   status: HttpStatus.CREATED,
+  //   description: 'File uploaded successfully',
+  // })
+  // @ApiResponse({
+  //   status: HttpStatus.BAD_REQUEST,
+  //   description: 'Invalid file upload request',
+  // })
+  // async uploadProfileImage(
+  //   @Param('id') id: string,
+  //   @UploadedFile() file: Express.Multer.File,
+  // ): Promise<{ imageUrl: string }> {
+  //   if (!file) {
+  //     throw new HttpException('No file uploaded', HttpStatus.BAD_REQUEST);
+  //   }
 
-    const allowedMimeTypes = ['image/jpeg', 'image/png'];
-    if (!allowedMimeTypes.includes(file.mimetype)) {
-      throw new HttpException(
-        'Invalid file type. Only JPG and PNG are allowed.',
-        HttpStatus.BAD_REQUEST,
-      );
-    }
+  //   const allowedMimeTypes = ['image/jpeg', 'image/png'];
+  //   if (!allowedMimeTypes.includes(file.mimetype)) {
+  //     throw new HttpException(
+  //       'Invalid file type. Only JPG and PNG are allowed.',
+  //       HttpStatus.BAD_REQUEST,
+  //     );
+  //   }
 
-    if (file.size > 5 * 1024 * 1024) {
-      throw new HttpException(
-        'File size exceeds 5MB limit.',
-        HttpStatus.BAD_REQUEST,
-      );
-    }
+  //   if (file.size > 5 * 1024 * 1024) {
+  //     throw new HttpException(
+  //       'File size exceeds 5MB limit.',
+  //       HttpStatus.BAD_REQUEST,
+  //     );
+  //   }
 
-    return await this.profileService.uploadProfileImageToS3(id, file);
-  }
+  //   return await this.profileService.uploadProfileImageToS3(id, file);
+  // }
 }

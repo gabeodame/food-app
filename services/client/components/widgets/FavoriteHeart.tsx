@@ -57,7 +57,6 @@ function FavoriteHeart({ recipeId }: FavoriteHeartProps) {
       setFavorited(newStatus); // ✅ UI syncs with backend
     } catch (error) {
       console.error("Failed to update favorite status:", error);
-      // ❌ Don't toggle UI if request fails
     } finally {
       setLoading(false);
     }

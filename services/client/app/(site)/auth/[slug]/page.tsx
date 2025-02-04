@@ -1,6 +1,5 @@
 import { Separator } from "@radix-ui/themes";
-import FoodList from "../../components/FoodList/FoodList";
-import { getUserRecipes } from "../actions/getUserRecipes";
+import DishList from "../../dishes/[id]/components/DishList";
 import Header from "./components/Header";
 import UpdateProfile from "./forms/UpdateProfile";
 
@@ -16,18 +15,10 @@ async function UserDashboard({
   params: Params;
   searchParams: SearchParams;
 }) {
-  // const { user, isLoading, isError } = useUser();
-  console.log(params);
-  console.log(searchParams);
-
-  // if (isLoading) return <div>Loading...</div>;
-  // if (isError) return <div>Error loading user data.</div>;
-
-  const userRecipes = await getUserRecipes();
-
-  console.log(userRecipes);
-  console.log("slug", params.slug);
-
+  const { userList, limit } = searchParams as {
+    userList: string;
+    limit: string;
+  };
   return (
     <div className="max-w-7xl p-2 md:p-4 lg:p-6 md:gap-4 md:container sm:px-2 md:px-4">
       <Header />
@@ -39,11 +30,8 @@ async function UserDashboard({
           <p className="text-color-primary">
             Here are some of your recent activities:
           </p>
-          {userRecipes.length > 0 ? (
-            <FoodList foodData={userRecipes} />
-          ) : (
-            <p>You currently do not have any Recipes</p>
-          )}
+
+          <DishList userList={userList} />
         </div>
       )}
     </div>

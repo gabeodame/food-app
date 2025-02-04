@@ -1,18 +1,18 @@
 import Featured from "./components/Featured";
-import Categories from "./components/FoodList/Categories";
-import FoodList from "./components/FoodList/FoodList";
 import Hero from "./components/Hero";
 import AdList from "./components/ads/AdList";
+import Categories from "./dishes/[id]/components/dishlist/Categories";
 
-import LogoText from "@/components/LogoText";
 import ContactUs from "./components/ContactUs";
 import { StickyCards } from "./components/StickyCards";
 
 import { Metadata } from "next";
-import Footer from "./components/Footer";
 import { Suspense } from "react";
-import { buildClient } from "../util/buildClient";
-import NotFound from "./not-found";
+import Footer from "./components/Footer";
+import DishList from "./dishes/[id]/components/DishList";
+
+type Params = { slug: string };
+type SearchParams = { [key: string]: string | string[] | undefined };
 
 export const metadata: Metadata = {
   title: "DishShare",
@@ -22,40 +22,37 @@ export const metadata: Metadata = {
 
 export const dynamic = "force-dynamic";
 
-export default async function MainHome() {
-  try {
-    const client = buildClient();
-    const res = await client.get("/api/1/recipes");
-    const data = res.data;
-
-    return (
-      <Suspense fallback={<div>Loading...</div>}>
-        <main className="w-full flex flex-col justify-center">
-          <div className="hidden md:block">
-            <Hero />
+export default async function MainHome({
+  params,
+  searchParams,
+}: {
+  params: Params;
+  searchParams: SearchParams;
+}) {
+  const { userList, limit } = searchParams as {
+    userList: string;
+    limit: string;
+  };
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <main className="w-full flex flex-col justify-center">
+        <div className="hidden md:block">
+          <Hero />
+        </div>
+        <div className="wf-full flex flex-col justify-center">
+          <Categories />
+          <div className="w-full hidden md:block">
+            <Featured />
           </div>
-          <div className="wf-full flex flex-col justify-center">
-            <Categories />
-            <div className="w-full hidden md:block">
-              <Featured />
-            </div>
-            <AdList />
-            <div className="container">
-              {data.length ? (
-                <FoodList foodData={data} limit={4} />
-              ) : (
-                <div>No Recipes found</div>
-              )}
-            </div>
+          <AdList />
+          <div className="container">
+            <DishList limit={limit} />
           </div>
-          <StickyCards />
-          <ContactUs />
-          <Footer />
-        </main>
-      </Suspense>
-    );
-  } catch (error) {
-    console.error("Error fetching food items:", error);
-    NotFound();
-  }
+        </div>
+        <StickyCards />
+        <ContactUs />
+        <Footer />
+      </main>
+    </Suspense>
+  );
 }

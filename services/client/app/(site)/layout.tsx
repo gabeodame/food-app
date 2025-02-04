@@ -4,9 +4,10 @@ import "../globals.css";
 import { cn } from "@/lib/utils";
 import ThemeProvider from "@/components/ThemeProvider";
 import TopNavBar from "./components/TopNavBar";
-import { SearchProvider, initialState } from "@/context/SearchContext";
+
 import ContextWrapper from "@/components/ContextWrapper";
 import { Suspense } from "react";
+import { AppProvider } from "@/context/AppContext";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -36,13 +37,13 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <ContextWrapper>
+          <AppProvider>
             <section className="w-full h-full">
               <TopNavBar />
 
               {children}
             </section>
-          </ContextWrapper>
+          </AppProvider>
         </ThemeProvider>
       </body>
     </html>

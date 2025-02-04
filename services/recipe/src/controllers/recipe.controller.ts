@@ -19,6 +19,7 @@ class RecipeController {
    *         description: Internal server error.
    */
   async getAllRecipes(req: Request, res: Response) {
+    console.log("Getting all recipes");
     const recipes = await recipeService.getAllRecipes(req);
     res.status(200).json(recipes);
   }
