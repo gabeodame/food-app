@@ -95,17 +95,13 @@ export class UpdateRecipeDto {
   @Type(() => CategoryDto)
   categories?: CategoryDto[];
 
-  // @IsNotEmpty()
-  // @IsString()
-  // userId?: string;
-
-  @IsNotEmpty()
+  @IsOptional() // ✅ Now optional for updates
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => IngredientDto)
   ingredients?: IngredientDto[];
 
-  @IsNotEmpty()
+  @IsOptional() // ✅ Now optional
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => InstructionDto)
@@ -117,7 +113,7 @@ export class UpdateRecipeDto {
   @Type(() => TagDto)
   tags?: TagDto[];
 
-  @IsOptional()
+  @IsOptional() // ✅ Ensure optional
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => CuisineTypeDto)
@@ -134,6 +130,12 @@ export class UpdateRecipeDto {
   @ValidateNested({ each: true })
   @Type(() => SpecialDietDto)
   specialDiets?: SpecialDietDto[];
+
+  @IsOptional() // ✅ Add `seasons` if needed
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => SeasonalEventDto)
+  seasons?: SeasonalEventDto[];
 }
 
 export class CategoryDto {

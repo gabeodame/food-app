@@ -11,6 +11,234 @@ import slugify from "slugify";
 import { formatRecipeResponse } from "../utils/formatRecipeRespons";
 
 class RecipeService {
+  async createRecipe(req: Request) {
+    if (!req?.currentUser) throw new NotAuthorizedError();
+
+    console.log(req.body);
+
+    const userId = req.currentUser.id;
+    const {
+      title,
+      description,
+      imageUrl,
+      ingredients,
+      instructions,
+      categories,
+      tags,
+      cuisineTypes,
+      seasonalEvent,
+      specialDiets,
+    } = req.body as CreateRecipeDto;
+    const slug = slugify(title, { lower: true, strict: true });
+
+    try {
+      const newRecipe = await prisma.recipe.create({
+        data: {
+          userId,
+          title,
+          slug,
+          description,
+          imageUrl,
+          ingredients: {
+            create: ingredients.map((ingredient) => ({
+              ingredient: { connect: { id: ingredient.id } },
+              quantity: ingredient.quantity,
+              unit: ingredient.unit || null,
+            })),
+          },
+          instructions: {
+            create: instructions.map((instruction) => ({
+              step: instruction.step,
+            })),
+          },
+          categories: {
+            create: categories?.map((category) => ({
+              category: {
+                connectOrCreate: {
+                  where: { name: category.name },
+                  create: { name: category.name },
+                },
+              },
+            })),
+          },
+          tags: {
+            create: tags?.map((tag) => ({
+              tag: {
+                connectOrCreate: {
+                  where: { name: tag.name },
+                  create: { name: tag.name },
+                },
+              },
+            })),
+          },
+          cuisineTypes: {
+            create: cuisineTypes?.map((cuisine) => ({
+              cuisineType: {
+                connectOrCreate: {
+                  where: { name: cuisine.name }, // ✅ Now refers to CuisineType, which has a unique name
+                  create: { name: cuisine.name },
+                },
+              },
+            })),
+          },
+
+          seasons: {
+            create: seasonalEvent?.map((season) => ({
+              season: {
+                connectOrCreate: {
+                  where: { name: season.name },
+                  create: { name: season.name },
+                },
+              },
+            })),
+          },
+          specialDiets: {
+            create: specialDiets?.map((diet) => ({
+              specialDiet: {
+                connectOrCreate: {
+                  where: { name: diet.name },
+                  create: { name: diet.name },
+                },
+              },
+            })),
+          },
+          createdAt: new Date(),
+        },
+      });
+
+      return newRecipe;
+    } catch (error: any) {
+      console.error("Error creating recipe:", error);
+      return new BadRequestError(`Error creating recipe: ${error.message}`);
+    }
+  }
+
+  async updateRecipe(
+    req: Request
+  ): Promise<
+    (Partial<FoodItemProps> & { isFavoritedByCurrentUser: boolean }) | Error
+  > {
+    console.log("Update Request body:", req.body);
+    const id = Number(req.params.id);
+    if (!req.body) return new BadRequestError("Request body is required");
+    const {
+      title,
+      description,
+      imageUrl,
+      ingredients,
+      instructions,
+      cuisineTypes,
+      categories,
+      seasonalEvent,
+      specialDiets,
+      tags,
+    } = req.body as UpdateRecipeDto;
+
+    try {
+      if (!req.currentUser) throw new NotAuthorizedError();
+      console.log("Current User ID:", req.currentUser.id);
+
+      const userId = req.currentUser.id;
+      const slug = slugify(title!, { lower: true, strict: true });
+
+      const recipe = await prisma.recipe.findFirstOrThrow({
+        where: { id },
+        select: {
+          userId: true,
+        },
+      });
+
+      if (recipe.userId !== userId) {
+        throw new NotAuthorizedError();
+      }
+
+      const updatedRecipe = await prisma.recipe.update({
+        where: { id },
+        data: {
+          title,
+          slug,
+          description,
+          imageUrl,
+          ingredients: {
+            deleteMany: {}, // ✅ Remove old ingredient associations
+            create: ingredients?.map((ingredient) => ({
+              ingredient: { connect: { id: ingredient.id } }, // Always reconnect
+              quantity: ingredient.quantity,
+              unit: ingredient.unit || null,
+            })),
+          },
+          instructions: {
+            deleteMany: {}, // Remove all existing instructions
+            create: instructions?.map((instruction) => ({
+              step: instruction.step, // Only insert steps, let the DB handle the IDs
+            })),
+          },
+          categories: {
+            deleteMany: {}, // ✅ Remove existing category links
+            create: categories?.map((category) => ({
+              category: {
+                connectOrCreate: {
+                  where: { name: category.name }, // Only match by name
+                  create: { name: category.name },
+                },
+              },
+            })),
+          },
+          tags: {
+            deleteMany: {}, // ✅ Remove existing tag links
+            create: tags?.map((tag) => ({
+              tag: {
+                connectOrCreate: {
+                  where: { name: tag.name }, // Only match by name
+                  create: { name: tag.name },
+                },
+              },
+            })),
+          },
+          cuisineTypes: {
+            deleteMany: {}, // ✅ Remove existing cuisine links
+            create: cuisineTypes?.map((cuisine) => ({
+              cuisineType: {
+                connectOrCreate: {
+                  where: { name: cuisine.name }, // Only match by name
+                  create: { name: cuisine.name },
+                },
+              },
+            })),
+          },
+          seasons: {
+            deleteMany: {}, // ✅ Remove existing season links
+            create: seasonalEvent?.map((season) => ({
+              season: {
+                connectOrCreate: {
+                  where: { name: season.name }, // Only match by name
+                  create: { name: season.name },
+                },
+              },
+            })),
+          },
+          specialDiets: {
+            deleteMany: {}, // ✅ Remove existing special diet links
+            create: specialDiets?.map((diet) => ({
+              specialDiet: {
+                connectOrCreate: {
+                  where: { name: diet.name }, // Only match by name
+                  create: { name: diet.name },
+                },
+              },
+            })),
+          },
+          updatedAt: new Date(),
+        },
+      });
+
+      return formatRecipeResponse(updatedRecipe, userId);
+    } catch (error: any) {
+      console.error("Error updating recipe:", error);
+      return new BadRequestError(`Error updating recipe: ${error.message}`);
+    }
+  }
+
   async getAllRecipes(req: any): Promise<Recipe[] | Error> {
     try {
       const currentUserId = req?.currentUser?.id || "0";
@@ -18,15 +246,8 @@ class RecipeService {
 
       const recipes = await prisma.recipe.findMany({
         include: {
-          ingredients: { include: { ingredient: true } },
           favoritedBy: { select: { userId: true } },
-          instructions: true,
-          categories: { include: { category: true } },
           views: true,
-          tags: { include: { tag: true } },
-          cuisineTypes: { include: { cuisineType: true } },
-          seasons: { include: { season: true } },
-          specialDiets: { include: { specialDiet: true } },
         },
       });
 
@@ -42,22 +263,6 @@ class RecipeService {
         isFavoritedByCurrentUser: recipe.favoritedBy.some(
           (fav) => fav.userId === currentUserId
         ),
-        ingredients: recipe.ingredients.map((ri) => ({
-          id: ri.ingredient.id,
-          name: ri.ingredient.name,
-          category: ri.ingredient.category,
-          unit: ri.ingredient?.unit || "",
-          quantity: ri.quantity,
-          recipeId: recipe.id,
-        })),
-        instructions: recipe.instructions.map((instruction) => ({
-          id: instruction.id,
-          step: instruction.step,
-        })),
-        categories: recipe.categories.map((cat) => ({
-          id: cat.category.id,
-          name: cat.category.name,
-        })),
         createdAt: recipe.createdAt,
         updatedAt: recipe.updatedAt,
       }));
@@ -70,7 +275,7 @@ class RecipeService {
     id: number,
     req: any
   ): Promise<
-    (Partial<FoodItemProps> & { isFavoritedByCurrentUser: boolean }) | undefined
+    (Partial<FoodItemProps> & { isFavoritedByCurrentUser: boolean }) | Error
   > {
     let currentUserId = req?.currentUser?.id || "0";
 
@@ -78,12 +283,12 @@ class RecipeService {
       const recipe = await prisma.recipe.findFirstOrThrow({
         where: { id },
         include: {
-          ingredients: { include: { ingredient: true } },
           instructions: true,
+          views: true,
+          ingredients: { include: { ingredient: true } },
           favoritedBy: { select: { userId: true } },
           categories: { include: { category: true } },
           tags: { include: { tag: true } },
-          views: true,
           cuisineTypes: { include: { cuisineType: true } },
           seasons: { include: { season: true } },
           specialDiets: { include: { specialDiet: true } },
@@ -91,147 +296,48 @@ class RecipeService {
       });
 
       return formatRecipeResponse(recipe, currentUserId);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error fetching recipe:", error);
-      throw new NotFoundError();
-    }
-  }
-
-  async createRecipe(req: Request) {
-    if (!req?.currentUser) throw new NotAuthorizedError();
-
-    console.log(req.body);
-
-    const userId = req.currentUser.id;
-    const { title, description, imageUrl, ingredients, instructions } =
-      req.body as CreateRecipeDto;
-    const slug = slugify(title, { lower: true, strict: true });
-
-    try {
-      const newRecipe = await prisma.recipe.create({
-        data: {
-          userId,
-          title,
-          slug,
-          description,
-          imageUrl,
-          ingredients: {
-            create: ingredients.map((ingredient) => ({
-              ingredient: { connect: { id: ingredient.id } },
-              quantity: ingredient.quantity,
-              unit: ingredient?.unit,
-            })),
-          },
-          instructions: {
-            create: instructions,
-          },
-          createdAt: new Date(),
-        },
-      });
-
-      return newRecipe;
-    } catch (error: any) {
-      console.error("Error creating recipe:", error);
-      throw new BadRequestError(`Error creating recipe: ${error.message}`);
-    }
-  }
-
-  async updateRecipe(
-    id: number,
-    req: Request
-  ): Promise<
-    (Partial<FoodItemProps> & { isFavoritedByCurrentUser: boolean }) | undefined
-  > {
-    if (!req.currentUser) throw new NotAuthorizedError();
-    if (!req.body) throw new Error("Request body is required");
-
-    const { title, description, imageUrl, ingredients, instructions } =
-      req.body as UpdateRecipeDto;
-
-    const userId = req.currentUser.id;
-
-    const recipe = await prisma.recipe.findFirstOrThrow({
-      where: { id },
-      select: {
-        userId: true,
-      },
-    });
-
-    if (recipe.userId !== userId) {
-      throw new NotAuthorizedError();
-    }
-
-    try {
-      const updatedRecipe = await prisma.recipe.update({
-        where: { id },
-        data: {
-          title,
-          description,
-          imageUrl,
-          ingredients: {
-            deleteMany: {}, // Clear previous associations
-            create: ingredients?.map((ingredient) => ({
-              ingredient: { connect: { id: ingredient.id } },
-              quantity: ingredient.quantity,
-            })),
-          },
-          instructions: {
-            deleteMany: {}, // Clear previous associations
-            create: instructions,
-          },
-          updatedAt: new Date(),
-        },
-        include: {
-          ingredients: { include: { ingredient: true } },
-          instructions: true,
-          favoritedBy: { select: { userId: true } },
-          categories: { include: { category: true } },
-          tags: { include: { tag: true } },
-          cuisineTypes: { include: { cuisineType: true } },
-          seasons: { include: { season: true } },
-          specialDiets: { include: { specialDiet: true } },
-          views: true, // ✅ Ensure views are included
-        },
-      });
-
-      return formatRecipeResponse(updatedRecipe, userId);
-    } catch (error: any) {
-      console.error("Error updating recipe:", error);
-      throw new BadRequestError(`Error updating recipe: ${error.message}`);
+      return new BadRequestError(`Error fetching recipe: ${error.message}`);
     }
   }
 
   async deleteRecipe(
     id: number,
     req: Request
-  ): Promise<{ message: string; data: Partial<FoodItemProps> }> {
+  ): Promise<{ message: string; data: Partial<FoodItemProps> } | Error> {
     if (!req.currentUser) throw new NotAuthorizedError();
 
-    const userId = req.currentUser.id;
+    try {
+      const userId = req.currentUser.id;
 
-    const foundRecipe = await prisma.recipe.findFirstOrThrow({
-      where: { id },
-      select: {
-        userId: true,
-      },
-    });
+      const foundRecipe = await prisma.recipe.findFirstOrThrow({
+        where: { id },
+        select: {
+          userId: true,
+        },
+      });
 
-    if (!foundRecipe) {
-      throw new NotFoundError();
+      if (!foundRecipe) {
+        throw new NotFoundError();
+      }
+
+      if (foundRecipe.userId !== userId) {
+        throw new NotAuthorizedError();
+      }
+
+      const recipe = await prisma.recipe.delete({
+        where: { id },
+      });
+
+      return {
+        message: "Recipe deleted successfully",
+        data: recipe,
+      };
+    } catch (error: any) {
+      console.error("Error deleting recipe:", error);
+      return new BadRequestError(`Error deleting recipe: ${error.message}`);
     }
-
-    if (foundRecipe.userId !== userId) {
-      throw new NotAuthorizedError();
-    }
-
-    const recipe = await prisma.recipe.delete({
-      where: { id },
-    });
-
-    return {
-      message: "Recipe deleted successfully",
-      data: recipe,
-    };
   }
 }
 
