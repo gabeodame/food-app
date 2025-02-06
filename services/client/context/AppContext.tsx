@@ -13,8 +13,8 @@ export type UserProfile = {
   id: string;
   username: string;
   email: string;
-  firstName: string;
-  lastName: string;
+  firstName?: string;
+  lastName?: string;
   bio?: string;
   imageUrl?: string;
 };
@@ -130,7 +130,7 @@ const reducer = (state: AppState, action: ReducerAction): AppState => {
 // ✅ Create Context
 const AppContext = createContext<{
   state: AppState;
-  setProfile: (profile: UserProfile) => void;
+  setProfile: (profile: UserProfile | null) => void;
   updateProfile: (updates: Partial<UserProfile>) => void;
   clearProfile: () => void;
   addSearch: (term: string) => void;
@@ -156,7 +156,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
 
   // Profile actions
   const setProfile = useCallback(
-    (profile: UserProfile) =>
+    (profile: UserProfile | null) =>
       dispatch({ type: REDUCER_ACTION_TYPE.SET_PROFILE, payload: profile }),
     []
   );

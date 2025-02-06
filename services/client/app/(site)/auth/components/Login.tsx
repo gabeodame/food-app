@@ -5,10 +5,14 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import fetchData from "@/app/util/fetchData";
 import { useRouter, usePathname } from "next/navigation";
+import { useAppContext } from "@/context/AppContext";
 
 function Login() {
   const router = useRouter();
-  const pathname = usePathname();
+  const {
+    setProfile,
+    state: { profile },
+  } = useAppContext();
   const userLoginSchema = z.object({
     username: z.string(),
     password: z.string(),
@@ -27,6 +31,8 @@ function Login() {
   const submitData = async (data: userInput) => {
     console.log(data);
     const userData = await fetchData("/api/users/signin", "post", data);
+    setProfile(userData.data);
+    console.log(userData);
 
     if (!userData.errors || userData.errors === null) {
       router.push(`/auth/dashboard`);

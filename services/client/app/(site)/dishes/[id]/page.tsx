@@ -1,18 +1,17 @@
 import { buildClient } from "@/app/util/buildClient";
 import FoodItemDetail from "./components/DishItemDetail";
-import NotFound from "../../not-found";
+import { notFound } from "next/navigation";
 
 type Params = { id: string };
 type SearchParams = { [key: string]: string | string[] | undefined };
 
-// ✅ Function to fetch recipe data
 async function fetchRecipe(recipeId: number) {
   try {
     const client = buildClient();
     const res = await client.get(`/api/1/recipes/${recipeId}`);
 
     if (res.status !== 200) {
-      return null;
+      return notFound();
     }
 
     return res.data;
@@ -23,33 +22,46 @@ async function fetchRecipe(recipeId: number) {
 }
 
 // ✅ Dynamically generate metadata
+
 export async function generateMetadata({ params }: { params: Params }) {
   const recipeId = Number(params.id);
-  const data = await fetchRecipe(recipeId);
 
-  if (!data) {
+  try {
+    const client = buildClient();
+    const res = await client.get(`/api/1/recipes/${recipeId}`);
+
+    if (res.status !== 200) {
+      return {
+        title: "Food Not Found",
+        description: "The requested food item could not be found.",
+      };
+    }
+
+    const data = res.data;
+
+    return {
+      title: `${data.title} | Food Details`,
+      description: data.description || "Delicious food details and recipes.",
+      openGraph: {
+        title: data.title,
+        description: data.description || "Discover delicious food details.",
+        images: [
+          {
+            url: data.imageUrl,
+            width: 800,
+            height: 600,
+            alt: data.title,
+          },
+        ],
+      },
+    };
+  } catch (error) {
+    console.error("Error fetching recipe metadata:", error);
     return {
       title: "Food Not Found",
       description: "The requested food item could not be found.",
     };
   }
-
-  return {
-    title: `${data.title} | Food Details`,
-    description: data.description || "Delicious food details and recipes.",
-    openGraph: {
-      title: data.title,
-      description: data.description || "Discover delicious food details.",
-      images: [
-        {
-          url: data.imageUrl,
-          width: 800,
-          height: 600,
-          alt: data.title,
-        },
-      ],
-    },
-  };
 }
 
 export default async function FoodDetailPage({
@@ -60,12 +72,11 @@ export default async function FoodDetailPage({
   searchParams: SearchParams;
 }) {
   const recipeId = Number(params.id);
-  console.log("recipeId", recipeId);
 
   const data = await fetchRecipe(recipeId);
 
   if (!data) {
-    return NotFound();
+    notFound();
   }
 
   return (
@@ -79,13 +90,13 @@ export default async function FoodDetailPage({
 export async function generateStaticParams() {
   try {
     const client = buildClient();
-    const res = await client.get("/api/1/recipes?limit=50"); // Adjust limit as needed
+    const res = await client.get("/api/1/recipes");
 
-    if (res.status !== 200) {
-      return [];
+    if (!res.data) {
+      notFound();
     }
 
-    const recipes = res.data;
+    const recipes = await res.data;
     return recipes.map((recipe: any) => ({ id: recipe.id.toString() }));
   } catch (error) {
     console.error("Error fetching static food params:", error);

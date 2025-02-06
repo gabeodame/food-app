@@ -15,14 +15,10 @@ export default async function FoodListHome({
   searchParams: SearchParams;
   params: Params;
 }) {
-  const { userList, limit } = searchParams as {
-    userList: string;
-    limit: string;
-  };
   return (
     <section>
       <div className="w-full md:container px-4 md:px-0 mt-4">
-        <DishList />
+        <DishList searchParams={searchParams} />
       </div>
     </section>
   );

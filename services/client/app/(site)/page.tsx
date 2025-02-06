@@ -46,7 +46,7 @@ export default async function MainHome({
           </div>
           <AdList />
           <div className="container">
-            <DishList limit={limit} />
+            <DishList searchParams={searchParams} />
           </div>
         </div>
         <StickyCards />
