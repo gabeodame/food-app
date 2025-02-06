@@ -1,5 +1,5 @@
 import { useSearchParams, usePathname, useRouter } from "next/navigation";
-import React, { useCallback } from "react";
+import { useCallback } from "react";
 
 function useUpdateQueryParams() {
   const searchParams = useSearchParams();
@@ -7,24 +7,21 @@ function useUpdateQueryParams() {
   const pathname = usePathname();
 
   const isDetailPage = useCallback(() => {
-    const detailPageRegex = /^\/foods\/\d+$/; // Example: matches "/foods/123"
-    return detailPageRegex.test(pathname);
+    return /^\/dishes\/\d+$/.test(pathname); // Matches "/dishes/123"
   }, [pathname]);
 
   const updateQueryParams = useCallback(
-    (name: string | null, value: string | null) => {
+    (name: string, value: string) => {
       const params = new URLSearchParams(searchParams.toString());
 
-      if (name && value !== null) {
-        params.set(name, value); // Set or update parameter
-      } else if (name) {
-        params.delete(name); // Delete parameter if value is null
+      if (params.get(name) === value) {
+        params.delete(name); // ✅ Remove if it already exists (toggle behavior)
+      } else {
+        params.set(name, value); // ✅ Otherwise, set new value
       }
 
-      console.log("params", params.toString());
-
       const baseUrl =
-        isDetailPage() || pathname === "/foods" ? "/foods" : pathname;
+        isDetailPage() || pathname === "/dishes" ? "/dishes" : pathname;
       const newUrl = `${baseUrl}?${params.toString()}`;
 
       router.push(newUrl);

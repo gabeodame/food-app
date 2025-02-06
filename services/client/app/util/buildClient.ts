@@ -2,7 +2,7 @@ import axios, { AxiosInstance } from "axios";
 import base64url from "base64url";
 
 // Helper function to extract the JWT from the session cookie
-const extractJwtFromSession = (sessionCookie: string): string | null => {
+export const extractJwtFromSession = (sessionCookie: string): string | null => {
   try {
     const decoded = base64url.decode(sessionCookie);
     const sessionData = JSON.parse(decoded);

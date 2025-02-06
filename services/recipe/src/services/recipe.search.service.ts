@@ -6,7 +6,8 @@ class RecipeSearchService {
     try {
       const filters: Record<string, any> = {};
 
-      // ✅ Validate filters before querying
+      console.log("Incoming Query Parameters:", query);
+
       const hasValidFilters = Object.keys(query).some((key) =>
         [
           "ingredientName",
@@ -23,21 +24,15 @@ class RecipeSearchService {
         );
       }
 
-      // ✅ Ensure currentUserId is correctly handled
       if (query.currentUserId) {
         if (!req?.currentUser?.id) {
           throw new BadRequestError(
             `Authentication required for user-based filtering. req.currentUser.id ${req.currentUser.id}`
           );
         }
-        const userId = req.currentUser.id;
-        console.log("Current User ID:", userId);
-
-        // ✅ Filter by user ID who created the recipe
-        filters.userId = userId;
+        filters.userId = req.currentUser.id;
       }
 
-      // ✅ Search by ingredient name
       if (query.ingredientName) {
         filters.ingredients = {
           some: {
@@ -51,67 +46,48 @@ class RecipeSearchService {
         };
       }
 
-      // ✅ Search by ingredient ID
       if (query.ingredientId) {
         filters.ingredients = {
-          some: {
-            ingredientId: parseInt(query.ingredientId as string, 10),
-          },
+          some: { ingredientId: parseInt(query.ingredientId as string, 10) },
         };
       }
 
-      // ✅ Search by category via `RecipeIngredient`
       if (query.category) {
-        filters.ingredients = {
+        filters.categories = {
           some: {
-            ingredient: {
-              category: {
-                contains: query.category as string,
-                mode: "insensitive",
-              },
+            category: {
+              name: { contains: query.category as string, mode: "insensitive" },
             },
           },
         };
       }
 
-      // ✅ Search by slug
       if (query.slug) {
-        filters.slug = {
-          contains: query.slug as string,
-          mode: "insensitive",
-        };
+        filters.slug = { contains: query.slug as string, mode: "insensitive" };
       }
 
-      console.log("Generated Prisma Filters:", filters);
+      console.log(
+        "Generated Prisma Filters:",
+        JSON.stringify(filters, null, 2)
+      );
 
-      // ✅ Fetch recipes based on filtered ingredients
       const recipes = await prisma.recipe.findMany({
         where: filters,
         include: {
-          ingredients: {
-            include: {
-              ingredient: true,
-            },
-          },
-          categories: {
-            include: {
-              category: true,
-            },
-          },
+          ingredients: { include: { ingredient: true } },
+          categories: { include: { category: true } },
         },
-        take: 20, // Limit results
+        take: 20,
       });
+
+      console.log(`Fetched ${recipes.length} recipes`);
 
       return recipes;
     } catch (error: any) {
       console.error("Error searching recipes:", error);
-
-      // ✅ Handle known Prisma errors gracefully
       if (error.code === "P2025") {
         throw new BadRequestError("No matching recipes found.");
       }
-
-      // ✅ Fallback to generic error
       throw new BadRequestError(`Search failed: ${error.message}`);
     }
   }

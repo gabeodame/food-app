@@ -19,16 +19,20 @@ import UserProfile from "./UserProfile";
 import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { CiUser } from "react-icons/ci";
 import { PiBowlFoodDuotone } from "react-icons/pi";
+import { useAppContext } from "@/context/AppContext";
 
 function UserAccount() {
   const { user, isLoading, isError } = useUser();
   const [isDropdownOpen, setDropdownOpen] = useState(false);
   const router = useRouter();
-
-  console.log("User:", user);
+  const {
+    state: { profile },
+    setProfile,
+  } = useAppContext();
 
   const handleLogout = () => {
     setDropdownOpen(false); // Close the dropdown after logout
+    setProfile(null); // Clear the profile from the context
     router.push("/");
   };
 
@@ -73,7 +77,7 @@ function UserAccount() {
       ),
     },
   ];
-
+  console.log("UserAccount -> user", user);
   return (
     <div className="relative">
       {user ? (
