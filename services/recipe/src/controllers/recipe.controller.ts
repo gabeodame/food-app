@@ -103,11 +103,7 @@ class RecipeController {
    *         description: Unauthorized.
    */
   async updateRecipe(req: Request, res: Response) {
-    const { id } = req.params;
-    const updatedRecipe = await recipeService.updateRecipe(
-      Number(id),
-      req.body
-    );
+    const updatedRecipe = await recipeService.updateRecipe(req);
     if (!updatedRecipe)
       return res.status(404).json({ message: "Recipe not found" });
     res.json(updatedRecipe);
