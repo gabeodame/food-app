@@ -10,6 +10,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useSearchParams } from "next/navigation";
 import { useRouter } from "next/navigation";
 import { ScrollArea } from "../ui/scroll-area";
+import slugify from "slugify";
 
 const Search = lazy(() => import("../Search"));
 
@@ -79,7 +80,8 @@ function CustomSearchBar() {
                     }
                   )}
                   onClick={() => {
-                    router.push(`/foods?search=${search}`);
+                    const slug = slugify(search, { lower: true });
+                    router.push(`/dishes?slug=${slug}`);
                     setOpen(false);
                   }}
                 >

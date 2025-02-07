@@ -1,29 +1,21 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { useForm, useFieldArray, Controller } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
 import * as z from "zod";
-import { useDebounce } from "use-debounce";
-import { SearchIngredient } from "../actions/actions";
-import { Ingredient } from "../types/types";
-import { BadRequestError } from "@gogittix/common";
-import sluggify from "slugify";
-import { useRouter } from "next/navigation";
-
-import IngredientForm from "./IngredientForm";
-
-import StepsForm from "./StepsForm";
-import DynamicFormArray from "./DynamicFormArray";
-import CustomDialog from "@/components/widgets/CustomDialog";
-import IngredientsForm from "./IngredientForm";
+import { zodResolver } from "@hookform/resolvers/zod";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import {
   formatUpdatePayload,
   processImageUpload,
 } from "./util/formHelperfunctions";
 
-// Validation schema for recipe
+import IngredientsForm from "./IngredientForm";
+import StepsForm from "./StepsForm";
+import DynamicFormArray from "./DynamicFormArray";
+
+// Define validation schema
 const recipeSchema = z.object({
   title: z.string().min(1, "Title is required"),
   imageUrl: z.any().optional().nullable(),
@@ -52,6 +44,9 @@ type RecipeFormData = z.infer<typeof recipeSchema>;
 
 const NewRecipeForm = ({ recipeId }: { recipeId?: string }) => {
   const [existingImageUrl, setExistingImageUrl] = useState<string | null>(null);
+  const [showOptionalFields, setShowOptionalFields] = useState(false);
+  const [showImageUpload, setShowImageUpload] = useState(false);
+
   const router = useRouter();
 
   const defaultValues = {
@@ -67,8 +62,7 @@ const NewRecipeForm = ({ recipeId }: { recipeId?: string }) => {
     specialDiets: [],
   };
 
-  // Initialize form with validation
-  let {
+  const {
     control,
     register,
     handleSubmit,
@@ -78,15 +72,27 @@ const NewRecipeForm = ({ recipeId }: { recipeId?: string }) => {
     getValues,
     formState: { errors },
   } = useForm<RecipeFormData>({
-    // resolver: zodResolver(recipeSchema),
+    resolver: zodResolver(recipeSchema),
     defaultValues,
   });
 
-  // Handle form submission
+  useEffect(() => {
+    if (recipeId) {
+      const fetchRecipe = async () => {
+        const res = await fetch(`/api/1/recipes/${recipeId}`);
+        if (res.ok) {
+          const data = await res.json();
+          reset(data); // Prefill form
+          setExistingImageUrl(data.imageUrl); // Store existing image
+        }
+      };
+      fetchRecipe();
+    }
+  }, [recipeId, reset]);
+
   const onSubmit = async (data: any) => {
     console.log("Submitting form data:", data);
 
-    // ✅ Remove unnecessary fields
     let {
       newIngredient,
       selectedIngredient,
@@ -103,18 +109,15 @@ const NewRecipeForm = ({ recipeId }: { recipeId?: string }) => {
       ...cleanData
     } = data;
 
-    // ✅ Handle Image Upload
     cleanData.imageUrl = await processImageUpload(
       data.imageUrl,
       existingImageUrl as string
     );
 
-    // ✅ If updating, perform cleanup & duplicate checking
     if (recipeId) {
       cleanData = formatUpdatePayload(cleanData);
     }
 
-    // ✅ Define API request details
     const method = recipeId ? "PATCH" : "POST";
     const url = recipeId ? `/api/1/recipes/${recipeId}` : `/api/1/recipes`;
 
@@ -135,33 +138,15 @@ const NewRecipeForm = ({ recipeId }: { recipeId?: string }) => {
     }
   };
 
-  useEffect(() => {
-    if (errors) {
-      console.log("Errors:", errors);
-    }
-  }, [errors]);
-
-  // **Fetch existing recipe if `recipeId` exists (edit mode)**
-  useEffect(() => {
-    if (recipeId) {
-      const fetchRecipe = async () => {
-        const res = await fetch(`/api/1/recipes/${recipeId}`);
-        if (res.ok) {
-          const data = await res.json();
-          reset(data); // Prefill form
-          setExistingImageUrl(data.imageUrl); // Save existing image
-        }
-      };
-      fetchRecipe();
-    }
-  }, [recipeId, reset]);
-
   return (
-    <div className="w-full  p-6 rounded-md space-y-6 shadow-md">
+    <div className="w-full gap-4 p-6 rounded-md space-y-6 shadow-md">
       <h2 className="text-xl font-bold mb-4 text-color-primary">
         {recipeId ? "Edit Recipe" : "Create Recipe"}
       </h2>
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+      <form
+        onSubmit={handleSubmit(onSubmit)}
+        className="space-y-6 flex flex-col gap-4"
+      >
         {/* Title */}
         <div>
           <label className="block text-sm font-medium mb-1 text-color-primary">
@@ -177,33 +162,37 @@ const NewRecipeForm = ({ recipeId }: { recipeId?: string }) => {
           )}
         </div>
 
-        {/* Image URL */}
-        <div>
-          <label className="block text-sm font-medium mb-1 text-color-primary">
-            Image
-          </label>
-          <input
-            type="file"
-            {...register("imageUrl")}
-            className="w-full p-2 bg-color-secondary-light rounded border focus:outline-none"
-          />
-          {existingImageUrl && (
+        {/* Image Upload Toggle */}
+        {existingImageUrl && !showImageUpload ? (
+          <div className="flex flex-col gap-2">
             <Image
               src={existingImageUrl}
               alt={getValues("title")}
-              className="w-full h-auto object-cover"
+              className="w-full h-auto object-cover rounded"
               layout="responsive"
-              sizes="(min-width: 60em) 24vw, (min-width: 28em) 45vw, 100vw"
               width={300}
               height={300}
             />
-          )}
-          {errors?.imageUrl && (
-            <p className="text-red-500 text-sm h-5">
-              {errors.imageUrl.message as string}
-            </p>
-          )}
-        </div>
+            <button
+              type="button"
+              className="text-sm text-blue-600 hover:underline"
+              onClick={() => setShowImageUpload(true)}
+            >
+              Change Image
+            </button>
+          </div>
+        ) : (
+          <div>
+            <label className="block text-sm font-medium mb-1 text-color-primary">
+              Upload Image
+            </label>
+            <input
+              type="file"
+              {...register("imageUrl")}
+              className="w-full p-2 bg-color-secondary-light rounded border focus:outline-none"
+            />
+          </div>
+        )}
 
         {/* Description */}
         <div>
@@ -222,68 +211,70 @@ const NewRecipeForm = ({ recipeId }: { recipeId?: string }) => {
           )}
         </div>
 
-        {/* Ingredients Form Component */}
+        {/* Ingredients */}
         <IngredientsForm
           control={control}
           errors={errors}
           setValue={setValue}
           watch={watch}
           getValues={getValues}
-          // onSubmit={handleIngredientAdd}
         />
 
         {/* Instructions */}
         <StepsForm control={control} />
 
-        {/* Categories */}
-        <DynamicFormArray
-          label="Categories"
-          fieldName="categories"
-          placeholder="Category Name"
-          control={control}
-        />
+        {/* Toggle for Optional Fields */}
+        <button
+          type="button"
+          onClick={() => setShowOptionalFields(!showOptionalFields)}
+          className="text-sm text-blue-600 hover:underline"
+        >
+          {showOptionalFields ? "Hide Optional Fields" : "Show Optional Fields"}
+        </button>
 
-        {/* Tags */}
-        <DynamicFormArray
-          label="Tags"
-          fieldName="tags"
-          placeholder="Tag Name"
-          control={control}
-        />
-
-        {/* Cuisine Types */}
-        <DynamicFormArray
-          label="Cuisine Types"
-          fieldName="cuisineTypes"
-          placeholder="Cuisine Type"
-          control={control}
-        />
-
-        {/* Seasonal Events */}
-        <DynamicFormArray
-          label="Seasonal Events"
-          fieldName="seasonalEvent"
-          placeholder="Seasonal Event"
-          control={control}
-        />
-
-        {/* Special Diets */}
-        <DynamicFormArray
-          label="Special Diets"
-          fieldName="specialDiets"
-          placeholder="Special Diet"
-          control={control}
-        />
+        {/* Optional Fields */}
+        {showOptionalFields && (
+          <>
+            <DynamicFormArray
+              label="Categories"
+              fieldName="categories"
+              placeholder="Category Name"
+              control={control}
+            />
+            <DynamicFormArray
+              label="Tags"
+              fieldName="tags"
+              placeholder="Tag Name"
+              control={control}
+            />
+            <DynamicFormArray
+              label="Cuisine Types"
+              fieldName="cuisineTypes"
+              placeholder="Cuisine Type"
+              control={control}
+            />
+            <DynamicFormArray
+              label="Seasonal Events"
+              fieldName="seasonalEvent"
+              placeholder="Seasonal Event"
+              control={control}
+            />
+            <DynamicFormArray
+              label="Special Diets"
+              fieldName="specialDiets"
+              placeholder="Special Diet"
+              control={control}
+            />
+          </>
+        )}
 
         {/* Submit Button */}
-        <div className="w-full flex justify-center items-center">
-          <button
-            type="submit"
-            className="bg-color-primary text-white px-4 py-2 rounded"
-          >
-            {recipeId ? "Update Recipe" : "Create Recipe"}
-          </button>
-        </div>
+        <button
+          type="submit"
+          className="w-fit bg-color-primary text-white px-4 py-2 rounded "
+        >
+          {recipeId ? "Update Recipe" : "Create Recipe"}
+        </button>
       </form>
     </div>
   );
