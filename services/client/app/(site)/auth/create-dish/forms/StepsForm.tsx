@@ -62,7 +62,7 @@ const StepsForm = ({ control }: StepsFormProps) => {
               <div
                 {...provided.droppableProps}
                 ref={provided.innerRef}
-                className={`space-y-2 bg-color-secondary rounded border shadow p-4 ${
+                className={`space-y-4 bg-color-secondary rounded border shadow p-4 ${
                   snapshot.isDraggingOver ? "bg-color-primary" : ""
                 }`}
               >
@@ -76,7 +76,7 @@ const StepsForm = ({ control }: StepsFormProps) => {
                       <div
                         ref={provided.innerRef}
                         {...provided.draggableProps}
-                        className={`flex items-center justify-between p-2 bg-white rounded border shadow ${
+                        className={`flex items-center justify-between gap-2 p-2 bg-white rounded border shadow ${
                           snapshot.isDragging ? "bg-blue-50" : ""
                         }`}
                       >
@@ -112,7 +112,7 @@ const StepsForm = ({ control }: StepsFormProps) => {
         ) : null}
       </DragDropContext>
       {/* Add Step */}
-      <label className="block text-sm font-medium mb-2">Steps</label>
+      <label className="block text-sm font-medium m-4">Steps</label>
 
       {/* Input and Add Button */}
       <div className="flex items-center gap-2 mb-4">

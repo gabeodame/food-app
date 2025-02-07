@@ -5,6 +5,7 @@ import React, { useEffect, useState } from "react";
 import { useDebounce } from "use-debounce";
 import SearchShortCut from "./SearchShortCut";
 import { useSearch } from "@/context/hooks/useSearch";
+import slugify from "slugify";
 
 type searchProps = {
   onSearchCompleted?: () => void; // for managing open dialog programatically
@@ -27,7 +28,8 @@ function Search({
 
   useEffect(() => {
     if (debouncedSearch && debouncedSearch.length > 0) {
-      searchQuery("search", debouncedSearch);
+      const slug = slugify(debouncedSearch, { lower: true });
+      searchQuery("slug", slug);
       add(debouncedSearch);
       setSearchSubmitted(true); // Mark the search as submitted
       onSearchCompleted && onSearchCompleted();

@@ -6,27 +6,23 @@ function useUpdateQueryParams() {
   const router = useRouter();
   const pathname = usePathname();
 
-  const isDetailPage = useCallback(() => {
-    return /^\/dishes\/\d+$/.test(pathname); // Matches "/dishes/123"
-  }, [pathname]);
-
   const updateQueryParams = useCallback(
     (name: string, value: string) => {
       const params = new URLSearchParams(searchParams.toString());
 
       if (params.get(name) === value) {
-        params.delete(name); // ✅ Remove if it already exists (toggle behavior)
+        params.delete(name); // ✅ Toggle: Remove if already exists
       } else {
-        params.set(name, value); // ✅ Otherwise, set new value
+        params.set(name, value); // ✅ Otherwise, add new value
       }
 
-      const baseUrl =
-        isDetailPage() || pathname === "/dishes" ? "/dishes" : pathname;
-      const newUrl = `${baseUrl}?${params.toString()}`;
+      // ✅ Always navigate to `/dishes` when filtering from a detail page
+      const isDetailPage = /^\/dishes\/\d+$/.test(pathname);
+      const baseUrl = isDetailPage ? "/dishes" : pathname;
 
-      router.push(newUrl);
+      router.push(`${baseUrl}?${params.toString()}`);
     },
-    [searchParams, router, pathname, isDetailPage]
+    [searchParams, router, pathname]
   );
 
   return updateQueryParams;
