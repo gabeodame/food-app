@@ -14,6 +14,7 @@ import {
 import IngredientsForm from "./IngredientForm";
 import StepsForm from "./StepsForm";
 import DynamicFormArray from "./DynamicFormArray";
+import NutritionalTracker from "../components/NutritionalTracker";
 
 // Define validation schema
 const recipeSchema = z.object({
@@ -139,143 +140,148 @@ const NewRecipeForm = ({ recipeId }: { recipeId?: string }) => {
   };
 
   return (
-    <div className="w-full gap-4 p-6 rounded-md space-y-6 shadow-md">
-      <h2 className="text-xl font-bold mb-4 text-color-primary">
-        {recipeId ? "Edit Recipe" : "Create Recipe"}
-      </h2>
-      <form
-        onSubmit={handleSubmit(onSubmit)}
-        className="space-y-6 flex flex-col gap-4"
-      >
-        {/* Title */}
-        <div>
-          <label className="block text-sm font-medium mb-1 text-color-primary">
-            Title
-          </label>
-          <input
-            type="text"
-            {...register("title")}
-            className="w-full p-2 bg-color-secondary-light rounded border focus:outline-none"
-          />
-          {errors.title && (
-            <p className="text-red-500 text-sm h-5">{errors.title.message}</p>
-          )}
-        </div>
-
-        {/* Image Upload Toggle */}
-        {existingImageUrl && !showImageUpload ? (
-          <div className="flex flex-col gap-2">
-            <Image
-              src={existingImageUrl}
-              alt={getValues("title")}
-              className="w-full h-auto object-cover rounded"
-              layout="responsive"
-              width={300}
-              height={300}
-            />
-            <button
-              type="button"
-              className="text-sm text-blue-600 hover:underline"
-              onClick={() => setShowImageUpload(true)}
-            >
-              Change Image
-            </button>
-          </div>
-        ) : (
+    <div className="w-full flex">
+      <div className="w-full gap-4 p-6 rounded-md space-y-6 shadow-md">
+        <h2 className="text-xl font-bold mb-4 text-color-primary">
+          {recipeId ? "Edit Recipe" : "Create Recipe"}
+        </h2>
+        <form
+          onSubmit={handleSubmit(onSubmit)}
+          className="space-y-6 flex flex-col gap-4"
+        >
+          {/* Title */}
           <div>
             <label className="block text-sm font-medium mb-1 text-color-primary">
-              Upload Image
+              Title
             </label>
             <input
-              type="file"
-              {...register("imageUrl")}
+              type="text"
+              {...register("title")}
               className="w-full p-2 bg-color-secondary-light rounded border focus:outline-none"
             />
+            {errors.title && (
+              <p className="text-red-500 text-sm h-5">{errors.title.message}</p>
+            )}
           </div>
-        )}
 
-        {/* Description */}
-        <div>
-          <label className="block text-sm font-medium mb-1 text-color-primary">
-            Description
-          </label>
-          <textarea
-            {...register("description")}
-            className="w-full p-2 bg-color-secondary-light rounded border focus:outline-none"
-            rows={4}
-          />
-          {errors.description && (
-            <p className="text-red-500 text-sm h-5">
-              {errors.description.message}
-            </p>
+          {/* Image Upload Toggle */}
+          {existingImageUrl && !showImageUpload ? (
+            <div className="flex flex-col gap-2">
+              <Image
+                src={existingImageUrl}
+                alt={getValues("title")}
+                className="w-full h-auto object-cover rounded"
+                layout="responsive"
+                width={300}
+                height={300}
+              />
+              <button
+                type="button"
+                className="text-sm text-blue-600 hover:underline"
+                onClick={() => setShowImageUpload(true)}
+              >
+                Change Image
+              </button>
+            </div>
+          ) : (
+            <div>
+              <label className="block text-sm font-medium mb-1 text-color-primary">
+                Upload Image
+              </label>
+              <input
+                type="file"
+                {...register("imageUrl")}
+                className="w-full p-2 bg-color-secondary-light rounded border focus:outline-none"
+              />
+            </div>
           )}
-        </div>
 
-        {/* Ingredients */}
-        <IngredientsForm
-          control={control}
-          errors={errors}
-          setValue={setValue}
-          watch={watch}
-          getValues={getValues}
-        />
+          {/* Description */}
+          <div>
+            <label className="block text-sm font-medium mb-1 text-color-primary">
+              Description
+            </label>
+            <textarea
+              {...register("description")}
+              className="w-full p-2 bg-color-secondary-light rounded border focus:outline-none"
+              rows={4}
+            />
+            {errors.description && (
+              <p className="text-red-500 text-sm h-5">
+                {errors.description.message}
+              </p>
+            )}
+          </div>
 
-        {/* Instructions */}
-        <StepsForm control={control} />
+          {/* Ingredients */}
+          <IngredientsForm
+            control={control}
+            errors={errors}
+            setValue={setValue}
+            watch={watch}
+            getValues={getValues}
+          />
 
-        {/* Toggle for Optional Fields */}
-        <button
-          type="button"
-          onClick={() => setShowOptionalFields(!showOptionalFields)}
-          className="text-sm text-blue-600 hover:underline"
-        >
-          {showOptionalFields ? "Hide Optional Fields" : "Show Optional Fields"}
-        </button>
+          {/* Instructions */}
+          <StepsForm control={control} />
 
-        {/* Optional Fields */}
-        {showOptionalFields && (
-          <>
-            <DynamicFormArray
-              label="Categories"
-              fieldName="categories"
-              placeholder="Category Name"
-              control={control}
-            />
-            <DynamicFormArray
-              label="Tags"
-              fieldName="tags"
-              placeholder="Tag Name"
-              control={control}
-            />
-            <DynamicFormArray
-              label="Cuisine Types"
-              fieldName="cuisineTypes"
-              placeholder="Cuisine Type"
-              control={control}
-            />
-            <DynamicFormArray
-              label="Seasonal Events"
-              fieldName="seasonalEvent"
-              placeholder="Seasonal Event"
-              control={control}
-            />
-            <DynamicFormArray
-              label="Special Diets"
-              fieldName="specialDiets"
-              placeholder="Special Diet"
-              control={control}
-            />
-          </>
-        )}
+          {/* Toggle for Optional Fields */}
+          <button
+            type="button"
+            onClick={() => setShowOptionalFields(!showOptionalFields)}
+            className="text-sm text-blue-600 hover:underline"
+          >
+            {showOptionalFields
+              ? "Hide Optional Fields"
+              : "Show Optional Fields"}
+          </button>
 
-        {/* Submit Button */}
-        <button
-          type="submit"
-          className="w-fit bg-color-primary text-white px-4 py-2 rounded "
-        >
-          {recipeId ? "Update Recipe" : "Create Recipe"}
-        </button>
-      </form>
+          {/* Optional Fields */}
+          {showOptionalFields && (
+            <>
+              <DynamicFormArray
+                label="Categories"
+                fieldName="categories"
+                placeholder="Category Name"
+                control={control}
+              />
+              <DynamicFormArray
+                label="Tags"
+                fieldName="tags"
+                placeholder="Tag Name"
+                control={control}
+              />
+              <DynamicFormArray
+                label="Cuisine Types"
+                fieldName="cuisineTypes"
+                placeholder="Cuisine Type"
+                control={control}
+              />
+              <DynamicFormArray
+                label="Seasonal Events"
+                fieldName="seasonalEvent"
+                placeholder="Seasonal Event"
+                control={control}
+              />
+              <DynamicFormArray
+                label="Special Diets"
+                fieldName="specialDiets"
+                placeholder="Special Diet"
+                control={control}
+              />
+            </>
+          )}
+
+          {/* Submit Button */}
+          <button
+            type="submit"
+            className="w-fit bg-color-primary text-white px-4 py-2 rounded "
+          >
+            {recipeId ? "Update Recipe" : "Create Recipe"}
+          </button>
+        </form>
+      </div>
+      <NutritionalTracker control={control} />
     </div>
   );
 };

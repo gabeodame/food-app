@@ -1,0 +1,70 @@
+{{- range .Values.services.deployments }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .deploymentName | default (printf "%s-depl" .name) }}
+  namespace: {{ $.Values.namespace }}
+  labels:
+    app: {{ .appLabel | default .name }}
+    {{- include "food-app.labels" $ | nindent 4 }}
+spec:
+  replicas: {{ .replicas | default 1 }}
+  selector:
+    matchLabels:
+      app: {{ .appLabel | default .name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .appLabel | default .name }}
+        {{- include "food-app.labels" $ | nindent 8 }}
+    spec:
+      {{- if $.Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml $.Values.imagePullSecrets | nindent 8 }}
+      {{- end }}
+      {{- if .initContainers }}
+      initContainers:
+        {{- toYaml .initContainers | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: {{ .containerName | default .name }}
+          image: "{{ .image.repository }}:{{ default $.Values.global.imageTag .image.tag }}"
+          imagePullPolicy: {{ .image.pullPolicy | default "IfNotPresent" }}
+          ports:
+            - containerPort: {{ .containerPort }}
+          {{- if .env }}
+          env:
+            {{- toYaml .env | nindent 12 }}
+          {{- end }}
+          {{- if .resources }}
+          resources:
+            {{- toYaml .resources | nindent 12 }}
+          {{- end }}
+          {{- if .livenessProbe }}
+          livenessProbe:
+            {{- toYaml .livenessProbe | nindent 12 }}
+          {{- end }}
+          {{- if .readinessProbe }}
+          readinessProbe:
+            {{- toYaml .readinessProbe | nindent 12 }}
+          {{- end }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .service.name | default (printf "%s-service" .name) }}
+  namespace: {{ $.Values.namespace }}
+  labels:
+    app: {{ .appLabel | default .name }}
+    {{- include "food-app.labels" $ | nindent 4 }}
+spec:
+  type: {{ .service.type | default "ClusterIP" }}
+  selector:
+    app: {{ .appLabel | default .name }}
+  ports:
+    - name: {{ .service.portName | default "http" }}
+      port: {{ .service.port }}
+      targetPort: {{ .service.targetPort | default .containerPort }}
+      protocol: {{ .service.protocol | default "TCP" }}
+---
+{{- end }}

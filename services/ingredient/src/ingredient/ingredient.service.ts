@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { Ingredient } from '../lib/ingredient.entity';
 import { RabbitMQBroker } from '@anchordiv/rabbitmq-broker';
 import { BadRequestError, NotAuthorizedError } from '@gogittix/common';
@@ -19,12 +19,25 @@ export class IngredientService {
     this.rabbitMQUrl = process.env.RABBITMQ_URL!;
   }
 
+  // Fetch all ingredients
   async getAllIngredients(): Promise<Ingredient[]> {
     return this.ingredientRepo.find();
   }
 
+  // Fetch multiple ingredients by IDs
   async getIngredientById(id: number): Promise<Ingredient> {
     return this.ingredientRepo.findOne({ where: { id } });
+  }
+
+  // Fetch multiple ingredients by IDs
+  async getIngredientsByIds(ids: number[]): Promise<Ingredient[]> {
+    if (!ids || ids.length === 0) {
+      throw new BadRequestError('At least one ingredient ID is required.');
+    }
+
+    return this.ingredientRepo.find({
+      where: { id: In(ids) },
+    });
   }
 
   async createIngredient(
@@ -127,8 +140,8 @@ export class IngredientService {
     const baseUrl = 'http://recipe-service.recipe.svc.cluster.local:3000'; // Extract base URL to environment variables
     console.log('Checking ingredient attachment to recipe');
 
-    const url = `${baseUrl}/api/1/recipes/search?ingredientId=1
-=${id}`;
+    // TODO: Extract this to a helper function and correct url
+    const url = `${baseUrl}/api/1/recipes/search?ingredientId=${id}`;
     console.log('URL:', url);
 
     try {

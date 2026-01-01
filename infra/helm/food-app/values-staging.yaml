@@ -1,0 +1,5 @@
+global:
+  imageTag: "staging"
+
+ingress:
+  host: recipe.staging

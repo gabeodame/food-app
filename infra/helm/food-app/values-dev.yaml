@@ -1,0 +1,5 @@
+global:
+  imageTag: "dev"
+
+ingress:
+  host: recipe.dev

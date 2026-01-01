@@ -61,7 +61,7 @@ function UserAccount() {
         <Link href="/auth/dashboard" passHref>
           <div className="flex items-center gap-2 p-2 hover:bg-accent hover:text-accent-foreground rounded-md cursor-pointer">
             <PiBowlFoodDuotone />
-            <span> My Recipes</span>
+            <span onClick={() => setDropdownOpen(false)}> My Recipes</span>
           </div>
         </Link>
       ),
