@@ -1,5 +1,6 @@
 import { BadRequestError } from "@gogittix/common";
 import { prisma } from "../utils/prisma";
+import axios from "axios";
 
 class RecipeSearchService {
   async searchBySlug(query: Record<string, string | string[]>, req: any) {
@@ -90,6 +91,113 @@ class RecipeSearchService {
       }
       throw new BadRequestError(`Search failed: ${error.message}`);
     }
+  }
+
+  async getRecipesWithIngredient(
+    ingredientId?: number,
+    ingredientName?: string
+  ) {
+    if (!ingredientId && !ingredientName) {
+      throw new BadRequestError("Ingredient ID or Name is required.");
+    }
+
+    // ✅ Step 1: Fetch recipes that use this ingredient
+    const recipes = await prisma.recipe.findMany({
+      where: {
+        ingredients: {
+          some: {
+            ingredientId: ingredientId,
+            ingredient: ingredientName
+              ? { name: { contains: ingredientName, mode: "insensitive" } }
+              : undefined,
+          },
+        },
+      },
+      include: {
+        ingredients: {
+          include: { ingredient: true }, // Fetch ingredient details
+        },
+      },
+      take: 20,
+    });
+
+    if (recipes.length === 0) {
+      return [];
+    }
+
+    // ✅ Step 2: Extract unique ingredient IDs for lookup
+    const uniqueIngredientIds = [
+      ...new Set(
+        recipes.flatMap((recipe) =>
+          recipe.ingredients.map((ri) => ri.ingredientId)
+        )
+      ),
+    ];
+
+    // ✅ Step 3: Fetch nutritional info from Ingredient Service
+    try {
+      const ingredientDetails = await axios.get(
+        `http://ingredient-service.api.svc.cluster.local/api/1/ingredient/batch`,
+        { params: { ids: uniqueIngredientIds.join(",") } }
+      );
+
+      const ingredientDataMap = ingredientDetails.data.reduce(
+        (acc: any, ingredient: any) => {
+          acc[ingredient.id] = ingredient;
+          return acc;
+        },
+        {}
+      );
+
+      // ✅ Step 4: Enrich recipes with ingredient details
+      return recipes.map((recipe) => ({
+        id: recipe.id,
+        title: recipe.title,
+        description: recipe.description,
+        imageUrl: recipe.imageUrl,
+        nutritionalBreakdown: this.calculateNutrition(
+          recipe.ingredients,
+          ingredientDataMap
+        ),
+      }));
+    } catch (error) {
+      console.error("Failed to fetch ingredient details:", error);
+      throw new BadRequestError("Could not retrieve ingredient data.");
+    }
+  }
+
+  // ✅ Compute Nutrition Per Recipe
+  private calculateNutrition(
+    recipeIngredients: any[],
+    ingredientDataMap: Record<number, any>
+  ) {
+    return recipeIngredients.reduce(
+      (acc, ri) => {
+        const ingredient = ingredientDataMap[ri.ingredientId];
+        if (!ingredient) return acc; // Skip if ingredient data is missing
+
+        acc.calories += (ingredient.calories || 0) * (ri.quantity || 1);
+        acc.protein += (ingredient.protein || 0) * (ri.quantity || 1);
+        acc.fat += (ingredient.fat || 0) * (ri.quantity || 1);
+        acc.carbohydrates +=
+          (ingredient.carbohydrates || 0) * (ri.quantity || 1);
+
+        if (ingredient.allergens) {
+          acc.allergens.add(
+            ...ingredient.allergens.split(",").map((a: string) => a.trim())
+          );
+        }
+
+        return acc;
+      },
+      {
+        calories: 0,
+        protein: 0,
+        fat: 0,
+        carbohydrates: 0,
+        allergens: new Set(),
+      }
+    );
   }
 }
 

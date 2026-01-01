@@ -13,6 +13,7 @@ import { FiEdit } from "react-icons/fi";
 import { useAppContext } from "@/context/AppContext";
 import { useRouter } from "next/navigation";
 import QueryParamsButtons from "@/app/(site)/dishes/[id]/components/dishlist/QueryParamsButtons";
+import NutritionalTracker from "@/app/(site)/auth/create-dish/components/NutritionalTracker";
 
 interface FoodContentProps {
   dish: DishItemProps;
@@ -83,6 +84,7 @@ function DishCardContent({ dish }: FoodContentProps) {
         </div>
         <QueryParamsButtons tags={dish?.tags as any} name="Tags" param="tag" />
       </div>
+      <NutritionalTracker recipeId={dish.id} />
     </ScrollArea>
   );
 }

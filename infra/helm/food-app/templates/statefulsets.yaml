@@ -1,0 +1,61 @@
+{{- range .Values.services.statefulsets }}
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ .name }}
+  namespace: {{ $.Values.namespace }}
+  labels:
+    app: {{ .appLabel | default .name }}
+    {{- include "food-app.labels" $ | nindent 4 }}
+spec:
+  serviceName: {{ .serviceName }}
+  replicas: {{ .replicas | default 1 }}
+  selector:
+    matchLabels:
+      app: {{ .appLabel | default .name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .appLabel | default .name }}
+        {{- include "food-app.labels" $ | nindent 8 }}
+    spec:
+      containers:
+        - name: {{ .containerName | default .name }}
+          image: "{{ .image.repository }}:{{ .image.tag }}"
+          ports:
+            {{- toYaml .ports | nindent 12 }}
+          {{- if .env }}
+          env:
+            {{- toYaml .env | nindent 12 }}
+          {{- end }}
+          {{- if .volumeMounts }}
+          volumeMounts:
+            {{- toYaml .volumeMounts | nindent 12 }}
+          {{- end }}
+          {{- if .resources }}
+          resources:
+            {{- toYaml .resources | nindent 12 }}
+          {{- end }}
+  {{- if .volumeClaimTemplates }}
+  volumeClaimTemplates:
+    {{- toYaml .volumeClaimTemplates | nindent 4 }}
+  {{- end }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .service.name }}
+  namespace: {{ $.Values.namespace }}
+  labels:
+    app: {{ .appLabel | default .name }}
+    {{- include "food-app.labels" $ | nindent 4 }}
+spec:
+  {{- if .service.clusterIP }}
+  clusterIP: {{ .service.clusterIP }}
+  {{- end }}
+  selector:
+    app: {{ .appLabel | default .name }}
+  ports:
+    {{- toYaml .service.ports | nindent 4 }}
+---
+{{- end }}

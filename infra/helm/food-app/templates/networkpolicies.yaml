@@ -1,0 +1,12 @@
+{{- range .Values.networkPolicies }}
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ .name }}
+  namespace: {{ $.Values.namespace }}
+  labels:
+    {{- include "food-app.labels" $ | nindent 4 }}
+spec:
+  {{- toYaml .spec | nindent 2 }}
+---
+{{- end }}
