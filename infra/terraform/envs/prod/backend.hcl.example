@@ -1,0 +1,5 @@
+bucket         = "food-app-terraform-state-prod"
+key            = "envs/prod/terraform.tfstate"
+region         = "us-east-1"
+dynamodb_table = "food-app-terraform-locks"
+encrypt        = true

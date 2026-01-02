@@ -48,3 +48,21 @@ variable "tags" {
   type        = map(string)
   default     = {}
 }
+
+variable "enable_irsa" {
+  description = "Enable IAM Roles for Service Accounts"
+  type        = bool
+  default     = true
+}
+
+variable "cluster_endpoint_private_access" {
+  description = "Enable private access to the Kubernetes API server endpoint"
+  type        = bool
+  default     = true
+}
+
+variable "cluster_endpoint_public_access" {
+  description = "Enable public access to the Kubernetes API server endpoint"
+  type        = bool
+  default     = false
+}

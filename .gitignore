@@ -5,10 +5,18 @@ secrets/
 **/secrets/
 /node_modules/
 
+
+/infra/k8s/*-secret.yaml
+# /infra/k8s/auth-mongo-secret.yaml
+archive/
+secrets/
+**/secrets/
+/node_modules/
+
 # local scratch
 .local/
 
-# terraform
+# terraform safety
 **/.terraform/
 **/*.tfstate
 **/*.tfstate.*
@@ -16,3 +24,8 @@ secrets/
 **/crash.*.log
 **/*.tfvars
 **/*.tfvars.json
+
+# k8s secrets anywhere under infra/k8s (extra guardrail)
+infra/k8s/**/*secret*.yaml
+infra/k8s/**/*-secret.yaml
+infra/k8s/**/secrets/
