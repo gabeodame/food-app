@@ -1,0 +1,64 @@
+namespace: jenkins
+
+image:
+  repository: jenkins/jenkins
+  tag: lts-jdk17
+  pullPolicy: IfNotPresent
+
+service:
+  type: ClusterIP
+  port: 8080
+  agentPort: 50000
+
+ingress:
+  enabled: false
+  className: nginx
+  annotations: {}
+  host: jenkins.example.com
+  path: /jenkins
+  pathType: Prefix
+
+persistence:
+  enabled: true
+  storageClassName: ""
+  accessModes:
+    - ReadWriteOnce
+  size: 20Gi
+
+resources:
+  requests:
+    cpu: "250m"
+    memory: "512Mi"
+  limits:
+    cpu: "1"
+    memory: "2Gi"
+
+podSecurityContext:
+  fsGroup: 1000
+
+containerSecurityContext:
+  runAsUser: 1000
+  runAsGroup: 1000
+
+serviceAccount:
+  create: true
+  name: ""
+
+rbac:
+  create: false
+
+jenkinsOpts: "--prefix=/jenkins"
+
+livenessProbe:
+  httpGet:
+    path: /jenkins/login
+    port: 8080
+  initialDelaySeconds: 60
+  periodSeconds: 10
+
+readinessProbe:
+  httpGet:
+    path: /jenkins/login
+    port: 8080
+  initialDelaySeconds: 30
+  periodSeconds: 10
