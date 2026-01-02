@@ -179,6 +179,22 @@ docker compose -f infra/jenkins/docker-compose.dev.yaml up -d
 
 Access: `http://localhost:8080/jenkins`
 
+### Plugins (explicit install)
+
+Dev Jenkins auto-installs only the plugins listed in `infra/jenkins/plugins.txt` on container start. Update that file to add/remove plugins, then restart the container to apply changes:
+
+```bash
+docker compose -f infra/jenkins/docker-compose.dev.yaml down
+docker compose -f infra/jenkins/docker-compose.dev.yaml up -d
+```
+
+On the first Jenkins setup screen, choose **Select plugins to install** (not Install suggested plugins). Proceed without selecting any plugins; the curated list is installed automatically from `infra/jenkins/plugins.txt`.
+
+Confirm plugins are installed:
+
+- Jenkins UI: **Manage Jenkins → Plugins → Installed** and search for `kubernetes` or `docker-workflow`.
+- CLI check: `scripts/ci/jenkins-plugins-status.sh jenkins-dev`
+
 ### Staging
 
 Use Helm in the staging cluster with the chart in `infra/helm/jenkins`.
