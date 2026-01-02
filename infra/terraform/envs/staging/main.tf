@@ -27,6 +27,10 @@ module "eks" {
   vpc_id       = module.vpc.vpc_id
   subnet_ids   = module.vpc.private_subnet_ids
 
+  enable_irsa                     = var.eks_enable_irsa
+  cluster_endpoint_private_access = var.eks_endpoint_private_access
+  cluster_endpoint_public_access  = var.eks_endpoint_public_access
+
   tags = local.default_tags
 }
 
@@ -50,12 +54,18 @@ resource "aws_security_group_rule" "rds_ingress" {
 module "rds_postgres" {
   source = "../../modules/aws-rds-postgres"
 
-  identifier            = var.db_identifier
-  db_name               = var.db_name
-  username              = var.db_username
-  password              = var.db_password
-  subnet_ids            = module.vpc.private_subnet_ids
+  identifier             = var.db_identifier
+  db_name                = var.db_name
+  username               = var.db_username
+  password               = var.db_password
+  subnet_ids             = module.vpc.private_subnet_ids
   vpc_security_group_ids = [aws_security_group.rds.id]
+
+  storage_encrypted       = var.rds_storage_encrypted
+  kms_key_id              = var.rds_kms_key_id
+  backup_retention_period = var.rds_backup_retention_period
+  publicly_accessible     = var.rds_publicly_accessible
+  deletion_protection     = var.rds_deletion_protection
 
   tags = local.default_tags
 }

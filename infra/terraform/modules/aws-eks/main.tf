@@ -8,6 +8,10 @@ module "eks" {
   vpc_id     = var.vpc_id
   subnet_ids = var.subnet_ids
 
+  enable_irsa                     = var.enable_irsa
+  cluster_endpoint_private_access = var.cluster_endpoint_private_access
+  cluster_endpoint_public_access  = var.cluster_endpoint_public_access
+
   eks_managed_node_groups = {
     default = {
       min_size     = var.node_group_min_size

@@ -4,3 +4,9 @@ archive/
 secrets/
 **/secrets/
 /node_modules/
+**/.terraform/
+*.tfstate
+*.tfstate.*
+crash.log
+crash.*.log
+.local/
