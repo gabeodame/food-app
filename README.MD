@@ -167,6 +167,35 @@ The Food Sharing Application is a modern, microservices-based platform designed 
 
 ---
 
+## CI/CD (Jenkins)
+
+Local dev Jenkins runs via Docker Compose. Staging and prod use Helm (Kubernetes) for consistency with production.
+
+### Dev
+
+```bash
+docker compose -f infra/jenkins/docker-compose.dev.yaml up -d
+```
+
+Access: `http://localhost:8080/jenkins`
+
+### Staging
+
+Use Helm in the staging cluster with the chart in `infra/helm/jenkins`.
+
+```bash
+helm upgrade --install jenkins infra/helm/jenkins \
+  --namespace jenkins \
+  --create-namespace \
+  -f infra/helm/jenkins/values-staging.yaml
+```
+
+### Required Jenkins credentials
+
+- `docker-registry-creds` (DockerHub username/password)
+
+---
+
 ## Getting Started
 
 ### Prerequisites

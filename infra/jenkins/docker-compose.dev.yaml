@@ -1,0 +1,21 @@
+version: "3.9"
+
+services:
+  jenkins:
+    image: jenkins/jenkins:lts-jdk17
+    container_name: jenkins-dev
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+      - "50000:50000"
+    environment:
+      - JENKINS_OPTS=--prefix=/jenkins
+      - KUBECONFIG=/var/jenkins_home/.kube/config
+      - JENKINS_INSTALL_PLUGINS=/usr/share/jenkins/ref/plugins.txt
+    volumes:
+      - jenkins_dev_home:/var/jenkins_home
+      - ${HOME}/.kube:/var/jenkins_home/.kube:ro
+      - ./plugins.txt:/usr/share/jenkins/ref/plugins.txt:ro
+
+volumes:
+  jenkins_dev_home:
