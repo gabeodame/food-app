@@ -13,9 +13,10 @@ if ! command -v helm >/dev/null 2>&1; then
 fi
 
 set_args=()
-if [[ -n "${image_tag}" ]]; then
-  set_args+=(--set "global.imageTag=${image_tag}")
+if [[ -z "${image_tag}" ]]; then
+  image_tag=$(git rev-parse --short HEAD)
 fi
+set_args+=(--set "global.imageTag=${image_tag}")
 
 helm upgrade --install "$release" "$chart_path" \
   --namespace "$namespace" \

@@ -68,7 +68,7 @@ deploy:
         valuesFiles:
           - infra/helm/food-app/values-dev.yaml
         setValueTemplates:
-          global.imageTag: "{{.IMAGE_TAG_gabeodame_auth_service}}"
+          global.imageTag: "{{.IMAGE_TAG_gabeodame_recipe_backend}}"
 profiles:
   - name: dev
     activation:
@@ -83,7 +83,7 @@ profiles:
             valuesFiles:
               - infra/helm/food-app/values-dev.yaml
             setValueTemplates:
-              global.imageTag: "{{.IMAGE_TAG_gabeodame_auth_service}}"
+              global.imageTag: "{{.IMAGE_TAG_gabeodame_recipe_backend}}"
         hooks:
           before:
             - host:
@@ -92,6 +92,9 @@ profiles:
                   - -c
                   - kubectl apply -f infra/k8s/dev/secrets
     build:
+      tagPolicy:
+        envTemplate:
+          template: "dev"
       local:
         push: false # Keep images local
 
@@ -109,7 +112,7 @@ profiles:
             valuesFiles:
               - infra/helm/food-app/values-staging.yaml
             setValueTemplates:
-              global.imageTag: "{{.IMAGE_TAG_gabeodame_auth_service}}"
+              global.imageTag: "{{.IMAGE_TAG_gabeodame_recipe_backend}}"
 
   - name: prod
     build:
@@ -132,4 +135,4 @@ profiles:
             valuesFiles:
               - infra/helm/food-app/values-prod.yaml
             setValueTemplates:
-              global.imageTag: "{{.IMAGE_TAG_gabeodame_auth_service}}"
+              global.imageTag: "{{.IMAGE_TAG_gabeodame_recipe_backend}}"

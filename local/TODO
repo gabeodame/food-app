@@ -1,0 +1,1 @@
+- Review ingredient service public GET access and lock down sensitive paths to avoid data leaks.

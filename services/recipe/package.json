@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "build": "tsc -p tsconfig.json",
-    "start": "node dist/server.js",
+    "start": "node dist/src/server.js",
     "start:dev": "ts-node-dev --poll src/server.ts",
     "test": "jest --coverage"
   },

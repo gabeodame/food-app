@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: recipe
-          image: gabeodame/recipe-backend
+          image: gabeodame/recipe-backend:dev
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 3000
@@ -56,4 +56,3 @@ spec:
   selector:
     app: recipe
   type: ClusterIP
-

@@ -618,10 +618,22 @@ migrations:
       image:
         repository: gabeodame/recipe-backend
         pullPolicy: IfNotPresent
+      initContainers:
+        - name: wait-for-recipe-postgres
+          image: busybox:1.36
+          command:
+            - sh
+            - -c
+            - |
+              echo "Waiting for recipe-postgres-headless.recipe.svc.cluster.local:5432...";
+              until nc -z recipe-postgres-headless.recipe.svc.cluster.local 5432; do
+                sleep 2;
+              done;
+              echo "Postgres is ready.";
       command:
         - sh
         - -c
-        - npx prisma migrate deploy --schema=prisma/schema.prisma
+        - npx prisma migrate deploy --config=prisma.config.ts
       env:
         - name: DATABASE_URL
           valueFrom:

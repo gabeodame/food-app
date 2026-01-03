@@ -4,11 +4,13 @@ import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import fetchData from "@/app/util/fetchData";
-import { useRouter, usePathname } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useAppContext } from "@/context/AppContext";
+import { useTransition } from "react";
 
 function Login() {
   const router = useRouter();
+  const [isPending, startTransition] = useTransition();
   const {
     setProfile,
     state: { profile },
@@ -32,10 +34,13 @@ function Login() {
     console.log(data);
     const userData = await fetchData("/api/users/signin", "post", data);
     setProfile(userData.data);
-    console.log(userData);
+    // console.log(userData);
 
     if (!userData.errors || userData.errors === null) {
-      router.push(`/auth/dashboard`);
+      startTransition(() => {
+        router.push(`/auth/dashboard`);
+        router.refresh();
+      });
     } else {
       console.log(userData.errors);
     }
@@ -84,8 +89,9 @@ function Login() {
         <button
           type="submit"
           className="bg-color-green w-full flex justify-center p-2 text-gray-50 font-semibold rounded-md"
+          disabled={isPending}
         >
-          Submit
+          {isPending ? "Signing in..." : "Submit"}
         </button>
       </div>
     </form>

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -48,6 +48,7 @@ const NewRecipeForm = ({ recipeId }: { recipeId?: string }) => {
   const [existingImageUrl, setExistingImageUrl] = useState<string | null>(null);
   const [showOptionalFields, setShowOptionalFields] = useState(false);
   const [showImageUpload, setShowImageUpload] = useState(false);
+  const [isPending, startTransition] = useTransition();
 
   const router = useRouter();
 
@@ -131,7 +132,10 @@ const NewRecipeForm = ({ recipeId }: { recipeId?: string }) => {
       });
 
       if (res.ok) {
-        router.push("/auth/dashboard");
+        startTransition(() => {
+          router.push("/auth/dashboard");
+          router.refresh();
+        });
       } else {
         console.error("Failed to save recipe", res.status);
       }
@@ -276,9 +280,22 @@ const NewRecipeForm = ({ recipeId }: { recipeId?: string }) => {
           {/* Submit Button */}
           <button
             type="submit"
-            className="w-fit bg-color-primary text-white px-4 py-2 rounded "
+            className="w-fit bg-color-primary text-white px-4 py-2 rounded disabled:opacity-60 inline-flex items-center gap-2"
+            disabled={isPending}
           >
-            {recipeId ? "Update Recipe" : "Create Recipe"}
+            {isPending && (
+              <span
+                className="inline-block h-3 w-3 animate-spin rounded-full border-2 border-white border-t-transparent"
+                aria-hidden="true"
+              />
+            )}
+            <span>
+              {isPending
+                ? "Saving..."
+                : recipeId
+                ? "Update Recipe"
+                : "Create Recipe"}
+            </span>
           </button>
         </form>
       </div>
