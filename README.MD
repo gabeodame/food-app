@@ -161,6 +161,7 @@ scripts/ci/scan-images.sh
 
 - Gateway is enabled by default in `values-*.yaml` and defines hostnames and optional TLS secrets.
 - Ingress is present but disabled in values; enable if you prefer nginx ingress over Envoy Gateway.
+- Example TLS secret names: `recipe-dev-tls` (dev) and hostnames like `recipe.dev`, `recipe.staging`, `recipe.prod`.
 
 ## CI/CD (Jenkins)
 
