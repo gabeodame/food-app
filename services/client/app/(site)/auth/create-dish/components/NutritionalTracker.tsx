@@ -3,6 +3,7 @@
 import { lazy, useEffect, useMemo, useState } from "react";
 import { Cell, Legend, Pie, Tooltip } from "recharts";
 import { Control, useWatch } from "react-hook-form";
+import { buildClient } from "@/app/util/buildClient";
 
 const PieChart = lazy(() =>
   import("recharts").then((mod) => ({ default: mod.PieChart }))
@@ -50,12 +51,19 @@ const NutritionalTracker = ({
 
     const fetchIngredients = async () => {
       try {
-        const res = await fetch(`/api/1/ingredient?recipeId=${recipeId}`);
-        if (!res.ok) throw new Error("Failed to fetch ingredients");
-        const data = await res.json();
+        const client = buildClient();
+        const res = await client.get(
+          `/api/1/ingredient?recipeId=${recipeId}`
+        );
+        const data = res.data;
         setIngredients(data);
       } catch (err: any) {
-        setError(err.message);
+        const status = err?.response?.status;
+        if (status === 401) {
+          setError("Unauthorized. Please sign in to view nutrition data.");
+        } else {
+          setError(err.message);
+        }
       } finally {
         setLoading(false);
       }

@@ -1,7 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useTransition } from "react";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { z } from "zod";
 import { useRouter } from "next/navigation";
@@ -26,6 +26,7 @@ function UpdateProfile() {
   const profile = state.profile;
   const router = useRouter();
   const [showImageUpload, setShowImageUpload] = useState(false); // Toggle image upload input
+  const [isPending, startTransition] = useTransition();
 
   const {
     register,
@@ -110,7 +111,10 @@ function UpdateProfile() {
       if (response.ok) {
         const updatedProfile = await response.json();
         setProfile(updatedProfile); // Update global state
-        router.push("/auth/dashboard"); // Navigate to dashboard
+        startTransition(() => {
+          router.push("/auth/dashboard"); // Navigate to dashboard
+          router.refresh();
+        });
       } else {
         console.error("Failed to update profile");
       }
@@ -205,9 +209,9 @@ function UpdateProfile() {
           <button
             className="w-full md:w-fit flex items-center justify-center bg-color-primary-alt py-2 px-4 text-white rounded-md md:self-end"
             type="submit"
-            disabled={isSubmitting}
+            disabled={isSubmitting || isPending}
           >
-            {isSubmitting ? "Updating..." : "Update Profile"}
+            {isSubmitting || isPending ? "Updating..." : "Update Profile"}
           </button>
         </form>
       </div>

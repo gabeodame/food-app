@@ -60,6 +60,7 @@ RUN npm ci --omit=dev \
 # Copy built app + prisma schema (and any runtime assets)
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/prisma ./prisma
+COPY --from=builder /app/prisma.config.ts ./prisma.config.ts
 
 # Copy Prisma generated client runtime bits
 # (Prisma stores the query engine + generated client here)

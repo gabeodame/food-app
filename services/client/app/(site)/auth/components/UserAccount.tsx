@@ -20,11 +20,13 @@ import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { CiUser } from "react-icons/ci";
 import { PiBowlFoodDuotone } from "react-icons/pi";
 import { useAppContext } from "@/context/AppContext";
+import { useSWRConfig } from "swr";
 
 function UserAccount() {
   const { user, isLoading, isError } = useUser();
   const [isDropdownOpen, setDropdownOpen] = useState(false);
   const router = useRouter();
+  const { mutate } = useSWRConfig();
   const {
     state: { profile },
     setProfile,
@@ -33,7 +35,9 @@ function UserAccount() {
   const handleLogout = () => {
     setDropdownOpen(false); // Close the dropdown after logout
     setProfile(null); // Clear the profile from the context
+    mutate("/api/users/currentuser", { currentUser: null }, false);
     router.push("/");
+    router.refresh();
   };
 
   type MenuItem = {
