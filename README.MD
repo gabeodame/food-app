@@ -87,6 +87,8 @@ skaffold dev --profile dev
 scripts/ci/run-tests.sh
 ```
 
+Auth tests use a local MongoDB container when Docker is available. The helper scripts live in `scripts/ci/start-mongo-test.sh` and `scripts/ci/stop-mongo-test.sh`.
+
 ### Lint / Format
 
 ```bash
