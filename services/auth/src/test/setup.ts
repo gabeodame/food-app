@@ -17,10 +17,15 @@ declare global {
   var signin: () => Promise<string[]>;
 }
 
-let mongo: any;
+let mongo: MongoMemoryServer | null = null;
 
 beforeAll(async () => {
   process.env.JWT_KEY = "dfdfdfadfdfdff";
+
+  if (process.env.MONGO_URI) {
+    await mongoose.connect(process.env.MONGO_URI, {});
+    return;
+  }
 
   mongo = await MongoMemoryServer.create({
     instance: { ip: "127.0.0.1" },
