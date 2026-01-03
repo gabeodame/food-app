@@ -12,7 +12,7 @@ const UserProfile = ({ email }: { email: string }) => {
 
   useEffect(() => {
     const fetchProfile = async () => {
-      if (!profile) {
+      if (!profile || profile.email !== email) {
         const data = await getUserProfile({ email });
         if (data) {
           setProfile(data); // Store profile globally
