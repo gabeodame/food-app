@@ -239,21 +239,128 @@ helm upgrade --install jenkins infra/helm/jenkins \
 
 ### Kubernetes Deployment
 
-1. Apply manifests:
+1. Apply dev Secrets (required for local runs):
 
    ```bash
-   kubectl apply -f k8s/
+   kubectl apply -f infra/k8s/dev/secrets
    ```
 
-2. Verify pods and services:
+2. Run Skaffold (Helm-based deploy):
 
    ```bash
-   kubectl get pods,svc
+   skaffold dev -p dev
    ```
 
-3. Access frontend via LoadBalancer or Ingress.
+3. Verify pods and services:
+
+   ```bash
+   kubectl get pods,svc -n recipe
+   ```
+
+4. Ensure required Secrets exist in the target namespace (see `infra/k8s/dev/secrets`).
+
+5. Prisma migrations run via a Helm Job (pre-install/pre-upgrade hook). The app container does not run migrations.
+   - Configure in `infra/helm/food-app/values.yaml` under `migrations.jobs`.
+   - Check status with `kubectl get jobs -n recipe`.
 
 ---
+
+## Prisma (recipe service)
+
+Here's what each package does:
+
+- prisma: Prisma CLI for commands like `prisma migrate` and `prisma generate`.
+- @prisma/client: Prisma Client used by the app to query the database.
+- @prisma/adapter-pg: Prisma driver adapter that connects Prisma Client to Postgres.
+- pg: Node Postgres driver used by the adapter.
+- dotenv: Loads environment variables from `.env`.
+
+### 1) Runtime module format
+
+The recipe service uses CommonJS. No ESM changes are required.
+
+### 2) Prisma config + schema locations
+
+The Prisma config and schema are already set up:
+
+- Config: `services/recipe/prisma.config.ts`
+- Schema: `services/recipe/prisma/schema.prisma`
+
+The current config loads `DATABASE_URL` and defines the seed command:
+
+```ts
+import "dotenv/config";
+import { defineConfig } from "prisma/config";
+
+const databaseUrl =
+  process.env.DATABASE_URL || "postgresql://localhost:5432/recipe";
+
+export default defineConfig({
+  schema: "prisma/schema.prisma",
+  datasource: {
+    url: databaseUrl,
+  },
+  migrations: {
+    seed: 'ts-node --compiler-options {"module":"CommonJS"} prisma/seed.ts',
+  },
+});
+```
+
+The schema uses the standard Prisma client generator:
+
+```prisma
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+```
+
+### 3) Migrations + client generation
+
+Create/apply a migration:
+
+```bash
+npx prisma migrate dev --config ./prisma.config.ts --name init
+```
+
+Generate Prisma client:
+
+```bash
+npx prisma generate --schema=prisma/schema.prisma
+```
+
+### 4) Prisma Client setup
+
+The app uses the Prisma Postgres adapter with a Pool. The client lives at
+`services/recipe/src/lib/prisma.ts` and is imported as:
+
+```ts
+import { prisma } from "../lib/prisma";
+```
+
+Implementation:
+
+```ts
+import { PrismaClient } from "@prisma/client";
+import { PrismaPg } from "@prisma/adapter-pg";
+import { Pool } from "pg";
+
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+});
+const adapter = new PrismaPg(pool);
+
+const prisma = new PrismaClient({ adapter });
+```
+
+### 5) Prisma Studio
+
+```bash
+npx prisma studio --config ./prisma.config.ts
+```
 
 ## NGINX Ingress Controller Configuration
 

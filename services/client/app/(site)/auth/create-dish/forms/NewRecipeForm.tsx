@@ -26,6 +26,7 @@ const recipeSchema = z.object({
       id: z.number().optional(),
       name: z.string().min(1, "Ingredient name is required"),
       quantity: z
+        .coerce
         .number({ invalid_type_error: "Quantity must be a number" })
         .positive("Quantity must be positive"),
       unit: z.string().min(1, "Unit is required"),
@@ -112,7 +113,7 @@ const NewRecipeForm = ({ recipeId }: { recipeId?: string }) => {
 
     cleanData.imageUrl = await processImageUpload(
       data.imageUrl,
-      existingImageUrl as string
+      existingImageUrl ?? ""
     );
 
     if (recipeId) {

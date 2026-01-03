@@ -1,6 +1,6 @@
 import { BadRequestError } from "@gogittix/common";
 import { CachedIngredientDto } from "../dtos";
-import { prisma } from "../utils/prisma";
+import { prisma } from "../lib/prisma";
 
 class RecipeIngredientService {
   async searchIngredients(term: string) {

@@ -3,17 +3,18 @@ export type FoodItemProps = {
   title: string;
   imageUrl: string;
   description: string;
-  slug: string;
+  slug?: string;
   categories?: { id?: number; name: string }[];
   userId: string;
   favoritedBy?: { id: string }[];
   favoritesCount?: number;
-  views: number;
+  views?: number;
   ingredients: {
-    id: number;
+    id?: number;
     name: string;
-    quantity: number | null; // Allow null values
-    recipeId: number | null; // Allow null values
+    quantity?: number | string | null; // Allow null values and seed strings
+    unit?: string;
+    recipeId?: number | null; // Allow null values
   }[];
   instructions: {
     id?: number;

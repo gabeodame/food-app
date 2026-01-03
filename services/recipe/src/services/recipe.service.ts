@@ -1,6 +1,6 @@
 import { FoodItemProps } from "../entities/recipe.entity";
 import { CreateRecipeDto, Recipe, UpdateRecipeDto } from "../dtos";
-import { prisma } from "../utils/prisma";
+import { prisma } from "../lib/prisma";
 import { Request } from "express";
 import {
   BadRequestError,

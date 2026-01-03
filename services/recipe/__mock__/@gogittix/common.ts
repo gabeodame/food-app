@@ -10,6 +10,14 @@ export const requireAuth = (req: any, res: any, next: any) => {
   next();
 };
 
+export const validateRequest = (_req: any, _res: any, next: any) => {
+  next();
+};
+
+export const errorHandler = (_err: any, _req: any, res: any, _next: any) => {
+  res.status(500).json({ error: "Test error handler" });
+};
+
 export class NotAuthorizedError extends Error {
   constructor() {
     super("Not authorized");

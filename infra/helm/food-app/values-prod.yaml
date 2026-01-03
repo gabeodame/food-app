@@ -2,6 +2,7 @@ global:
   imageTag: "prod"
 
 ingress:
+  enabled: false
   host: recipe.prod
   paths:
     - path: /api/auth/?(.*)
@@ -16,3 +17,8 @@ ingress:
       pathType: ImplementationSpecific
       serviceName: recipe-client-service
       servicePort: 3000
+
+gateway:
+  enabled: true
+  hostnames:
+    - recipe.prod

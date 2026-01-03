@@ -77,6 +77,17 @@ class RecipeFavoriteController {
    *       responses:
    *         200:
    *           description: Successfully favorited recipe.
+   *           content:
+   *             application/json:
+   *               schema:
+   *                 type: object
+   *                 properties:
+   *                   message:
+   *                     type: string
+   *                     example: "Recipe favorited successfully"
+   *                   isFavoritedByCurrentUser:
+   *                     type: boolean
+   *                     example: true
    *         400:
    *           description: Invalid request. Missing recipe ID.
    *         401:
@@ -95,16 +106,16 @@ class RecipeFavoriteController {
         return res.status(401).json({ error: "Unauthorized request" });
       }
 
-      const recipe = await recipeFavoriteService.favoriteRecipe(
+      const result = await recipeFavoriteService.favoriteRecipe(
         req.currentUser.id,
         recipeId
       );
 
-      if (!recipe) {
+      if (!result) {
         return res.status(404).json({ error: "Recipe not found" });
       }
 
-      res.status(200).json(recipe);
+      res.status(200).json(result);
     } catch (error) {
       console.error("Error favoriting recipe:", error);
       res.status(500).json({ error: "Internal Server Error" });
@@ -129,6 +140,17 @@ class RecipeFavoriteController {
    *       responses:
    *         200:
    *           description: Successfully unfavorited recipe.
+   *           content:
+   *             application/json:
+   *               schema:
+   *                 type: object
+   *                 properties:
+   *                   message:
+   *                     type: string
+   *                     example: "Recipe unfavorited successfully"
+   *                   isFavoritedByCurrentUser:
+   *                     type: boolean
+   *                     example: false
    *         400:
    *           description: Invalid request. Missing recipe ID.
    *         401:
@@ -147,20 +169,18 @@ class RecipeFavoriteController {
         return res.status(401).json({ error: "Unauthorized request" });
       }
 
-      const recipe = await recipeFavoriteService.unfavoriteRecipe(
+      const result = await recipeFavoriteService.unfavoriteRecipe(
         req.currentUser.id,
         recipeId
       );
 
-      if (!recipe) {
+      if (!result) {
         return res
           .status(404)
           .json({ error: "Recipe not found or not favorited" });
       }
 
-      res
-        .status(200)
-        .json({ message: "Recipe unfavorited successfully", recipe });
+      res.status(200).json(result);
     } catch (error) {
       console.error("Error unfavoriting recipe:", error);
       res.status(500).json({ error: "Internal Server Error" });
