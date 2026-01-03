@@ -89,6 +89,8 @@ scripts/ci/run-tests.sh
 
 Auth tests use a local MongoDB container when Docker is available. The helper scripts live in `scripts/ci/start-mongo-test.sh` and `scripts/ci/stop-mongo-test.sh`.
 
+Overrides: `MONGO_TEST_CONTAINER`, `MONGO_TEST_PORT`, `MONGO_TEST_IMAGE`.
+
 ### Lint / Format
 
 ```bash
