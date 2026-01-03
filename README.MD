@@ -114,6 +114,18 @@ helm upgrade --install food-app infra/helm/food-app \
   --set global.imageTag=$(git rev-parse --short HEAD)
 ```
 
+Env-specific values files:
+
+- `infra/helm/food-app/values-dev.yaml`
+- `infra/helm/food-app/values-staging.yaml`
+- `infra/helm/food-app/values-prod.yaml`
+
+You can also use the CI helper script:
+
+```bash
+HELM_VALUES_FILE=infra/helm/food-app/values-dev.yaml scripts/ci/deploy-helm.sh
+```
+
 ### Check Status
 
 ```bash
@@ -138,6 +150,17 @@ export IMAGE_NAMESPACE=gabeodame
 scripts/ci/build-images.sh
 scripts/ci/push-images.sh
 ```
+
+Optional image scanning (requires `trivy`):
+
+```bash
+scripts/ci/scan-images.sh
+```
+
+### Gateway / Ingress
+
+- Gateway is enabled by default in `values-*.yaml` and defines hostnames and optional TLS secrets.
+- Ingress is present but disabled in values; enable if you prefer nginx ingress over Envoy Gateway.
 
 ## CI/CD (Jenkins)
 
