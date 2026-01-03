@@ -28,22 +28,24 @@ const COLORS = [
   "#c33130", // Accent Yellow (For energy and visibility)
 ];
 
-const NutritionalTracker = ({
+const NutritionalTrackerBase = ({
   recipeId,
-  control, // Used for watching local form state
+  formIngredients,
 }: {
   recipeId?: number;
-  control?: Control<any>;
+  formIngredients?: Ingredient[];
 }) => {
-  const [ingredients, setIngredients] = useState<Ingredient[]>([]);
+  const [ingredients, setIngredients] = useState<Ingredient[]>(
+    formIngredients ?? []
+  );
   const [loading, setLoading] = useState<boolean>(!!recipeId);
   const [error, setError] = useState<string | null>(null);
 
-  // Watch form ingredients when in creation mode
-  let formIngredients: Ingredient[] = [];
-  if (control) {
-    formIngredients = useWatch({ control, name: "ingredients" });
-  }
+  useEffect(() => {
+    if (formIngredients) {
+      setIngredients(formIngredients);
+    }
+  }, [formIngredients]);
 
   // **Fetch ingredients if recipeId exists (View Mode)**
   useEffect(() => {
@@ -71,13 +73,6 @@ const NutritionalTracker = ({
 
     fetchIngredients();
   }, [recipeId]);
-
-  // **Use local ingredients if creating a new recipe (Creation Mode)**
-  // useEffect(() => {
-  //   if (!recipeId && formIngredients) {
-  //     setIngredients(formIngredients);
-  //   }
-  // }, [formIngredients, recipeId]);
 
   // **Calculate Nutritional Totals**
   const totals = useMemo(() => {
@@ -183,6 +178,37 @@ const NutritionalTracker = ({
       </div>
     </div>
   );
+};
+
+const NutritionalTrackerWithForm = ({
+  recipeId,
+  control,
+}: {
+  recipeId?: number;
+  control: Control<any>;
+}) => {
+  const formIngredients = useWatch({ control, name: "ingredients" });
+
+  return (
+    <NutritionalTrackerBase
+      recipeId={recipeId}
+      formIngredients={formIngredients}
+    />
+  );
+};
+
+const NutritionalTracker = ({
+  recipeId,
+  control,
+}: {
+  recipeId?: number;
+  control?: Control<any>;
+}) => {
+  if (control) {
+    return <NutritionalTrackerWithForm recipeId={recipeId} control={control} />;
+  }
+
+  return <NutritionalTrackerBase recipeId={recipeId} />;
 };
 
 export default NutritionalTracker;
