@@ -49,7 +49,7 @@ function UnitSelector({
       setValue(name, defaultUnit, { shouldDirty: true, shouldValidate: true });
       control.setError(name, { type: "manual", message: "" });
     }
-  }, [system, getValues, setValue, name, unitOptions]);
+  }, [system, getValues, setValue, name, unitOptions, control]);
 
   // Handle system change efficiently
   const handleSystemChange = (newSystem: UnitSystem) => {

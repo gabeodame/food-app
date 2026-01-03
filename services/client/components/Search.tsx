@@ -34,7 +34,7 @@ function Search({
       setSearchSubmitted(true); // Mark the search as submitted
       onSearchCompleted && onSearchCompleted();
     }
-  }, [debouncedSearch]);
+  }, [debouncedSearch, add, onSearchCompleted, searchQuery]);
 
   useEffect(() => {
     if (searchSubmitted) {
