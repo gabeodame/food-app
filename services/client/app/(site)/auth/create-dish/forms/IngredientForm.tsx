@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useFieldArray, Control, Controller } from "react-hook-form";
 import { SearchIngredient, AddNewIngredient } from "../actions/actions";
 import { useDebounce } from "use-debounce";
@@ -50,13 +50,7 @@ const IngredientsForm = ({
     unit?: string;
   }>({});
 
-  useEffect(() => {
-    if (debouncedSearchTerm.length > 2) {
-      fetchIngredients(debouncedSearchTerm);
-    }
-  }, [debouncedSearchTerm]);
-
-  const fetchIngredients = async (query: string) => {
+  const fetchIngredients = useCallback(async (query: string) => {
     if (query.length > 2) {
       try {
         const data = await SearchIngredient(query);
@@ -82,7 +76,13 @@ const IngredientsForm = ({
         setShowQuantityFields(false);
       }
     }
-  };
+  }, [getValues]);
+
+  useEffect(() => {
+    if (debouncedSearchTerm.length > 2) {
+      fetchIngredients(debouncedSearchTerm);
+    }
+  }, [debouncedSearchTerm, fetchIngredients]);
 
   // Handle new ingredient addition from modal form
   const handleAddIngredient = async (ingredient: Ingredient) => {
