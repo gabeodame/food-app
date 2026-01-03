@@ -1,5 +1,5 @@
 import { BadRequestError } from "@gogittix/common";
-import { prisma } from "../utils/prisma";
+import { prisma } from "../lib/prisma";
 import axios from "axios";
 
 class RecipeSearchService {

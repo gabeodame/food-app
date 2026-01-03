@@ -30,9 +30,11 @@ export const buildClient = (): AxiosInstance => {
     headers.Cookie = sessionCookie ? `session=${sessionCookie}` : undefined;
     headers.Authorization = jwt ? `Bearer ${jwt}` : undefined;
 
+    const url =
+      "http://envoy-gateway-food-app.envoy-gateway-system.svc.cluster.local";
+
     return axios.create({
-      baseURL:
-        "http://ingress-nginx-controller.ingress-nginx.svc.cluster.local",
+      baseURL: process.env.NODE_ENV === "production" ? "/" : url,
       headers,
     });
   } else {

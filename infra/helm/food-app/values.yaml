@@ -588,6 +588,9 @@ networkPolicies:
             - podSelector:
                 matchLabels:
                   app: ingress-nginx
+            - namespaceSelector:
+                matchLabels:
+                  kubernetes.io/metadata.name: envoy-gateway
           ports:
             - protocol: TCP
               port: 3000
@@ -607,8 +610,27 @@ networkPolicies:
             - protocol: TCP
               port: 5432
 
-ingress:
+migrations:
   enabled: true
+  jobs:
+    - name: recipe-migrate
+      appLabel: recipe-migrate
+      image:
+        repository: gabeodame/recipe-backend
+        pullPolicy: IfNotPresent
+      command:
+        - sh
+        - -c
+        - npx prisma migrate deploy --schema=prisma/schema.prisma
+      env:
+        - name: DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+              name: recipe-postgres-secret
+              key: DATABASE_URL
+
+ingress:
+  enabled: false
   className: nginx
   annotations:
     nginx.ingress.kubernetes.io/use-regex: "true"
@@ -638,3 +660,47 @@ ingress:
       pathType: ImplementationSpecific
       serviceName: recipe-client-service
       servicePort: 3000
+
+gateway:
+  enabled: true
+  className: envoy-gateway
+  name: food-app-gateway
+  listener:
+    name: http
+    protocol: HTTP
+    port: 80
+    hostname: ""
+  tls:
+    enabled: false
+    secretName: ""
+  hostnames:
+    - recipe.dev
+  routes:
+    - path: /api/users
+      backend:
+        name: auth-service
+        port: 3000
+    - path: /api/auth
+      backend:
+        name: auth-service
+        port: 3000
+    - path: /api/1/recipes
+      backend:
+        name: recipe-service
+        port: 3000
+    - path: /api/1/profile
+      backend:
+        name: userprofile-service
+        port: 3000
+    - path: /api/1/ingredient
+      backend:
+        name: ingredient-service
+        port: 3000
+    - path: /api/1/uploads
+      backend:
+        name: uploads-service
+        port: 3000
+    - path: /
+      backend:
+        name: recipe-client-service
+        port: 3000

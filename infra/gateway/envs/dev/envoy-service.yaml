@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: envoy-gateway-food-app
+  namespace: envoy-gateway-system
+spec:
+  type: ClusterIP
+  selector:
+    gateway.envoyproxy.io/owning-gateway-name: food-app-gateway
+    gateway.envoyproxy.io/owning-gateway-namespace: recipe
+  ports:
+    - name: http
+      port: 80
+      targetPort: 10080
