@@ -1,0 +1,11 @@
+global:
+  imageTag: "staging"
+
+ingress:
+  enabled: false
+  host: recipe.staging
+
+gateway:
+  enabled: true
+  hostnames:
+    - recipe.staging

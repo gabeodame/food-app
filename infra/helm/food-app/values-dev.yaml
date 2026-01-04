@@ -1,0 +1,17 @@
+global:
+  imageTag: "dev"
+
+ingress:
+  enabled: false
+  host: recipe.dev
+
+gateway:
+  enabled: true
+  listener:
+    hostname: ""
+  tls:
+    enabled: true
+    secretName: recipe-dev-tls
+  hostnames:
+    - recipe.dev
+    - envoy-gateway-food-app.envoy-gateway-system.svc.cluster.local

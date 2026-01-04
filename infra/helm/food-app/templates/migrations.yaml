@@ -1,0 +1,55 @@
+{{- if .Values.migrations.enabled }}
+{{- range .Values.migrations.jobs }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ .name }}
+  namespace: {{ $.Release.Namespace }}
+  labels:
+    app: {{ .appLabel | default .name }}
+    {{- include "food-app.labels" $ | nindent 4 }}
+  annotations:
+    "helm.sh/hook": {{ .hook | default "post-install,post-upgrade" | quote }}
+    "helm.sh/hook-weight": {{ .hookWeight | default "0" | quote }}
+    "helm.sh/hook-delete-policy": {{ .hookDeletePolicy | default "before-hook-creation,hook-succeeded" | quote }}
+spec:
+  backoffLimit: {{ .backoffLimit | default 3 }}
+  template:
+    metadata:
+      labels:
+        app: {{ .appLabel | default .name }}
+        {{- include "food-app.labels" $ | nindent 8 }}
+    spec:
+      restartPolicy: OnFailure
+      {{- if $.Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml $.Values.imagePullSecrets | nindent 8 }}
+      {{- end }}
+      {{- if .initContainers }}
+      initContainers:
+        {{- toYaml .initContainers | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: {{ .containerName | default .name }}
+          image: "{{ .image.repository }}:{{ default $.Values.global.imageTag .image.tag }}"
+          imagePullPolicy: {{ .image.pullPolicy | default "IfNotPresent" }}
+          {{- if .command }}
+          command:
+            {{- toYaml .command | nindent 12 }}
+          {{- else }}
+          command:
+            - sh
+            - -c
+            - npx prisma migrate deploy --config=prisma.config.ts
+          {{- end }}
+          {{- if .args }}
+          args:
+            {{- toYaml .args | nindent 12 }}
+          {{- end }}
+          {{- if .env }}
+          env:
+            {{- toYaml .env | nindent 12 }}
+          {{- end }}
+---
+{{- end }}
+{{- end }}
