@@ -14,7 +14,7 @@ can_bind_local_port() {
 }
 
 can_run_docker() {
-  command -v docker >/dev/null 2>&1
+  command -v docker >/dev/null 2>&1 && docker ps >/dev/null 2>&1
 }
 
 for service in "${services[@]}"; do
