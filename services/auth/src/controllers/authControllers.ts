@@ -21,7 +21,6 @@ export class AuthController {
     }
 
     const existingUser = await User.findOne({ $or: [{ email }, { username }] });
-    console.log(existingUser);
     if (existingUser) {
       throw new BadRequestError("Email already in use");
     }

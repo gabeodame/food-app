@@ -28,12 +28,10 @@ class RabbitMQBroker {
 
     // Trim the URL to remove any unwanted whitespace or line breaks
     const sanitizedUrl = url.trim();
-    console.log("Connecting to RabbitMQ with sanitized URL:", sanitizedUrl);
 
     try {
       this.connection = await amqp.connect(sanitizedUrl);
       this.channel = await this.connection.createChannel();
-      console.log("RabbitMQ connection and channel established.");
     } catch (err) {
       console.error("Failed to connect to RabbitMQ:", {
         url: sanitizedUrl,
@@ -62,7 +60,6 @@ class RabbitMQBroker {
         queue,
         Buffer.isBuffer(message) ? message : Buffer.from(message)
       );
-      console.log(`Message published to queue: ${queue}`);
     } catch (err) {
       console.error("Failed to publish message:", err);
       throw err;
@@ -98,7 +95,6 @@ class RabbitMQBroker {
         }
       });
 
-      console.log(`Consumer set up for queue: ${queue}`);
     } catch (err) {
       console.error("Failed to set up consumer:", err);
       throw err;
@@ -118,7 +114,6 @@ class RabbitMQBroker {
         await this.connection.close();
         this.connection = null;
       }
-      console.log("RabbitMQ connection closed.");
     } catch (err) {
       console.error("Error while closing RabbitMQ connection:", err);
     }

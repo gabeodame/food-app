@@ -7,7 +7,6 @@ import { NextFunction } from "express-serve-static-core";
 const router = Router();
 
 router.get("/test", (req, res) => {
-  console.log("Test route");
   res.send("You are authenticated");
 });
 
@@ -60,10 +59,8 @@ router.post(
   ],
   validateRequest,
   async (req: Request, res: Response, next: NextFunction) => {
-    console.log("Signin route");
     try {
       const { user, token } = await authController.signin(req);
-      console.log(user, token);
 
       // Set session and respond
       req.session = { jwt: token };
