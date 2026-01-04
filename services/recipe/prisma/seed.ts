@@ -1,244 +1,286 @@
-// import { PrismaClient } from "@prisma/client";
-// import {
-//   users,
-//   categories,
-//   tagData,
-//   cuisineTypes,
-//   seasonal,
-//   specialDiets,
-//   recipes,
-// } from "../src/data/foodData";
+import { PrismaClient } from "@prisma/client";
+import slugify from "slugify";
+import {
+  users,
+  categories,
+  tagData,
+  cuisineTypes,
+  seasonal,
+  specialDiets,
+  recipes,
+} from "../src/data/foodData";
 
-// const prisma = new PrismaClient();
+const prisma = new PrismaClient();
 
-// async function seedUsers() {
-//   for (const user of users) {
-//     await prisma.user.upsert({
-//       where: { email: user.email },
-//       update: {},
-//       create: user,
-//     });
-//   }
-// }
+const parseQuantity = (value: number | string | null | undefined) => {
+  if (value === null || value === undefined) return null;
+  const numeric = parseFloat(String(value).replace(/[^0-9.]/g, ""));
+  return Number.isNaN(numeric) ? null : numeric;
+};
 
-// async function seedCategories() {
-//   for (const category of categories) {
-//     await prisma.category.upsert({
-//       where: { name: category.name },
-//       update: {},
-//       create: { name: category.name },
-//     });
-//   }
-// }
-// async function seedTags() {
-//   for (const tag of tagData) {
-//     await prisma.tag.upsert({
-//       where: { name: tag },
-//       update: {},
-//       create: { name: tag },
-//     });
-//   }
-// }
+const ensureSeedAllowed = () => {
+  if (process.env.SEED_ALLOW !== "true") {
+    console.log("Seeding disabled: set SEED_ALLOW=true to proceed.");
+    return false;
+  }
+  return true;
+};
 
-// async function seedCuisineTypes() {
-//   for (const cuisine of cuisineTypes) {
-//     await prisma.cuisineType.upsert({
-//       where: { name: cuisine.name },
-//       update: {},
-//       create: cuisine,
-//     });
-//   }
-// }
-// async function seedSeasonal() {
-//   for (const season of seasonal) {
-//     await prisma.season.upsert({
-//       where: { name: season.name },
-//       update: {},
-//       create: season,
-//     });
-//   }
-// }
+const upsertUsers = async () => {
+  for (const user of users) {
+    await prisma.user.upsert({
+      where: { id: user.id },
+      update: {
+        email: user.email,
+        username: user.name ?? null,
+      },
+      create: {
+        id: user.id,
+        email: user.email,
+        username: user.name ?? null,
+      },
+    });
+  }
+};
 
-// async function seedSpecialDiets() {
-//   for (const diet of specialDiets) {
-//     await prisma.specialDiet.upsert({
-//       where: { name: diet.name },
-//       update: {},
-//       create: diet,
-//     });
-//   }
-// }
+const upsertLookups = async () => {
+  for (const category of categories) {
+    await prisma.category.upsert({
+      where: { name: category.name },
+      update: {},
+      create: { name: category.name },
+    });
+  }
 
-// async function seedRecipesAndAssociations() {
-//   const allCategories = await prisma.category.findMany();
-//   const allTags = await prisma.tag.findMany();
-//   const allCuisineTypes = await prisma.cuisineType.findMany();
-//   const allSpecialDiets = await prisma.specialDiet.findMany();
-//   const allSeasons = await prisma.season.findMany();
+  for (const tag of tagData) {
+    const name = tag.trim();
+    if (!name) continue;
+    await prisma.tag.upsert({
+      where: { name },
+      update: {},
+      create: { name },
+    });
+  }
 
-//   for (const recipeData of recipes) {
-//     const createdRecipe = await prisma.recipe.create({
-//       data: {
-//         title: recipeData.title,
-//         description: recipeData.description,
-//         imageUrl: recipeData.imageUrl,
-//         userId: recipeData.userId,
-//         // Assuming direct creation of ingredients and instructions here if included
-//         ingredients: {
-//           create: recipeData.ingredients,
-//         },
-//         instructions: {
-//           create: recipeData.instructions,
-//         },
-//       },
-//     });
+  for (const cuisine of cuisineTypes) {
+    await prisma.cuisineType.upsert({
+      where: { name: cuisine.name },
+      update: {},
+      create: { name: cuisine.name },
+    });
+  }
 
-//     //using prisma transaction should be optimal here - however since using a small data set for dev env. no need to add complexity
-//     // Associate categories with the recipe without duplicating entries
-//     for (const categoryData of recipeData?.categories ?? []) {
-//       const category = allCategories.find((c) => c.name === categoryData.name);
-//       if (category) {
-//         // Check if the association already exists
-//         const existingAssociation = await prisma.recipeCategory.findFirst({
-//           where: {
-//             categoryId: category.id,
-//             recipeId: createdRecipe.id,
-//           },
-//         });
-//         // Only create the new association if it does not exist
-//         if (!existingAssociation) {
-//           await prisma.recipeCategory.create({
-//             data: {
-//               categoryId: category.id,
-//               recipeId: createdRecipe.id,
-//             },
-//           });
-//         }
-//       }
-//     }
+  for (const season of seasonal) {
+    await prisma.season.upsert({
+      where: { name: season.name },
+      update: {},
+      create: { name: season.name },
+    });
+  }
 
-//     // Similar logic for tags
-//     for (const recipeTag of recipeData?.tags ?? []) {
-//       const tag = allTags.find((c) => c.name === recipeTag.name);
-//       if (tag) {
-//         // Check if the tag association already exists
-//         const existingAssociation = await prisma.recipeTag.findFirst({
-//           where: {
-//             tagId: tag.id,
-//             recipeId: createdRecipe.id,
-//           },
-//         });
-//         // Only create the new association if it does not exist
-//         if (!existingAssociation) {
-//           await prisma.recipeTag.create({
-//             data: {
-//               tagId: tag.id,
-//               recipeId: createdRecipe.id,
-//             },
-//           });
-//         }
-//       }
-//     }
+  for (const diet of specialDiets) {
+    await prisma.specialDiet.upsert({
+      where: { name: diet.name },
+      update: {},
+      create: { name: diet.name },
+    });
+  }
+};
 
-//     // Similar logic for cuisineTypes
-//     for (const recipeCuisineType of recipeData?.cuisineTypes ?? []) {
-//       const cuisineType = allCuisineTypes.find(
-//         (c) => c.name === recipeCuisineType.name
-//       );
-//       if (cuisineType) {
-//         // Check if the tag association already exists
-//         const existingAssociation = await prisma.recipeCuisineType.findFirst({
-//           where: {
-//             cuisineTypeId: cuisineType.id,
-//             recipeId: createdRecipe.id,
-//           },
-//         });
-//         // Only create the new association if it does not exist
-//         if (!existingAssociation) {
-//           await prisma.recipeCuisineType.create({
-//             data: {
-//               cuisineTypeId: cuisineType.id,
-//               recipeId: createdRecipe.id,
-//             },
-//           });
-//         }
-//       }
-//     }
-//     // Similar logic for specialDients
-//     for (const recipeSpecialDiets of recipeData?.specialDiets ?? []) {
-//       const specialDiet = allSpecialDiets.find(
-//         (c) => c.name === recipeSpecialDiets.name
-//       );
-//       if (specialDiet) {
-//         // Check if the tag association already exists
-//         const existingAssociation = await prisma.recipeSpecialDiet.findFirst({
-//           where: {
-//             specialDietId: specialDiet.id,
-//             recipeId: createdRecipe.id,
-//           },
-//         });
-//         // Only create the new association if it does not exist
-//         if (!existingAssociation) {
-//           await prisma.recipeSpecialDiet.create({
-//             data: {
-//               specialDietId: specialDiet.id,
-//               recipeId: createdRecipe.id,
-//             },
-//           });
-//         }
-//       }
-//     }
-//     // Similar logic for Seasons
-//     for (const recipeSeason of recipeData?.seasonalEvent ?? []) {
-//       const season = allSeasons.find((c) => c.name === recipeSeason.name);
-//       if (season) {
-//         // Check if the tag association already exists
-//         const existingAssociation = await prisma.recipeSeason.findFirst({
-//           where: {
-//             seasonId: season.id,
-//             recipeId: createdRecipe.id,
-//           },
-//         });
-//         // Only create the new association if it does not exist
-//         if (!existingAssociation) {
-//           await prisma.recipeSeason.create({
-//             data: {
-//               seasonId: season.id,
-//               recipeId: createdRecipe.id,
-//             },
-//           });
-//         }
-//       }
-//     }
+const upsertIngredients = async () => {
+  const ingredientNames = Array.from(
+    new Set(
+      recipes.flatMap((recipe) =>
+        recipe.ingredients.map((ingredient) => ingredient.name.trim())
+      )
+    )
+  ).filter(Boolean);
 
-//     // Similarly, associate tags and other entities by repeating a similar process
-//   }
-// }
+  const ingredientMap = new Map<string, number>();
+  const idBase = 1000;
 
-// async function main() {
-//   console.log("seeding initiated");
-//   const data = await prisma.recipe.findMany();
-//   if (data.length > 0) {
-//     console.log("seeding not required");
-//     return;
-//   }
-//   await seedUsers();
-//   await seedCategories();
-//   await seedTags();
-//   await seedCuisineTypes();
-//   await seedSeasonal();
-//   await seedSpecialDiets();
-//   await seedRecipesAndAssociations();
-//   // Include calls to seed other entities as needed
+  for (const [index, name] of ingredientNames.entries()) {
+    const existing = await prisma.ingredient.findFirst({ where: { name } });
+    if (existing) {
+      ingredientMap.set(name, existing.id);
+      continue;
+    }
 
-//   console.log("seeding completed");
-// }
+    const created = await prisma.ingredient.create({
+      data: {
+        id: idBase + index,
+        name,
+      },
+    });
+    ingredientMap.set(name, created.id);
+  }
 
-// main()
-//   .catch((e) => {
-//     console.error(e);
-//     process.exit(1);
-//   })
-//   .finally(async () => {
-//     await prisma.$disconnect();
-//   });
+  return ingredientMap;
+};
+
+const seedRecipes = async (ingredientMap: Map<string, number>) => {
+  const categoryMap = new Map(
+    (await prisma.category.findMany()).map((item) => [item.name, item.id])
+  );
+  const tagMap = new Map(
+    (await prisma.tag.findMany()).map((item) => [item.name, item.id])
+  );
+  const cuisineMap = new Map(
+    (await prisma.cuisineType.findMany()).map((item) => [item.name, item.id])
+  );
+  const seasonMap = new Map(
+    (await prisma.season.findMany()).map((item) => [item.name, item.id])
+  );
+  const dietMap = new Map(
+    (await prisma.specialDiet.findMany()).map((item) => [item.name, item.id])
+  );
+
+  for (const recipe of recipes) {
+    const slug = slugify(recipe.title, { lower: true, strict: true });
+    const userId = recipe.userId || users[0]?.id;
+    if (!userId) {
+      throw new Error("Seed requires at least one user.");
+    }
+
+    const upserted = await prisma.recipe.upsert({
+      where: { slug },
+      update: {
+        title: recipe.title,
+        description: recipe.description,
+        imageUrl: recipe.imageUrl ?? "",
+        userId,
+        updatedAt: new Date(),
+      },
+      create: {
+        title: recipe.title,
+        slug,
+        description: recipe.description,
+        imageUrl: recipe.imageUrl ?? "",
+        userId,
+        createdAt: new Date(),
+      },
+    });
+
+    const recipeId = upserted.id;
+
+    await prisma.instruction.deleteMany({ where: { recipeId } });
+    await prisma.recipeIngredient.deleteMany({ where: { recipeId } });
+    await prisma.recipeCategory.deleteMany({ where: { recipeId } });
+    await prisma.recipeTag.deleteMany({ where: { recipeId } });
+    await prisma.recipeCuisineType.deleteMany({ where: { recipeId } });
+    await prisma.recipeSeason.deleteMany({ where: { recipeId } });
+    await prisma.recipeSpecialDiet.deleteMany({ where: { recipeId } });
+
+    if (recipe.instructions?.length) {
+      await prisma.instruction.createMany({
+        data: recipe.instructions.map((instruction) => ({
+          recipeId,
+          step: instruction.step,
+        })),
+      });
+    }
+
+    if (recipe.ingredients?.length) {
+      await prisma.recipeIngredient.createMany({
+        data: recipe.ingredients
+          .map((ingredient) => {
+            const ingredientId = ingredientMap.get(ingredient.name.trim());
+            if (!ingredientId) return null;
+            return {
+              recipeId,
+              ingredientId,
+              quantity: parseQuantity(ingredient.quantity),
+              unit: ingredient.unit ?? null,
+            };
+          })
+          .filter(Boolean) as Array<{
+          recipeId: number;
+          ingredientId: number;
+          quantity: number | null;
+          unit: string | null;
+        }>,
+      });
+    }
+
+    if (recipe.categories?.length) {
+      await prisma.recipeCategory.createMany({
+        data: recipe.categories
+          .map((category) => {
+            const categoryId = categoryMap.get(category.name);
+            return categoryId ? { recipeId, categoryId } : null;
+          })
+          .filter(Boolean) as Array<{ recipeId: number; categoryId: number }>,
+      });
+    }
+
+    if (recipe.tags?.length) {
+      await prisma.recipeTag.createMany({
+        data: recipe.tags
+          .map((tag) => {
+            const tagId = tagMap.get(tag.name.trim());
+            return tagId ? { recipeId, tagId } : null;
+          })
+          .filter(Boolean) as Array<{ recipeId: number; tagId: number }>,
+      });
+    }
+
+    if (recipe.cuisineTypes?.length) {
+      await prisma.recipeCuisineType.createMany({
+        data: recipe.cuisineTypes
+          .map((cuisine) => {
+            const cuisineTypeId = cuisineMap.get(cuisine.name);
+            return cuisineTypeId ? { recipeId, cuisineTypeId } : null;
+          })
+          .filter(Boolean) as Array<{
+          recipeId: number;
+          cuisineTypeId: number;
+        }>,
+      });
+    }
+
+    if (recipe.seasonalEvent?.length) {
+      await prisma.recipeSeason.createMany({
+        data: recipe.seasonalEvent
+          .map((season) => {
+            const seasonId = seasonMap.get(season.name);
+            return seasonId ? { recipeId, seasonId } : null;
+          })
+          .filter(Boolean) as Array<{ recipeId: number; seasonId: number }>,
+      });
+    }
+
+    if (recipe.specialDiets?.length) {
+      await prisma.recipeSpecialDiet.createMany({
+        data: recipe.specialDiets
+          .map((diet) => {
+            const specialDietId = dietMap.get(diet.name);
+            return specialDietId ? { recipeId, specialDietId } : null;
+          })
+          .filter(Boolean) as Array<{
+          recipeId: number;
+          specialDietId: number;
+        }>,
+      });
+    }
+  }
+};
+
+const main = async () => {
+  if (!ensureSeedAllowed()) return;
+
+  await upsertUsers();
+  await upsertLookups();
+  const ingredientMap = await upsertIngredients();
+  await seedRecipes(ingredientMap);
+
+  console.log("Seeding completed.");
+};
+
+main()
+  .catch((error) => {
+    console.error("Seed failed:", error);
+    process.exit(1);
+  })
+  .finally(async () => {
+    await prisma.$disconnect();
+  });

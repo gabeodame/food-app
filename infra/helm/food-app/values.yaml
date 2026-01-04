@@ -2,8 +2,13 @@ namespace: recipe
 
 global:
   imageTag: "dev"
+  environment: "dev"
 
 imagePullSecrets: []
+
+db:
+  secretName: recipe-postgres-secret
+  secretKey: DATABASE_URL
 
 services:
   deployments:
@@ -622,6 +627,9 @@ migrations:
   jobs:
     - name: recipe-migrate
       appLabel: recipe-migrate
+      hookWeight: "0"
+      hookDeletePolicy: "hook-succeeded,hook-failed"
+      backoffLimit: 1
       image:
         repository: gabeodame/recipe-backend
         pullPolicy: IfNotPresent
@@ -647,6 +655,18 @@ migrations:
             secretKeyRef:
               name: recipe-postgres-secret
               key: DATABASE_URL
+
+seed:
+  enabled: false
+  hookWeight: "5"
+  allowInProd: false
+  mode: "prisma"
+  sqlScripts: {}
+  backoffLimit: 1
+  ttlSecondsAfterFinished: 300
+  image:
+    repository: gabeodame/recipe-backend
+    pullPolicy: IfNotPresent
 
 ingress:
   enabled: false

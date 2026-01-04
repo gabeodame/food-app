@@ -10,6 +10,6 @@ export default defineConfig({
     url: databaseUrl,
   },
   migrations: {
-    seed: 'ts-node --compiler-options {"module":"CommonJS"} prisma/seed.ts',
+    seed: "node dist/prisma/seed.js",
   },
 });

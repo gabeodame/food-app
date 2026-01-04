@@ -1,5 +1,9 @@
 global:
   imageTag: "staging"
+  environment: "staging"
+
+seed:
+  enabled: false
 
 ingress:
   enabled: false

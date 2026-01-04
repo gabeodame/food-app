@@ -1,0 +1,15 @@
+{{- if and .Values.seed.enabled (eq .Values.seed.mode "psql") (gt (len .Values.seed.sqlScripts) 0) }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: recipe-seed-sql
+  namespace: {{ $.Release.Namespace }}
+  labels:
+    app: recipe-seed
+    {{- include "food-app.labels" $ | nindent 4 }}
+data:
+{{- range $name, $content := .Values.seed.sqlScripts }}
+  {{ $name }}: |
+{{ $content | indent 4 }}
+{{- end }}
+{{- end }}

@@ -116,6 +116,36 @@ helm upgrade --install food-app infra/helm/food-app \
   --set global.imageTag=$(git rev-parse --short HEAD)
 ```
 
+### Seeding (Dev Only)
+
+Seed runs as a Helm hook Job after migrations when enabled. It is gated and will not run in production unless explicitly allowed.
+
+```bash
+helm upgrade --install food-app infra/helm/food-app \
+  --namespace recipe \
+  --values infra/helm/food-app/values-dev.yaml \
+  --set seed.enabled=true
+```
+
+Disable in prod (default):
+
+```bash
+helm upgrade --install food-app infra/helm/food-app \
+  --namespace recipe \
+  --values infra/helm/food-app/values-prod.yaml \
+  --set seed.enabled=false
+```
+
+Re-run seed safely:
+
+```bash
+kubectl delete job -n recipe recipe-seed
+helm upgrade --install food-app infra/helm/food-app \
+  --namespace recipe \
+  --values infra/helm/food-app/values-dev.yaml \
+  --set seed.enabled=true
+```
+
 Env-specific values files:
 
 - `infra/helm/food-app/values-dev.yaml`
