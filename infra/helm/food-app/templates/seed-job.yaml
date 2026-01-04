@@ -1,8 +1,10 @@
-{{- if and .Values.seed.enabled (or .Values.seed.allowInProd (ne (default "dev" .Values.global.environment) "prod")) }}
+{{- $env := default "dev" .Values.global.environment }}
+{{- $seedAllowed := or .Values.seed.allowInProd (ne $env "prod") }}
+{{- if and .Values.seed.enabled $seedAllowed }}
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: recipe-seed
+  name: recipe-seed-{{ $.Release.Revision }}
   namespace: {{ $.Release.Namespace }}
   labels:
     app: recipe-seed
@@ -10,7 +12,7 @@ metadata:
   annotations:
     "helm.sh/hook": "post-install,post-upgrade"
     "helm.sh/hook-weight": {{ .Values.seed.hookWeight | default "5" | quote }}
-    "helm.sh/hook-delete-policy": "hook-succeeded,hook-failed"
+    "helm.sh/hook-delete-policy": "before-hook-creation,hook-succeeded,hook-failed"
 spec:
   backoffLimit: {{ .Values.seed.backoffLimit | default 1 }}
   ttlSecondsAfterFinished: {{ .Values.seed.ttlSecondsAfterFinished | default 300 }}
@@ -40,6 +42,8 @@ spec:
             - -c
             - psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f /seeds/seed.sql
           volumeMounts:
+            - name: tmp
+              mountPath: /tmp
             - name: seed-sql
               mountPath: /seeds
               readOnly: true
@@ -47,7 +51,10 @@ spec:
           command:
             - sh
             - -c
-            - npx prisma db seed --config=prisma.config.ts
+            - ./node_modules/.bin/prisma db seed --config=prisma.config.ts
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
           {{- end }}
           env:
             - name: DATABASE_URL
@@ -56,13 +63,21 @@ spec:
                   name: {{ .Values.db.secretName }}
                   key: {{ .Values.db.secretKey }}
             - name: NODE_ENV
-              value: {{ .Values.global.environment | default "dev" | quote }}
+              value: {{ $env | quote }}
             - name: SEED_ALLOW
-              value: "true"
+              value: {{ ternary "true" "false" $seedAllowed | quote }}
+            - name: TMPDIR
+              value: /tmp
       {{- if eq .Values.seed.mode "psql" }}
       volumes:
         - name: seed-sql
           configMap:
             name: recipe-seed-sql
+        - name: tmp
+          emptyDir: {}
+      {{- else }}
+      volumes:
+        - name: tmp
+          emptyDir: {}
       {{- end }}
 {{- end }}

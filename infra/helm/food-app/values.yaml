@@ -628,8 +628,9 @@ migrations:
     - name: recipe-migrate
       appLabel: recipe-migrate
       hookWeight: "0"
-      hookDeletePolicy: "hook-succeeded,hook-failed"
+      hookDeletePolicy: "before-hook-creation,hook-succeeded,hook-failed"
       backoffLimit: 1
+      ttlSecondsAfterFinished: 300
       image:
         repository: gabeodame/recipe-backend
         pullPolicy: IfNotPresent
