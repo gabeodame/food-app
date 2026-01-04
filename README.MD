@@ -1,276 +1,216 @@
-
-# Food Sharing App - Comprehensive Overview
-
-## Project Overview
-
-The Food Sharing Application is a modern, microservices-based platform designed to facilitate seamless sharing of food recipes and ingredients. Built with a scalable and containerized architecture, the application leverages advanced cloud technologies and follows best practices for security, reliability, and maintainability.
-
----
-
-## Architecture Highlights
-
-### Key Features
-
-- **Microservices Architecture**: Independent, decoupled services for modular functionality.
-- **Containerized Applications**: All services are containerized using Docker for portability and consistency.
-- **Kubernetes Orchestration**: Deployed and managed using Kubernetes (K8s) for high availability and scalability.
-- **Message Queue Communication**: RabbitMQ is utilized for asynchronous communication between services.
-- **Shared NPM Library**: A common library (`@gogittix/common`) for harmonized patterns such as error handling, authentication, and middleware.
-- **RabbitMQ Broker Wrapper**: An additional published NPM package (`@anchordiv/rabbitmq-broker`) simplifies the use of RabbitMQ via a singleton wrapper.
-
----
-
-## Microservices Overview
-
-### **1. Auth Service**
-
-**Purpose**: Handles user authentication and authorization.
-
-- **Tech Stack**: Node.js, MongoDB
-- **Message Queue**: Publishes user-related events to RabbitMQ.
-- **Endpoints**:
-  - `POST /signup`: Register a new user.
-  - `POST /signin`: Log in an existing user.
-  - `POST /signout`: Log out the user.
-  - `GET /currentuser`: Fetch the authenticated user’s details.
-  - `POST /change-password`: Update the user’s password.
-
----
-
-### **2. Profile Service**
-
-**Purpose**: Manages user profile details.
-
-- **Tech Stack**: NestJS, PostgreSQL
-- **Documentation**: Swagger for API documentation.
-- **Endpoints**:
-  - `POST /`: Create a new user profile.
-  - `GET /:id`: Retrieve a profile by user ID.
-  - `GET /email/:email`: Retrieve a profile by email.
-  - `PATCH /:id`: Update profile details.
-  - `DELETE /:id`: Delete a profile.
-  - `POST /:id/image`: Upload a profile image.
-
----
-
-### **3. Client Service (Frontend)**
-
-**Purpose**: User-facing application interface.
-
-- **Tech Stack**: Next.js (React Framework), Material UI, Shadcn UI, Tailwind CSS
-- **Folder Structure**:
-  - `app/`: Main application logic split into pages and components.
-  - `hooks/`: Reusable custom hooks (e.g., `useSearch` for search functionality).
-  - `components/`: Modular and reusable UI components.
-  - `context/`: Context API for global state management (e.g., `SearchContext`).
-  - `util/`: Utility functions for shared logic.
-
----
-
-### **4. Recipe Service**
-
-**Purpose**: Handles recipe-related operations.
-
-- **Tech Stack**: Node.js, Express, PostgreSQL
-- **Message Queue**: Listens to RabbitMQ for ingredient-related events.
-- **Documentation**: Swagger for API documentation.
-- **Endpoints**:
-  - `GET /`: Retrieve all recipes.
-  - `GET /:id`: Retrieve a specific recipe by ID.
-  - `POST /`: Add a new recipe.
-  - `PATCH /:id`: Update an existing recipe.
-  - `DELETE /:id`: Remove a recipe.
-
----
-
-### **5. Ingredient Service**
-
-**Purpose**: Manages ingredient inventory.
-
-- **Tech Stack**: NestJS, PostgreSQL
-- **Documentation**: Swagger for API documentation.
-- **Message Queue**: Consumes ingredient updates and handles dead-letter queues.
-- **Endpoints**:
-  - `POST /`: Create a new ingredient.
-  - `GET /`: Retrieve all ingredients.
-  - `GET /:id`: Fetch an ingredient by ID.
-  - `PATCH /:id`: Update an ingredient.
-  - `DELETE /:id`: Remove an ingredient.
-
----
-
-## Shared Library
-
-**Name**: [@gogittix/common](https://www.npmjs.com/package/@gogittix/common?activeTab=code)
-
-- **Purpose**: Centralized repository for reusable patterns across services.
-- **Key Features**:
-  - Authentication Middleware (`requireAuth`, `currentUser`).
-  - Custom Error Handling (e.g., `BadRequestError`, `NotAuthorizedError`).
-  - RabbitMQ Broker Wrapper for message queue operations.
-
-**Name**: [@anchordiv/rabbitmq-broker](https://www.npmjs.com/package/@anchordiv/rabbitmq-broker)
-
-- **Purpose**: Simplifies RabbitMQ operations via a singleton wrapper.
-- **Key Features**:
-  - Easy initialization and queue setup.
-  - Publish and consume messages efficiently.
-  - Built-in dead-letter queue handling.
-
----
-
-## Deployment Options
-
-### AWS
-
-1. **EKS (Elastic Kubernetes Service)**: For orchestrating Kubernetes workloads.
-2. **RDS (Relational Database Service)**: Managed PostgreSQL instances for Recipe, Profile, and Ingredient services.
-3. **S3 Buckets**: For storing profile images.
-4. **IAM Roles**: Secure access to secrets via AWS Secrets Manager.
-
-### Azure
-
-1. **AKS (Azure Kubernetes Service)**: Kubernetes orchestration with seamless integration into Azure’s ecosystem.
-2. **Azure PostgreSQL**: Fully managed relational database service.
-3. **Blob Storage**: Profile image storage.
-4. **Azure Active Directory**: Authentication and role management.
-
----
-
-## Design Considerations
-
-### Scalability
-
-- Kubernetes ensures horizontal scaling.
-- RabbitMQ allows for asynchronous processing and decoupled services.
-
-### Security
-
-- JWT-based authentication.
-- Secure connections to RabbitMQ and databases.
-- Use of HTTPS and secrets management (e.g., environment variables).
-
-### Maintainability
-
-- Decoupled services for modular development.
-- Shared library for consistent patterns.
-- Swagger documentation for clear API definitions.
-
----
-
-## Roadmap
-
-- **Integration Testing**: Ensure seamless communication between microservices.
-- **Enhanced Search**: Add Elasticsearch for advanced query capabilities.
-- **Cloud Agnostic Deployment**: Support for GCP in addition to AWS and Azure.
-- **Deployment Pipelines**: Automate CI/CD with GitHub Actions and Kubernetes manifests.
-
----
-
-## Getting Started
-
-### Prerequisites
-
-- Docker installed.
-- Kubernetes cluster (local or cloud-based).
-- MongoDB, PostgreSQL databases.
-- RabbitMQ server.
-
-### Running Locally
-
-1. Clone the repository.
-2. Build and run services:
-
-   ```bash
-   docker-compose up --build
-   ```
-
-3. Access services:
-   - Auth: `http://localhost:3001`
-   - Profile: `http://localhost:3002`
-   - Recipe: `http://localhost:3003`
-   - Ingredient: `http://localhost:3004`
-   - Client: `http://localhost:3000`
-
-### Kubernetes Deployment
-
-1. Apply manifests:
-
-   ```bash
-   kubectl apply -f k8s/
-   ```
-
-2. Verify pods and services:
-
-   ```bash
-   kubectl get pods,svc
-   ```
-
-3. Access frontend via LoadBalancer or Ingress.
-
----
-
-## NGINX Ingress Controller Configuration
-
-The NGINX Ingress Controller is set up as the central point of entry to route traffic to appropriate services.
-
-```yaml
-apiVersion: networking.k8s.io/v1
-kind: Ingress
-metadata:
-  name: ingress-service
-  namespace: recipe
-  annotations:
-    nginx.ingress.kubernetes.io/use-regex: "true"
-spec:
-  ingressClassName: nginx
-  rules:
-    - host: example@domain.com
-      http:
-        paths:
-          - path: /api/users/?(.*)
-            pathType: ImplementationSpecific
-            backend:
-              service:
-                name: auth-service
-                port:
-                  number: 3000
-          - path: /api/1/recipes/?(.*)
-            pathType: ImplementationSpecific
-            backend:
-              service:
-                name: recipe-service
-                port:
-                  number: 3000
-          - path: /api/1/profile/?(.*)
-            pathType: ImplementationSpecific
-            backend:
-              service:
-                name: userprofile-service 
-                port:
-                  number: 3000
-          - path: /api/1/ingredient/?(.*)
-            pathType: ImplementationSpecific
-            backend:
-              service:
-                name: ingredient-service
-                port:
-                  number: 3000
-          - path: /?(.*)
-            pathType: ImplementationSpecific
-            backend:
-              service:
-                name: recipe-client-service
-                port:
-                  number: 3000
+# Food Sharing Platform
+
+A production-style, microservices recipe platform designed to showcase auth, event-driven services, and Kubernetes-first deployment workflows.
+
+## What It Demonstrates
+
+- Microservices with clear service boundaries and shared libraries
+- AuthN/AuthZ with public reads and protected writes
+- Helm-based Kubernetes deployment (Jobs, ingress/gateway, NetworkPolicy)
+- Git SHA image tagging (Skaffold + CI scripts)
+- Migration strategy via Helm Job hooks
+- API documentation via Swagger/Swagger UI
+- Jenkins pipeline wired for lint, test, build, scan, push, deploy, smoke
+- CI/CD-ready layout (scripts + Jenkins chart)
+
+## Architecture (High Level)
+
+```
+                 +------------------+
+                 |   Web Client     |
+                 |  Next.js (UI)    |
+                 +--------+---------+
+                          |
+                          v
+                +--------------------+
+                | Ingress / Gateway  |
+                +--+----+----+----+--+
+                   |    |    |    |
+                   v    v    v    v
+               +------+ +------+ +---------+ +---------+
+               | Auth | |Recipe| |Ingredient| |Profile |
+               +--+---+ +--+---+ +----+----+ +----+----+
+                  |        |          |           |
+               MongoDB  Postgres   Postgres    Postgres
+
+   +-------------------+           +--------------------+
+   | Uploads Service   |<--S3----->|    Object Store    |
+   +-------------------+           +--------------------+
+
+         +-----------------------------+
+         |     RabbitMQ (Events)       |
+         +-----------------------------+
+
+         +-----------------------------+
+         | Helm Job: Prisma Migrations |
+         +-----------------------------+
 ```
 
----
+## Links
 
-## Contributors
+- Live demo: Not published yet
+- Docs: `docs/`
+- ADRs: `docs/adr/`
+- Hardening checklist: `docs/hardening.md`
+- Jenkins pipeline: `Jenkinsfile`
 
-- **Project Lead**: Gabriel Odame
+## Features
 
----
+- Public read endpoints; authenticated write endpoints (see `currentUser` + `requireAuth` middleware)
+- Migration strategy via Helm Job hooks (`infra/helm/food-app/templates/migrations.yaml`)
+- Git SHA image tagging via Skaffold and CI scripts (`skaffold.yaml`, `scripts/ci/*.sh`)
+- Readiness/liveness probes supported in Helm values (optional per service)
+- API docs: Swagger UI for recipe and uploads services, OpenAPI for NestJS services
 
-For any issues or feature requests, please open an issue on the GitHub repository.
+## Local Dev Quickstart
+
+### Prereqs
+
+- Docker Desktop with Kubernetes enabled
+- kubectl, Helm, Skaffold
+- Node.js 18+ (for running services outside Kubernetes)
+
+### Environment Variables
+
+Use `.env.example` as a reference for per-service `.env` files when running without Kubernetes. For Kubernetes, secrets are managed via manifests in `infra/k8s/dev/secrets`.
+
+### Run Services Locally (Kubernetes + Skaffold)
+
+```bash
+kubectl apply -f infra/k8s/dev/secrets
+skaffold dev --profile dev
+```
+
+### Run Tests
+
+```bash
+scripts/ci/run-tests.sh
+```
+
+Auth tests use a local MongoDB container when Docker is available. The helper scripts live in `scripts/ci/start-mongo-test.sh` and `scripts/ci/stop-mongo-test.sh`.
+
+Overrides: `MONGO_TEST_CONTAINER`, `MONGO_TEST_PORT`, `MONGO_TEST_IMAGE`.
+
+### Lint / Format
+
+```bash
+scripts/ci/run-lint.sh
+```
+
+## Kubernetes / Helm Deploy
+
+### Create Namespace
+
+```bash
+kubectl create namespace recipe
+```
+
+### Install / Upgrade
+
+```bash
+helm upgrade --install food-app infra/helm/food-app \
+  --namespace recipe \
+  --values infra/helm/food-app/values-dev.yaml \
+  --set global.imageTag=$(git rev-parse --short HEAD)
+```
+
+Env-specific values files:
+
+- `infra/helm/food-app/values-dev.yaml`
+- `infra/helm/food-app/values-staging.yaml`
+- `infra/helm/food-app/values-prod.yaml`
+
+You can also use the CI helper script:
+
+```bash
+HELM_VALUES_FILE=infra/helm/food-app/values-dev.yaml scripts/ci/deploy-helm.sh
+```
+
+### Check Status
+
+```bash
+kubectl get pods -n recipe
+kubectl get jobs -n recipe
+kubectl get ingress -n recipe
+kubectl get svc -n recipe
+```
+
+### Port-Forward Postgres (Example)
+
+```bash
+kubectl get pods -n recipe -l app=recipe-postgres
+kubectl port-forward -n recipe pod/<recipe-postgres-pod> 5432:5432
+```
+
+### Image Tagging and Push
+
+```bash
+export IMAGE_TAG=$(git rev-parse --short HEAD)
+export IMAGE_NAMESPACE=gabeodame
+scripts/ci/build-images.sh
+scripts/ci/push-images.sh
+```
+
+Optional image scanning (requires `trivy`):
+
+```bash
+scripts/ci/scan-images.sh
+```
+
+### Gateway / Ingress
+
+- Gateway is enabled by default in `values-*.yaml` and defines hostnames and optional TLS secrets.
+- Ingress is present but disabled in values; enable if you prefer nginx ingress over Envoy Gateway.
+- Example TLS secret names: `recipe-dev-tls` (dev) and hostnames like `recipe.dev`, `recipe.staging`, `recipe.prod`.
+
+## CI/CD (Jenkins)
+
+The repository includes a Jenkins pipeline that wires the full delivery path:
+
+- `Jenkinsfile` defines lint → test → build → scan → push → deploy → smoke stages.
+- Branch-based environments: `dev` (default), `main` → `staging`, `release/*` → `prod`.
+- Image tags default to the short Git SHA (see `IMAGE_TAG` in the pipeline).
+
+### Local Jenkins (Dev)
+
+```bash
+docker compose -f infra/jenkins/docker-compose.dev.yaml up -d
+```
+
+Access: `http://localhost:8080/jenkins`
+
+Plugins are pinned in `infra/jenkins/plugins.txt` and installed on container startup.
+
+## Troubleshooting (Fast Commands)
+
+```bash
+kubectl get pods -n <ns>
+kubectl describe pod -n <ns> <pod>
+kubectl logs -n <ns> <pod>
+kubectl get events -n <ns> --sort-by=.metadata.creationTimestamp
+```
+
+### ImagePullBackOff
+
+- Verify image name/tag in Helm values and registry access.
+- Check `imagePullSecrets` and node registry auth.
+
+### CrashLoopBackOff
+
+- Inspect logs and readiness configuration.
+- Check database and RabbitMQ connectivity from env/secret values.
+
+### Job Failed (Migrations)
+
+- Inspect Job logs and ensure DB is reachable.
+- Re-run with `helm upgrade` after fixing the migration/DB issue.
+
+### Ingress 404/502
+
+- Confirm ingress controller class and service selectors.
+- Validate routes and service ports in `infra/helm/food-app/values.yaml`.
+
+### DB Connectivity
+
+- Verify the secret-backed `DATABASE_URL`.
+- Confirm the DB pod and service are running and reachable.

@@ -1,4 +1,9 @@
-import { Module, MiddlewareConsumer, NestModule } from '@nestjs/common';
+import {
+  Module,
+  MiddlewareConsumer,
+  NestModule,
+  RequestMethod,
+} from '@nestjs/common';
 import { IngredientModule } from './ingredient/ingredient.module';
 import { TypeOrmModule, TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { Ingredient } from './lib/ingredient.entity';
@@ -34,7 +39,16 @@ const getOrmConfig = (configService: ConfigService): TypeOrmModuleOptions => ({
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
-    // Apply currentUser and requireAuth globally to all routes
-    consumer.apply(currentUser, requireAuth).forRoutes('*');
+    // Apply currentUser to all routes, but allow public GET access
+    consumer.apply(currentUser).forRoutes('*');
+    consumer
+      .apply(requireAuth)
+      .exclude(
+        { path: 'api/1/ingredient', method: RequestMethod.GET },
+        { path: 'api/1/ingredient/:id', method: RequestMethod.GET },
+        { path: 'api/1/ingredient/batch', method: RequestMethod.GET },
+        { path: 'api/1/ingredient/search', method: RequestMethod.GET },
+      )
+      .forRoutes('*');
   }
 }

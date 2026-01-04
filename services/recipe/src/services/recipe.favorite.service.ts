@@ -1,6 +1,6 @@
 import { Ingredient } from "@prisma/client";
 import recipeService from "./recipe.service";
-import { prisma } from "../utils/prisma";
+import { prisma } from "../lib/prisma";
 import { BadRequestError, NotAuthorizedError } from "@gogittix/common";
 import { Recipe } from "../dtos";
 
@@ -23,7 +23,10 @@ class RecipeFavoriteService {
     }
   }
 
-  async favoriteRecipe(userId: string, recipeId: number): Promise<boolean> {
+  async favoriteRecipe(
+    userId: string,
+    recipeId: number
+  ): Promise<{ message: string; isFavoritedByCurrentUser: boolean }> {
     try {
       const existingFavorite = await prisma.favorite.findFirst({
         where: { userId, recipeId },
@@ -40,14 +43,20 @@ class RecipeFavoriteService {
         });
       }
 
-      return true;
+      return {
+        message: "Recipe favorited successfully",
+        isFavoritedByCurrentUser: true,
+      };
     } catch (error) {
       console.error("Error favoriting recipe:", error);
       throw new BadRequestError("Error favoriting recipe");
     }
   }
 
-  async unfavoriteRecipe(userId: string, recipeId: number): Promise<boolean> {
+  async unfavoriteRecipe(
+    userId: string,
+    recipeId: number
+  ): Promise<{ message: string; isFavoritedByCurrentUser: boolean }> {
     try {
       const existingFavorite = await prisma.favorite.findFirst({
         where: { userId, recipeId },
@@ -66,7 +75,10 @@ class RecipeFavoriteService {
         data: { favoritesCount: { decrement: 1 } },
       });
 
-      return false; // Ensure consistent return type
+      return {
+        message: "Recipe unfavorited successfully",
+        isFavoritedByCurrentUser: false,
+      };
     } catch (error) {
       console.error("Error unfavoriting recipe:", error);
       throw new BadRequestError("Error unfavoriting recipe");

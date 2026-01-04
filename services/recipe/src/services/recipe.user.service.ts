@@ -1,5 +1,5 @@
 import { RecipeUser } from "../dtos";
-import { prisma } from "../utils/prisma";
+import { prisma } from "../lib/prisma";
 
 class RecipeUserService {
   async createUser(data: RecipeUser) {

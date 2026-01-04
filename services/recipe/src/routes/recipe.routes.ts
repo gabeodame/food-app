@@ -42,6 +42,9 @@ router.delete(
 // router.get("/search", validateRequest, recipeSearchService.searchBySlug);
 router.get("/search", validateRequest, recipeSearchController.search);
 
+// router.get("/search/related", recipeSearchService.getRelatedRecipes);
+router.get("/search/related", recipeSearchController.getRelatedRecipes);
+
 // Increment recipe view count
 router.post(
   "/:id/views",

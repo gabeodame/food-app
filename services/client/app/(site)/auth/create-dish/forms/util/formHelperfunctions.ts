@@ -1,9 +1,9 @@
 /** ✅ Handles Image Upload */
 export const processImageUpload = async (
   imageUrl: FileList | string,
-  existingImageUrl: string
+  existingImageUrl?: string
 ) => {
-  let finalImageUrl = existingImageUrl;
+  let finalImageUrl = existingImageUrl ?? "";
   const fileInput = imageUrl as unknown as FileList;
   const file = fileInput?.[0];
 

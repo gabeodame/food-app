@@ -2,11 +2,15 @@ import useSWR from "swr";
 
 const useUser = () => {
   const fetcher = async (url: string) => {
-    const res = await fetch(url);
-    if (!res.ok) {
-      throw new Error("An error occurred while fetching the data.");
+    try {
+      const res = await fetch(url);
+      if (!res.ok) {
+        return { currentUser: null };
+      }
+      return res.json();
+    } catch (error) {
+      return { currentUser: null };
     }
-    return res.json();
   };
 
   // Define URL based on environment

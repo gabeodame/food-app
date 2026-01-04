@@ -3,7 +3,7 @@ import { app } from "../../app";
 
 it("returns 201 after successfull signup", async () => {
   return request(app)
-    .post("/api/sers/signup")
+    .post("/api/users/signup")
     .send({
       email: "test@test.com",
       password: "password",

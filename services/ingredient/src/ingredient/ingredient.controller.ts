@@ -9,6 +9,7 @@ import {
   // UseGuards,
   Req,
   Request,
+  Query,
   // Query,
 } from '@nestjs/common';
 import { IngredientService } from './ingredient.service';
@@ -20,10 +21,10 @@ import {
   ApiResponse,
   ApiBody,
   ApiBearerAuth,
+  ApiQuery,
 } from '@nestjs/swagger';
 import { IngredientSearchService } from './ingredient-search.service';
-
-// import { requireAuth } from '@gogittix/common';
+import { BadRequestError } from '@gogittix/common';
 
 @ApiTags('ingredient')
 @ApiBearerAuth('bearerAuth') // Apply bearer auth
@@ -127,5 +128,41 @@ export class IngredientController {
     @Req() req: Request,
   ): Promise<void> {
     return this.ingredientService.deleteIngredient(id, req);
+  }
+
+  @Get('batch')
+  @ApiOperation({ summary: 'Fetch multiple ingredients by IDs' })
+  @ApiResponse({
+    status: 200,
+    description: 'Return multiple ingredients.',
+    type: [Ingredient],
+  })
+  @ApiQuery({
+    name: 'ids',
+    required: true,
+    description: 'Comma-separated list of ingredient IDs (e.g., "1,2,3")',
+    type: String,
+    example: '1,2,3',
+  })
+  async getIngredientsByIds(@Query('ids') ids: string): Promise<Ingredient[]> {
+    if (!ids) throw new BadRequestError('Ingredient IDs are required.');
+
+    // ✅ Trim whitespace, split by ",", and filter out empty strings
+    const idArray = ids
+      .split(',')
+      .map((id) => id.trim()) // Remove extra spaces
+      .filter((id) => id !== '') // Remove empty strings
+      .map((id) => parseInt(id, 10)) // Convert to numbers
+      .filter((id) => !isNaN(id)); // ✅ Remove NaN values
+
+    console.log('Valid ID array:', idArray);
+
+    if (idArray.length === 0) {
+      throw new BadRequestError(
+        'At least one valid ingredient ID is required.',
+      );
+    }
+
+    return this.ingredientService.getIngredientsByIds(idArray);
   }
 }

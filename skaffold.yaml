@@ -58,62 +58,61 @@ build:
         manual:
           - src: "src/**/*.ts"
             dest: .
-manifests:
-  rawYaml:
-  # base k8s resources
-    - ./infra/k8s/base/namespace.yaml
-    - ./infra/k8s/base/network.yaml
-  # dev k8s resources - secrets
-    - ./infra/k8s/dev/secrets/auth-mongo-secret.yaml
-    - ./infra/k8s/dev/secrets/recipe-postgres-secret.yaml
-    - ./infra/k8s/dev/secrets/ingredient-postgres-secret.yaml
-    - ./infra/k8s/dev/secrets/userprofile-psql-secret.yaml
-    - ./infra/k8s/dev/secrets/rabbitmq-secret.yaml
-    - ./infra/k8s/dev/secrets/jwt-auth-secret.yaml
-    - ./infra/k8s/dev/secrets/s3-secret.yaml
-    - ./infra/k8s/dev/secrets/recipe-client-secret.yaml
-  # dev k8s resources - statefulsets
-    - ./infra/k8s/dev/statefulsets/rabbitmq-sts.yaml
-    - ./infra/k8s/dev/statefulsets/auth-mongo-sts.yaml
-    - ./infra/k8s/dev/statefulsets/recipe-postgres-sts.yaml
-    - ./infra/k8s/dev/statefulsets/userprofile-sts.yaml
-    - ./infra/k8s/dev/statefulsets/ingredient-postgres-sts.yaml
-  # dev k8s resources - deployments
-    - ./infra/k8s/dev/deployments/*.yaml
-    - ./infra/k8s/dev/ingress/*.yaml
+deploy:
+  helm:
+    releases:
+      - name: food-app
+        chartPath: infra/helm/food-app
+        namespace: recipe
+        createNamespace: true
+        valuesFiles:
+          - infra/helm/food-app/values-dev.yaml
+        setValueTemplates:
+          global.imageTag: "{{.IMAGE_TAG_gabeodame_recipe_backend}}"
 profiles:
   - name: dev
     activation:
       - kubeContext: docker-desktop # Activate for Docker Desktop Kubernetes
+    deploy:
+      helm:
+        releases:
+          - name: food-app
+            chartPath: infra/helm/food-app
+            namespace: recipe
+            createNamespace: true
+            valuesFiles:
+              - infra/helm/food-app/values-dev.yaml
+            setValueTemplates:
+              global.imageTag: "{{.IMAGE_TAG_gabeodame_recipe_backend}}"
+        hooks:
+          before:
+            - host:
+                command:
+                  - sh
+                  - -c
+                  - kubectl apply -f infra/k8s/dev/secrets
     build:
+      tagPolicy:
+        envTemplate:
+          template: "dev"
       local:
         push: false # Keep images local
+
+  - name: staging
+    build:
+      local:
+        push: true
     deploy:
-      kubectl: {}
-    manifests:
-      rawYaml:
-      # base k8s resources
-        - ./infra/k8s/base/namespace.yaml
-        - ./infra/k8s/base/network.yaml
-      # dev k8s resources - secrets
-        - ./infra/k8s/dev/secrets/auth-mongo-secret.yaml
-        - ./infra/k8s/dev/secrets/recipe-postgres-secret.yaml
-        - ./infra/k8s/dev/secrets/ingredient-postgres-secret.yaml
-        - ./infra/k8s/dev/secrets/userprofile-psql-secret.yaml
-        - ./infra/k8s/dev/secrets/rabbitmq-secret.yaml
-        - ./infra/k8s/dev/secrets/jwt-auth-secret.yaml
-        - ./infra/k8s/dev/secrets/s3-secret.yaml
-        - ./infra/k8s/dev/secrets/recipe-client-secret.yaml
-      # dev k8s resources - statefulsets
-        - ./infra/k8s/dev/statefulsets/rabbitmq-sts.yaml
-        - ./infra/k8s/dev/statefulsets/auth-mongo-sts.yaml
-        - ./infra/k8s/dev/statefulsets/recipe-postgres-sts.yaml
-        - ./infra/k8s/dev/statefulsets/userprofile-sts.yaml
-        - ./infra/k8s/dev/statefulsets/ingredient-postgres-sts.yaml
-      
-      # dev k8s resources - deployments
-        - ./infra/k8s/dev/deployments/*.yaml
-        - ./infra/k8s/dev/ingress/*.yaml
+      helm:
+        releases:
+          - name: food-app
+            chartPath: infra/helm/food-app
+            namespace: recipe
+            createNamespace: true
+            valuesFiles:
+              - infra/helm/food-app/values-staging.yaml
+            setValueTemplates:
+              global.imageTag: "{{.IMAGE_TAG_gabeodame_recipe_backend}}"
 
   - name: prod
     build:
@@ -127,8 +126,13 @@ profiles:
         - image: gabeodame/ingredient-backend
         - image: gabeodame/uploads
     deploy:
-      kubectl: {}
-    manifests:
-      rawYaml:
-        - ./infra/k8s/prod/*.yaml
-
+      helm:
+        releases:
+          - name: food-app
+            chartPath: infra/helm/food-app
+            namespace: recipe
+            createNamespace: true
+            valuesFiles:
+              - infra/helm/food-app/values-prod.yaml
+            setValueTemplates:
+              global.imageTag: "{{.IMAGE_TAG_gabeodame_recipe_backend}}"

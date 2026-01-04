@@ -1,18 +1,62 @@
+############################################
+# Kubernetes secrets (hard stop)
+############################################
+
+# Explicit secret files
 /infra/k8s/*-secret.yaml
-# /infra/k8s/auth-mongo-secret.yaml
+infra/k8s/**/*-secret.yaml
+infra/k8s/**/*secret*.yaml
+infra/k8s/**/secrets/
+
+# Generic secret directories (anywhere)
+**/secrets/
 archive/
 secrets/
-**/secrets/
-/node_modules/
 
-# local scratch
+
+############################################
+# Node / JS dependencies
+############################################
+
+**/node_modules/
+
+
+############################################
+# Build, test, coverage outputs
+############################################
+
+**/dist/
+**/coverage/
+**/.nyc_output/
+
+
+############################################
+# Local scratch / dev artifacts
+############################################
+
 .local/
+local/
 
-# terraform
+
+############################################
+# Terraform safety (state + sensitive vars)
+############################################
+
 **/.terraform/
 **/*.tfstate
 **/*.tfstate.*
-**/crash.log
-**/crash.*.log
 **/*.tfvars
 **/*.tfvars.json
+**/crash.log
+**/crash.*.log
+
+
+############################################
+# Certificates / keys (never commit)
+############################################
+
+*.pem
+*.key
+*.crt
+*.pfx
+*.p12

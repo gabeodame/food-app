@@ -1,29 +1,78 @@
-FROM node:alpine3.19
+# ============================================================
+# Recipe Backend — Production-ready Dockerfile (Prisma + PG)
+# - Uses Debian slim for Prisma reliability (avoid Alpine/musl pain)
+# - Multi-stage build: small runtime image, deterministic builds
+# - Runs as non-root
+# - Generates Prisma client at build time
+# - Includes safe migration retry loop at startup
+# ============================================================
 
-# Install PostgreSQL client and essential tools
-RUN apk add --no-cache postgresql-client curl
+# ---------- Builder ----------
+FROM node:22-bookworm-slim AS builder
 
 WORKDIR /app
 
-# Copying package.json and package-lock.json
+# Prisma engines commonly require OpenSSL + CA certs
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends ca-certificates openssl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy manifests first for better caching
 COPY package*.json ./
 
-# Installing dependencies as root, including Prisma CLI
+# Install all deps (include dev deps so Prisma CLI exists for generate)
 RUN npm ci
 
-# Ensuring the node user has ownership of the directories Prisma CLI might write to
-RUN mkdir -p node_modules/.cache prisma && chown -R node:node ./
+# Copy app source
+COPY . .
 
-# Switching to the node user for subsequent commands
+# Generate Prisma client
+RUN npx prisma generate --schema=prisma/schema.prisma
+
+# Build TypeScript output
+RUN npm run build \
+    && if [ ! -d /app/dist ]; then \
+      echo "ERROR: expected build output in /app/dist, but it was not created." >&2; \
+      echo "Contents of /app:" >&2; \
+      ls -la /app >&2; \
+      exit 1; \
+    fi
+
+
+
+# ---------- Runtime ----------
+FROM node:22-bookworm-slim AS runtime
+
+WORKDIR /app
+ENV NODE_ENV=production
+
+# Runtime: CA certs + OpenSSL for Prisma engine + TLS calls
+# Optional: postgresql-client only if you truly need psql in the container.
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends ca-certificates openssl postgresql-client \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy only manifests; install prod deps only (smaller + safer)
+COPY package*.json ./
+RUN npm ci --omit=dev \
+    && npm cache clean --force
+
+# Copy built app + prisma schema (and any runtime assets)
+COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/prisma ./prisma
+COPY --from=builder /app/prisma.config.ts ./prisma.config.ts
+
+# Copy Prisma generated client runtime bits
+# (Prisma stores the query engine + generated client here)
+COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
+COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
+COPY --from=builder /app/node_modules/@prisma/client ./node_modules/@prisma/client
+
+# Ensure non-root runtime
+RUN chown -R node:node /app
 USER node
-
-# Copying the rest of your application code with appropriate permissions
-COPY --chown=node:node . .
-
-# Generating the Prisma client using the locally installed Prisma CLI
-RUN npx prisma generate
 
 EXPOSE 3000
 
-# Add retry logic for database migrations
-CMD ["sh", "-c", "until npx prisma migrate deploy; do echo 'Retrying migrations...'; sleep 5; done && npm run start"]
+# Migrations should run via a dedicated job (e.g., Helm hook/Job) instead of the app container.
+CMD ["npm", "run", "start"]

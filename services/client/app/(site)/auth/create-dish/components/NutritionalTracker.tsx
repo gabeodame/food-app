@@ -2,93 +2,105 @@
 
 import { lazy, useEffect, useMemo, useState } from "react";
 import { Cell, Legend, Pie, Tooltip } from "recharts";
+import { Control, useWatch } from "react-hook-form";
+import { buildClient } from "@/app/util/buildClient";
 
 const PieChart = lazy(() =>
   import("recharts").then((mod) => ({ default: mod.PieChart }))
 );
 
-export type Ingredient = {
-  id: number;
+type Ingredient = {
+  id?: number;
   name: string;
   unit: string;
-  quantity: number | null; // quantity of ingredient in recipe
+  quantity: number;
   calories: number;
   protein: number;
   fat: number;
   carbohydrates: number;
-  allergens: string; // comma-separated allergens
+  allergens?: string;
 };
 
-const ingredients: Ingredient[] = [
-  {
-    id: 1,
-    name: "Tomato",
-    unit: "grams",
-    quantity: 100,
-    calories: 18,
-    protein: 0.9,
-    fat: 0.2,
-    carbohydrates: 3.9,
-    allergens: "",
-  },
-  {
-    id: 2,
-    name: "Cheese",
-    unit: "grams",
-    quantity: 50,
-    calories: 402,
-    protein: 25,
-    fat: 33,
-    carbohydrates: 1.3,
-    allergens: "Milk",
-  },
-  {
-    id: 3,
-    name: "Wheat Bread",
-    unit: "slice",
-    quantity: 1,
-    calories: 79,
-    protein: 3.3,
-    fat: 1,
-    carbohydrates: 14,
-    allergens: "Wheat, Gluten",
-  },
+const COLORS = [
+  "#144249", // Primary Brand Color (Bold Red-Orange)
+  "#f7881f", // Secondary Green (Vibrant Green for Freshness)
+  "#9fab38", // Complementary Blue (For a balanced contrast)
+  "#c33130", // Accent Yellow (For energy and visibility)
 ];
 
-const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042"];
+const NutritionalTrackerBase = ({
+  recipeId,
+  formIngredients,
+}: {
+  recipeId?: number;
+  formIngredients?: Ingredient[];
+}) => {
+  const [ingredients, setIngredients] = useState<Ingredient[]>(
+    formIngredients ?? []
+  );
+  const [loading, setLoading] = useState<boolean>(!!recipeId);
+  const [error, setError] = useState<string | null>(null);
 
-const NutritionalTracker = () => {
-  const [isClient, setIsClient] = useState(false);
-
-  // Ensure component renders only on the client
   useEffect(() => {
-    setIsClient(true);
-  }, []);
+    if (formIngredients) {
+      setIngredients(formIngredients);
+    }
+  }, [formIngredients]);
 
+  // **Fetch ingredients if recipeId exists (View Mode)**
+  useEffect(() => {
+    if (!recipeId) return;
+
+    const fetchIngredients = async () => {
+      try {
+        const client = buildClient();
+        const res = await client.get(
+          `/api/1/ingredient?recipeId=${recipeId}`
+        );
+        const data = res.data;
+        setIngredients(data);
+      } catch (err: any) {
+        const status = err?.response?.status;
+        if (status === 401) {
+          setError("Unauthorized. Please sign in to view nutrition data.");
+        } else {
+          setError(err.message);
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchIngredients();
+  }, [recipeId]);
+
+  // **Calculate Nutritional Totals**
   const totals = useMemo(() => {
     const initial = { calories: 0, protein: 0, fat: 0, carbohydrates: 0 };
     return ingredients.reduce(
       (acc, ingredient) => ({
-        calories: acc.calories + ingredient.calories,
-        protein: acc.protein + ingredient.protein,
-        fat: acc.fat + ingredient.fat,
-        carbohydrates: acc.carbohydrates + ingredient.carbohydrates,
+        calories: acc.calories + (ingredient.calories || 0),
+        protein: acc.protein + (ingredient.protein || 0),
+        fat: acc.fat + (ingredient.fat || 0),
+        carbohydrates: acc.carbohydrates + (ingredient.carbohydrates || 0),
       }),
       initial
     );
   }, [ingredients]);
 
+  // **Extract Unique Allergens**
   const allergens = useMemo(() => {
     const allergenSet = new Set<string>();
     ingredients.forEach((ingredient) => {
       ingredient.allergens
-        .split(",")
+        ?.split(",")
         .map((allergen) => allergen.trim())
-        .forEach((allergen) => (!!allergen ? allergenSet.add(allergen) : null));
+        .forEach((allergen) => allergen && allergenSet.add(allergen));
     });
     return Array.from(allergenSet);
   }, [ingredients]);
 
+  // **Prepare Chart Data**
   const chartData = useMemo(
     () => [
       { name: "Calories", value: totals.calories },
@@ -99,61 +111,104 @@ const NutritionalTracker = () => {
     [totals]
   );
 
-  if (!isClient) return null; // Ensure it doesn't render on the server
+  if (loading)
+    return <p className="text-gray-500">Loading nutrition data...</p>;
+  if (error) return <p className="text-red-500">Error: {error}</p>;
 
   return (
-    <div className="p-4 bg-white shadow rounded-md">
-      <h2 className="text-xl font-bold mb-4">Nutritional Breakdown</h2>
+    <div className="p-6 bg-white shadow-lg rounded-md">
+      <h2 className="text-xl font-bold mb-4 text-color-primary">
+        Nutritional Breakdown
+      </h2>
 
-      {/* Pie Chart */}
-      <div className="flex justify-center mb-6">
-        <PieChart width={400} height={400}>
-          <Pie
-            data={chartData}
-            cx="50%"
-            cy="50%"
-            outerRadius={120}
-            fill="#8884d8"
-            dataKey="value"
-            label
-          >
-            {chartData.map((_, index) => (
-              <Cell
-                key={`cell-${index}`}
-                fill={COLORS[index % COLORS.length]}
-              />
-            ))}
-          </Pie>
-          <Tooltip />
-          <Legend />
-        </PieChart>
-      </div>
+      <div className="flex flex-col md:flex-row items-center gap-6">
+        {/* Pie Chart */}
+        <div className="flex justify-center">
+          <PieChart width={320} height={320}>
+            <Pie
+              data={chartData}
+              cx="50%"
+              cy="50%"
+              outerRadius={120}
+              fill="#8884d8"
+              dataKey="value"
+              label
+            >
+              {chartData.map((_, index) => (
+                <Cell
+                  key={`cell-${index}`}
+                  fill={COLORS[index % COLORS.length]}
+                />
+              ))}
+            </Pie>
+            <Tooltip />
+            <Legend />
+          </PieChart>
+        </div>
 
-      {/* Insights */}
-      <div>
-        <h3 className="text-lg font-semibold">Summary</h3>
-        <ul className="mt-2 mb-4 ">
-          <li>Total Calories: {totals.calories}</li>
-          <li>Total Protein: {totals.protein}g</li>
-          <li>Total Fat: {totals.fat}g</li>
-          <li>Total Carbohydrates: {totals.carbohydrates}g</li>
-        </ul>
-
-        <h3 className="text-lg font-semibold">Allergens</h3>
-        {allergens.length > 0 ? (
-          <ul className="list-disc list-inside mt-2 flex gap-2">
-            {allergens.map((allergen, index) => (
-              <li key={index} className="text-red-500 font-medium">
-                {allergen}
-              </li>
-            ))}
+        {/* Summary Data */}
+        <div className="w-full space-y-4">
+          <h3 className="text-lg font-semibold">Summary</h3>
+          <ul className="text-gray-700 space-y-1">
+            <li>
+              <strong>Total Calories:</strong> {totals.calories} kcal
+            </li>
+            <li>
+              <strong>Total Protein:</strong> {totals.protein}g
+            </li>
+            <li>
+              <strong>Total Fat:</strong> {totals.fat}g
+            </li>
+            <li>
+              <strong>Total Carbohydrates:</strong> {totals.carbohydrates}g
+            </li>
           </ul>
-        ) : (
-          <p className="text-green-600 mt-2">No allergens detected.</p>
-        )}
+
+          <h3 className="text-lg font-semibold">Allergens</h3>
+          {allergens.length > 0 ? (
+            <ul className="list-disc list-inside text-red-500 space-y-1">
+              {allergens.map((allergen, index) => (
+                <li key={index}>{allergen}</li>
+              ))}
+            </ul>
+          ) : (
+            <p className="text-green-600">No allergens detected.</p>
+          )}
+        </div>
       </div>
     </div>
   );
+};
+
+const NutritionalTrackerWithForm = ({
+  recipeId,
+  control,
+}: {
+  recipeId?: number;
+  control: Control<any>;
+}) => {
+  const formIngredients = useWatch({ control, name: "ingredients" });
+
+  return (
+    <NutritionalTrackerBase
+      recipeId={recipeId}
+      formIngredients={formIngredients}
+    />
+  );
+};
+
+const NutritionalTracker = ({
+  recipeId,
+  control,
+}: {
+  recipeId?: number;
+  control?: Control<any>;
+}) => {
+  if (control) {
+    return <NutritionalTrackerWithForm recipeId={recipeId} control={control} />;
+  }
+
+  return <NutritionalTrackerBase recipeId={recipeId} />;
 };
 
 export default NutritionalTracker;
