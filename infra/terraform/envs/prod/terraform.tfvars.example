@@ -1,0 +1,16 @@
+region              = "us-east-1"
+environment         = "prod"
+cluster_name        = "food-app-prod"
+
+vpc_cidr            = "10.30.0.0/16"
+availability_zones  = ["us-east-1a", "us-east-1b"]
+public_subnet_cidrs = ["10.30.0.0/24", "10.30.1.0/24"]
+private_subnet_cidrs = ["10.30.10.0/24", "10.30.11.0/24"]
+
+db_identifier = "food-app-prod"
+db_name       = "food_app_prod"
+db_username   = "foodapp"
+# db_password should be provided securely (TF_VAR_db_password or tfvars)
+
+# rds_backup_retention_period = 14
+# tags = {"Owner" = "platform"}
