@@ -74,6 +74,8 @@ A production-style, microservices recipe platform designed to showcase auth, eve
 
 Use `.env.example` as a reference for per-service `.env` files when running without Kubernetes. For Kubernetes, secrets are managed via manifests in `infra/k8s/dev/secrets`.
 
+Note: secret manifests are intentionally excluded from git; example shapes live in `docs/examples/`.
+
 ### Run Services Locally (Kubernetes + Skaffold)
 
 ```bash
