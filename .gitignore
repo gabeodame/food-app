@@ -4,3 +4,15 @@ archive/
 secrets/
 **/secrets/
 /node_modules/
+
+# local scratch
+.local/
+
+# terraform
+**/.terraform/
+**/*.tfstate
+**/*.tfstate.*
+**/crash.log
+**/crash.*.log
+**/*.tfvars
+**/*.tfvars.json
