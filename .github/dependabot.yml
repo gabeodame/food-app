@@ -1,21 +1,13 @@
 version: 2
 updates:
-  # GitHub Actions
+ 
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
       interval: "weekly"
     open-pull-requests-limit: 10
 
-  # Root package.json (if present)
-  - package-ecosystem: "npm"
-    directory: "/"
-    schedule:
-      interval: "weekly"
-    open-pull-requests-limit: 10
-    versioning-strategy: "increase"
-
-  # Microservices
+  # Microservices (npm)
   - package-ecosystem: "npm"
     directory: "/services/auth"
     schedule:
@@ -46,6 +38,13 @@ updates:
 
   - package-ecosystem: "npm"
     directory: "/services/uploads"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 10
+    versioning-strategy: "increase"
+
+  - package-ecosystem: "npm"
+    directory: "/services/client"
     schedule:
       interval: "weekly"
     open-pull-requests-limit: 10
