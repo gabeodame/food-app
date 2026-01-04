@@ -2,6 +2,7 @@
 
 These files show the expected shape of Kubernetes Secrets referenced by the Helm chart.
 Replace all values before applying in any environment.
+No real credentials should ever be committed (see `SECURITY.md`).
 
 ## Service ↔ Secret Mapping
 
