@@ -138,7 +138,7 @@ function TopNavBar() {
                     <li className="row-span-3">
                       <NavigationMenuLink asChild>
                         <Link
-                          href="/foods"
+                          href="/dishes"
                           className="flex flex-col w-full h-full p-6 bg-gradient-to-b from-muted/50 to-muted rounded-md select-none no-underline focus:shadow-md"
                         >
                           <div className="w-full h-full">
