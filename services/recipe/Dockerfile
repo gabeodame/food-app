@@ -57,16 +57,15 @@ COPY package*.json ./
 RUN npm ci --omit=dev \
     && npm cache clean --force
 
-# Copy built app + prisma schema (and any runtime assets)
-COPY --from=builder /app/dist ./dist
+# Copy Prisma schema/config before generate
 COPY --from=builder /app/prisma ./prisma
 COPY --from=builder /app/prisma.config.ts ./prisma.config.ts
 
-# Copy Prisma generated client runtime bits
-# (Prisma stores the query engine + generated client here)
-COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
-COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
-COPY --from=builder /app/node_modules/@prisma/client ./node_modules/@prisma/client
+# Generate Prisma client in the runtime image to avoid stub client issues
+RUN ./node_modules/.bin/prisma generate --schema=prisma/schema.prisma
+
+# Copy built app output
+COPY --from=builder /app/dist ./dist
 
 # Ensure non-root runtime
 RUN chown -R node:node /app

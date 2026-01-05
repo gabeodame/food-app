@@ -17,16 +17,18 @@ function QueryParamsButtons({ name, tags, param }: Props) {
   const searchParams = useSearchParams();
 
   return (
-    <div className="w-full gap-3 flex items-center justify-start mt-4">
-      <p>{name}</p>
-      <div className="w-full flex gap-4 items-start">
+    <div className="w-full flex flex-col items-center gap-2 mt-4 md:items-start md:gap-3">
+      <p className="font-semibold text-gray-600 text-center md:text-left">
+        {name}
+      </p>
+      <div className="w-full flex flex-wrap items-center justify-center gap-2 md:justify-start">
         {tags?.map((tag) => {
           const isActive = searchParams.get(param) === tag.name.toLowerCase();
 
           return (
             <button
               key={tag.id}
-              className={`px-4 py-1 w-fit rounded-md ${
+              className={`px-4 py-2 text-sm w-full sm:w-auto rounded-md ${
                 isActive
                   ? "bg-color-primary text-white"
                   : "bg-color-secondary text-white hover:bg-color-secondary-alt"

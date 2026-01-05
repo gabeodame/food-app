@@ -1,6 +1,9 @@
 {{- $env := default "dev" .Values.global.environment }}
 {{- $seedAllowed := or .Values.seed.allowInProd (ne $env "prod") }}
-{{- if and .Values.seed.enabled $seedAllowed }}
+{{- $seedDelay := default 0 .Values.seed.startupDelaySeconds }}
+{{- $seedDelayInt := int $seedDelay }}
+{{- $seedRender := and .Values.seed.enabled .Values.seed.confirm $seedAllowed }}
+{{- if $seedRender }}
 apiVersion: batch/v1
 kind: Job
 metadata:
@@ -12,7 +15,7 @@ metadata:
   annotations:
     "helm.sh/hook": "post-install,post-upgrade"
     "helm.sh/hook-weight": {{ .Values.seed.hookWeight | default "5" | quote }}
-    "helm.sh/hook-delete-policy": "before-hook-creation,hook-succeeded,hook-failed"
+    "helm.sh/hook-delete-policy": "before-hook-creation,hook-succeeded{{- if .Values.seed.deleteFailedHook }},hook-failed{{- end }}"
 spec:
   backoffLimit: {{ .Values.seed.backoffLimit | default 1 }}
   ttlSecondsAfterFinished: {{ .Values.seed.ttlSecondsAfterFinished | default 300 }}
@@ -25,22 +28,36 @@ spec:
       restartPolicy: Never
       securityContext:
         runAsNonRoot: true
+      {{- if .Values.seed.serviceAccountName }}
+      serviceAccountName: {{ .Values.seed.serviceAccountName }}
+      {{- end }}
       {{- if $.Values.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml $.Values.imagePullSecrets | nindent 8 }}
+      {{- end }}
+      {{- if .Values.seed.initContainers }}
+      initContainers:
+        {{- toYaml .Values.seed.initContainers | nindent 8 }}
       {{- end }}
       containers:
         - name: recipe-seed
           image: "{{ .Values.seed.image.repository }}:{{ default $.Values.global.imageTag .Values.seed.image.tag }}"
           imagePullPolicy: {{ .Values.seed.image.pullPolicy | default "IfNotPresent" }}
           securityContext:
+            runAsNonRoot: true
+            runAsUser: 1000
+            runAsGroup: 1000
             allowPrivilegeEscalation: false
             readOnlyRootFilesystem: true
           {{- if eq .Values.seed.mode "psql" }}
           command:
             - sh
             - -c
-            - psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f /seeds/seed.sql
+            - |
+              {{- if gt $seedDelayInt 0 }}
+              sleep {{ $seedDelayInt }};
+              {{- end }}
+              psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f /seeds/seed.sql
           volumeMounts:
             - name: tmp
               mountPath: /tmp
@@ -51,7 +68,11 @@ spec:
           command:
             - sh
             - -c
-            - ./node_modules/.bin/prisma db seed --config=prisma.config.ts
+            - |
+              {{- if gt $seedDelayInt 0 }}
+              sleep {{ $seedDelayInt }};
+              {{- end }}
+              ./node_modules/.bin/prisma db seed --config=prisma.config.ts
           volumeMounts:
             - name: tmp
               mountPath: /tmp
@@ -65,9 +86,13 @@ spec:
             - name: NODE_ENV
               value: {{ $env | quote }}
             - name: SEED_ALLOW
-              value: {{ ternary "true" "false" $seedAllowed | quote }}
+              value: {{ ternary "true" "false" $seedRender | quote }}
             - name: TMPDIR
               value: /tmp
+          {{- if .Values.seed.resources }}
+          resources:
+            {{- toYaml .Values.seed.resources | nindent 12 }}
+          {{- end }}
       {{- if eq .Values.seed.mode "psql" }}
       volumes:
         - name: seed-sql

@@ -11,15 +11,32 @@ type SearchParams = { [key: string]: string | string[] | undefined };
 async function DishList({
   limit,
   userList,
-  searchParams,
+  searchParams = {},
+  showAllLink = false,
+  paginated = false,
+  pageSize = 12,
 }: {
   limit?: string;
   userList?: string;
-  searchParams: SearchParams;
+  searchParams?: SearchParams;
+  showAllLink?: boolean;
+  paginated?: boolean;
+  pageSize?: number;
 }) {
-  const params = new URLSearchParams(searchParams as Record<string, string>);
+  const params = new URLSearchParams();
+  Object.entries(searchParams ?? {}).forEach(([key, value]) => {
+    if (typeof value === "string") {
+      params.set(key, value);
+    }
+  });
+  const pageParam = searchParams?.page;
+  const currentPage = Math.max(
+    1,
+    Number(Array.isArray(pageParam) ? pageParam[0] : pageParam) || 1
+  );
 
   let data: DishListTypes[] = [];
+  let totalPages = 0;
 
   try {
     if (userList) {
@@ -38,15 +55,29 @@ async function DishList({
       });
 
       // ✅ If no search params exist, fetch ALL recipes
-      const apiEndpoint =
-        filteredParams.toString().length > 0
-          ? `/api/1/recipes/search?${filteredParams.toString()}`
-          : `/api/1/recipes`;
+      if (paginated) {
+        filteredParams.set("page", String(currentPage));
+        filteredParams.set("pageSize", String(pageSize));
+      }
+
+      const hasSearchFilters = ["slug", "category", "ingredientName"].some(
+        (key) => filteredParams.has(key)
+      );
+      const apiEndpoint = hasSearchFilters
+        ? `/api/1/recipes/search?${filteredParams.toString()}`
+        : paginated
+        ? `/api/1/recipes?${filteredParams.toString()}`
+        : `/api/1/recipes`;
 
       const res = await client.get(apiEndpoint);
 
       if (res.status === 200) {
-        data = res.data;
+        if (Array.isArray(res.data)) {
+          data = res.data;
+        } else {
+          data = res.data.data ?? [];
+          totalPages = res.data.totalPages ?? 0;
+        }
       }
     }
   } catch (error) {
@@ -57,13 +88,15 @@ async function DishList({
     <Suspense fallback={<div>Loading...</div>}>
       <div className="flex flex-col gap-4">
         {/* Conditional Button */}
-        <Link
-          href="/dishes"
-          className="flex gap-1 items-center justify-center md:justify-end"
-        >
-          <ArrowLeftIcon className="h-4 w-4" />
-          Show All
-        </Link>
+        {showAllLink && (
+          <Link
+            href="/dishes"
+            className="flex gap-1 items-center justify-center md:justify-end"
+          >
+            <ArrowLeftIcon className="h-4 w-4" />
+            Show All
+          </Link>
+        )}
 
         {/* Grid Layout */}
         <div className="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 auto-rows-auto gap-4">
@@ -79,6 +112,42 @@ async function DishList({
             </p>
           )}
         </div>
+
+        {paginated && totalPages > 1 && (
+          <div className="w-full flex items-center justify-center gap-4 pt-4">
+            <Link
+              href={`/dishes?${new URLSearchParams({
+                ...Object.fromEntries(params.entries()),
+                page: String(Math.max(1, currentPage - 1)),
+              }).toString()}`}
+              className={`px-3 py-1 rounded-md border ${
+                currentPage <= 1
+                  ? "pointer-events-none text-gray-400 border-gray-200"
+                  : "border-gray-300 text-gray-700 hover:bg-gray-100"
+              }`}
+              aria-disabled={currentPage <= 1}
+            >
+              Previous
+            </Link>
+            <span className="text-sm text-gray-600">
+              Page {currentPage} of {totalPages}
+            </span>
+            <Link
+              href={`/dishes?${new URLSearchParams({
+                ...Object.fromEntries(params.entries()),
+                page: String(Math.min(totalPages, currentPage + 1)),
+              }).toString()}`}
+              className={`px-3 py-1 rounded-md border ${
+                currentPage >= totalPages
+                  ? "pointer-events-none text-gray-400 border-gray-200"
+                  : "border-gray-300 text-gray-700 hover:bg-gray-100"
+              }`}
+              aria-disabled={currentPage >= totalPages}
+            >
+              Next
+            </Link>
+          </div>
+        )}
       </div>
     </Suspense>
   );

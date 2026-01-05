@@ -1,5 +1,5 @@
 import { FoodItemProps } from "../entities/recipe.entity";
-import { CreateRecipeDto, Recipe, UpdateRecipeDto } from "../dtos";
+import { CreateRecipeDto, UpdateRecipeDto } from "../dtos";
 import { prisma } from "../lib/prisma";
 import { Request } from "express";
 import {
@@ -9,6 +9,28 @@ import {
 } from "@gogittix/common";
 import slugify from "slugify";
 import { formatRecipeResponse } from "../utils/formatRecipeRespons";
+
+type RecipeListItem = {
+  id: number;
+  title: string;
+  slug: string;
+  imageUrl: string;
+  description: string;
+  userId: string;
+  views: number;
+  favoritesCount: number;
+  isFavoritedByCurrentUser: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+};
+
+type PaginatedRecipeList = {
+  data: RecipeListItem[];
+  page: number;
+  pageSize: number;
+  total: number;
+  totalPages: number;
+};
 
 class RecipeService {
   async createRecipe(req: Request) {
@@ -239,19 +261,34 @@ class RecipeService {
     }
   }
 
-  async getAllRecipes(req: any): Promise<Recipe[] | Error> {
+  async getAllRecipes(
+    req: any
+  ): Promise<RecipeListItem[] | PaginatedRecipeList | Error> {
     try {
       const currentUserId = req?.currentUser?.id || "0";
       console.log("Current User ID from recipe service:", currentUserId);
+
+      const pageParam = Number(req?.query?.page);
+      const pageSizeParam = Number(req?.query?.pageSize);
+      const usePagination = Number.isFinite(pageParam) || Number.isFinite(pageSizeParam);
+      const page = Number.isFinite(pageParam) && pageParam > 0 ? pageParam : 1;
+      const pageSize =
+        Number.isFinite(pageSizeParam) && pageSizeParam > 0 ? pageSizeParam : 12;
 
       const recipes = await prisma.recipe.findMany({
         include: {
           favoritedBy: { select: { userId: true } },
           views: true,
         },
+        ...(usePagination
+          ? {
+              skip: (page - 1) * pageSize,
+              take: pageSize,
+            }
+          : {}),
       });
 
-      return recipes.map((recipe) => ({
+      const mapped = recipes.map((recipe) => ({
         id: recipe.id,
         title: recipe.title,
         slug: recipe.slug,
@@ -266,6 +303,20 @@ class RecipeService {
         createdAt: recipe.createdAt,
         updatedAt: recipe.updatedAt,
       }));
+
+      if (!usePagination) {
+        return mapped;
+      }
+
+      const total = await prisma.recipe.count();
+      const totalPages = Math.max(1, Math.ceil(total / pageSize));
+      return {
+        data: mapped,
+        page,
+        pageSize,
+        total,
+        totalPages,
+      } as any;
     } catch (error: any) {
       return new BadRequestError(`Error fetching recipes: ${error.message}`);
     }

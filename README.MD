@@ -118,13 +118,14 @@ helm upgrade --install food-app infra/helm/food-app \
 
 ### Seeding (Dev Only)
 
-Seed runs as a Helm hook Job after migrations when enabled. It is gated and will not run in production unless explicitly allowed.
+Seed runs as a Helm hook Job after migrations when enabled and confirmed. Enable it safely with `seed.enabled=true`, `seed.confirm=true`, and `global.environment=dev`. It is gated and will not run in production unless explicitly allowed.
 
 ```bash
 helm upgrade --install food-app infra/helm/food-app \
   --namespace recipe \
   --values infra/helm/food-app/values-dev.yaml \
-  --set seed.enabled=true
+  --set seed.enabled=true \
+  --set seed.confirm=true
 ```
 
 Disable in prod (default):
@@ -136,14 +137,32 @@ helm upgrade --install food-app infra/helm/food-app \
   --set seed.enabled=false
 ```
 
+Allow seeding in prod (discouraged):
+
+```bash
+helm upgrade --install food-app infra/helm/food-app \
+  --namespace recipe \
+  --values infra/helm/food-app/values-prod.yaml \
+  --set seed.allowInProd=true \
+  --set seed.confirm=true
+```
+
 Re-run seed safely:
 
 ```bash
-kubectl delete job -n recipe recipe-seed
+kubectl delete job -n recipe -l app=recipe-seed
 helm upgrade --install food-app infra/helm/food-app \
   --namespace recipe \
   --values infra/helm/food-app/values-dev.yaml \
-  --set seed.enabled=true
+  --set seed.enabled=true \
+  --set seed.confirm=true
+```
+
+View seed logs (failed jobs remain by default):
+
+```bash
+kubectl logs -n <ns> -f job/<jobName>
+kubectl get pods -n <ns> -l job-name=<jobName>
 ```
 
 Env-specific values files:

@@ -72,7 +72,10 @@ class RecipeSearchController {
 
       const recipes = await recipeSearchService.searchBySlug(filters, req);
 
-      if (!recipes.length) {
+      if (Array.isArray(recipes) && !recipes.length) {
+        return res.status(404).json({ message: "No recipes found." });
+      }
+      if (!Array.isArray(recipes) && (!recipes.data || !recipes.data.length)) {
         return res.status(404).json({ message: "No recipes found." });
       }
 

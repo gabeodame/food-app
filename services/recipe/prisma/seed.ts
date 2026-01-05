@@ -1,4 +1,6 @@
 import { PrismaClient } from "@prisma/client";
+import { PrismaPg } from "@prisma/adapter-pg";
+import { Pool } from "pg";
 import slugify from "slugify";
 import {
   users,
@@ -10,7 +12,11 @@ import {
   recipes,
 } from "../src/data/foodData";
 
-const prisma = new PrismaClient();
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+});
+const adapter = new PrismaPg(pool);
+const prisma = new PrismaClient({ adapter });
 
 const parseQuantity = (value: number | string | null | undefined) => {
   if (value === null || value === undefined) return null;
@@ -283,4 +289,5 @@ main()
   })
   .finally(async () => {
     await prisma.$disconnect();
+    await pool.end();
   });

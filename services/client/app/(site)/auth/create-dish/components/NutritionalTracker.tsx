@@ -54,9 +54,7 @@ const NutritionalTrackerBase = ({
     const fetchIngredients = async () => {
       try {
         const client = buildClient();
-        const res = await client.get(
-          `/api/1/ingredient?recipeId=${recipeId}`
-        );
+        const res = await client.get(`/api/1/ingredient?recipeId=${recipeId}`);
         const data = res.data;
         setIngredients(data);
       } catch (err: any) {
@@ -121,7 +119,7 @@ const NutritionalTrackerBase = ({
         Nutritional Breakdown
       </h2>
 
-      <div className="flex flex-col md:flex-row items-center gap-6">
+      <div className="flex flex-col items-center gap-6">
         {/* Pie Chart */}
         <div className="flex justify-center">
           <PieChart width={320} height={320}>

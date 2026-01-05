@@ -6,6 +6,13 @@ class RecipeSearchService {
   async searchBySlug(query: Record<string, string | string[]>, req: any) {
     try {
       const filters: Record<string, any> = {};
+      const pageParam = Number(query.page);
+      const pageSizeParam = Number(query.pageSize);
+      const usePagination =
+        Number.isFinite(pageParam) || Number.isFinite(pageSizeParam);
+      const page = Number.isFinite(pageParam) && pageParam > 0 ? pageParam : 1;
+      const pageSize =
+        Number.isFinite(pageSizeParam) && pageSizeParam > 0 ? pageSizeParam : 12;
 
       console.log("Incoming Query Parameters:", query);
 
@@ -78,12 +85,29 @@ class RecipeSearchService {
           ingredients: { include: { ingredient: true } },
           categories: { include: { category: true } },
         },
-        take: 20,
+        ...(usePagination
+          ? {
+              skip: (page - 1) * pageSize,
+              take: pageSize,
+            }
+          : { take: 20 }),
       });
 
       console.log(`Fetched ${recipes.length} recipes`);
 
-      return recipes;
+      if (!usePagination) {
+        return recipes;
+      }
+
+      const total = await prisma.recipe.count({ where: filters });
+      const totalPages = Math.max(1, Math.ceil(total / pageSize));
+      return {
+        data: recipes,
+        page,
+        pageSize,
+        total,
+        totalPages,
+      };
     } catch (error: any) {
       console.error("Error searching recipes:", error);
       if (error.code === "P2025") {

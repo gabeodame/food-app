@@ -5,7 +5,7 @@ import Link from "next/link";
 
 import { DishItemProps } from "@/app/(site)/models/types/types";
 import Image from "next/image";
-import FoodCardContent from "./DishCardContent";
+import DishCardContent from "./DishCardContent";
 import { buildClient } from "@/app/util/buildClient";
 import { useEffect } from "react";
 
@@ -37,23 +37,28 @@ function DisdhItemDetail({ dish }: { dish: DishItemProps }) {
           </div>
         </Link>
 
-        {/* Food Card */}
-        <div className="w-svw h-full md:max-w-7xl gap-4 border border-gray-100 shadow-md rounded-lg p-2 sm:p-4">
+        {/* Dish Card */}
+        <div className="w-full flex flex-col gap-4 border border-gray-100 shadow-md rounded-lg p-2 sm:p-4">
           {/* Image Section */}
-          <div className="w-full h-full rounded-lg overflow-hidden border-gray-200">
+          <div className="relative w-full h-[240px] sm:h-[360px] lg:h-[520px] rounded-lg overflow-hidden border-gray-200 bg-gray-100">
             <Image
               src={dish?.imageUrl ?? ""}
               alt={dish?.title ?? ""}
-              width="0"
-              height="0"
-              sizes="(min-width: 60em) 24vw, (min-width: 28em) 45vw, 100vw"
-              className="w-full h-auto object-cover"
+              fill
+              sizes="100vw"
+              className="object-cover"
             />
+          </div>
+
+          <div className="w-full">
+            <h1 className="w-full text-center text-2xl sm:text-3xl font-bold text-gray-700">
+              {dish?.title}
+            </h1>
           </div>
 
           {/* Content Section */}
           <div className="w-full h-full p-4">
-            <FoodCardContent dish={dish} />
+            <DishCardContent dish={dish} />
           </div>
         </div>
       </div>

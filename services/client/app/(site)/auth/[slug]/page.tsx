@@ -31,7 +31,7 @@ async function UserDashboard({
             Here are some of your recent activities:
           </p>
 
-          <DishList userList={userList} />
+          <DishList userList={userList} showAllLink={false} />
         </div>
       )}
     </div>

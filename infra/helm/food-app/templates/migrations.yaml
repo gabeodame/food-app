@@ -37,6 +37,9 @@ spec:
           image: "{{ .image.repository }}:{{ default $.Values.global.imageTag .image.tag }}"
           imagePullPolicy: {{ .image.pullPolicy | default "IfNotPresent" }}
           securityContext:
+            runAsNonRoot: true
+            runAsUser: 1000
+            runAsGroup: 1000
             allowPrivilegeEscalation: false
             readOnlyRootFilesystem: true
           {{- if .command }}
