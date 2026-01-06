@@ -8,6 +8,9 @@ seed:
   allowInProd: false
 
 secrets:
+  enabled: false
+
+secrets:
   enabled: true
 
 ingress:

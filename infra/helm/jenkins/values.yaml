@@ -33,6 +33,30 @@ resources:
     cpu: "1"
     memory: "2Gi"
 
+secretsManifests:
+  enabled: false
+  mountPath: /var/jenkins_home/secrets
+  files: {}
+
+plugins:
+  enabled: true
+  list:
+    - configuration-as-code
+    - credentials
+    - credentials-binding
+    - docker-workflow
+    - git
+    - github
+    - github-branch-source
+    - pipeline-utility-steps
+    - pipeline-stage-view
+    - workflow-aggregator
+    - kubernetes
+    - kubernetes-cli
+    - blueocean
+    - aws-credentials
+    - pipeline-aws
+
 podSecurityContext:
   fsGroup: 1000
 

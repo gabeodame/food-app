@@ -5,10 +5,13 @@ pipeline {
     choice(name: "DEPLOY_ENV_OVERRIDE", choices: ["", "dev", "staging", "prod"], description: "Override environment selection (optional).")
     booleanParam(name: "INSTALL_GATEWAY_CRDS", defaultValue: true, description: "Install Gateway API CRDs before Helm deploy.")
     booleanParam(name: "USE_EXTERNAL_SECRETS", defaultValue: false, description: "Disable Helm-managed secrets and rely on an external secret store.")
+    booleanParam(name: "APPLY_SECRETS_MANIFESTS", defaultValue: false, description: "Apply pre-created Secret manifests before Helm deploy.")
+    string(name: "SECRETS_MANIFEST_DIR", defaultValue: "", description: "Directory containing Secret manifests to apply (optional).")
     booleanParam(name: "CREATE_IMAGE_PULL_SECRET", defaultValue: false, description: "Create imagePullSecret during Helm deploy.")
     string(name: "IMAGE_PULL_SECRET_NAME", defaultValue: "docker-registry-creds", description: "Name for the image pull secret.")
     string(name: "IMAGE_PULL_SECRET_SERVER", defaultValue: "https://index.docker.io/v1/", description: "Registry server for image pull secret.")
     string(name: "IMAGE_PULL_SECRET_EMAIL", defaultValue: "", description: "Email for image pull secret (optional).")
+    string(name: "IMAGE_NAMESPACE", defaultValue: "gabeodame", description: "Docker registry namespace/org for image tags.")
   }
 
   options {
@@ -63,6 +66,17 @@ pipeline {
           env.IMAGE_PULL_SECRET_NAME = params.IMAGE_PULL_SECRET_NAME
           env.IMAGE_PULL_SECRET_SERVER = params.IMAGE_PULL_SECRET_SERVER
           env.IMAGE_PULL_SECRET_EMAIL = params.IMAGE_PULL_SECRET_EMAIL
+          env.IMAGE_NAMESPACE = params.IMAGE_NAMESPACE
+          env.APPLY_SECRETS_MANIFESTS = params.APPLY_SECRETS_MANIFESTS ? "true" : "false"
+          env.SECRETS_MANIFEST_DIR = params.SECRETS_MANIFEST_DIR?.trim()
+          if (!env.SECRETS_MANIFEST_DIR) {
+            env.SECRETS_MANIFEST_DIR = "infra/k8s/${env.DEPLOY_ENV}/secrets"
+          }
+          if (!env.IMAGE_NAMESPACE?.trim()) {
+            withCredentials([usernamePassword(credentialsId: "docker-registry-creds", usernameVariable: "REGISTRY_USER", passwordVariable: "REGISTRY_PASSWORD")]) {
+              env.IMAGE_NAMESPACE = env.REGISTRY_USER
+            }
+          }
 
           if (env.DEPLOY_ENV == "prod") {
             env.SMOKE_TEST_URL = "http://recipe.prod/"
@@ -104,6 +118,20 @@ pipeline {
       steps {
         withCredentials([usernamePassword(credentialsId: "docker-registry-creds", usernameVariable: "REGISTRY_USER", passwordVariable: "REGISTRY_PASSWORD")]) {
           sh "scripts/ci/push-images.sh"
+        }
+      }
+    }
+
+    stage("Apply Secrets") {
+      when {
+        expression { return params.APPLY_SECRETS_MANIFESTS }
+      }
+      steps {
+        script {
+          if (!fileExists(env.SECRETS_MANIFEST_DIR)) {
+            error("Secrets manifest dir not found: ${env.SECRETS_MANIFEST_DIR}")
+          }
+          sh "kubectl apply -f ${env.SECRETS_MANIFEST_DIR}"
         }
       }
     }

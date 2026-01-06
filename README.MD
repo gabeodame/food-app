@@ -156,6 +156,7 @@ HELM_VALUES_FILE=infra/helm/food-app/values-dev.yaml scripts/ci/deploy-helm.sh
 
 - **Image tags:** CI builds and pushes `:SHA` images. Deploys override `global.imageTag` with the same SHA to avoid pull errors.
 - **Secrets (default):** Helm renders Kubernetes Secrets from `values.yaml`. Override with `SECRETS_EXTERNAL_ENABLED=true` to rely on an external secret store.
+- **Pre-created secrets:** Set `secrets.enabled=false` and use `envFrom` + `APPLY_SECRETS_MANIFESTS=true` in Jenkins. Defaults to `infra/k8s/<env>/secrets` or override with `SECRETS_MANIFEST_DIR`.
 - **Registry pull secret (optional):** Set `IMAGE_PULL_SECRET_*` env vars or Jenkins parameters to create an image pull secret during deploy.
 - **Gateway CRDs:** `scripts/ci/deploy-helm.sh` can install Gateway API CRDs when `INSTALL_GATEWAY_CRDS=true`.
 
@@ -179,10 +180,12 @@ kubectl port-forward -n recipe pod/<recipe-postgres-pod> 5432:5432
 
 ```bash
 export IMAGE_TAG=$(git rev-parse --short HEAD)
-export IMAGE_NAMESPACE=gabeodame
+export IMAGE_NAMESPACE=<your-docker-namespace>
 scripts/ci/build-images.sh
 scripts/ci/push-images.sh
 ```
+
+In Jenkins, `IMAGE_NAMESPACE` defaults to the username from the `docker-registry-creds` credential when not provided.
 
 Optional image scanning (requires `trivy`):
 

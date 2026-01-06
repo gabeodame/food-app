@@ -13,6 +13,7 @@ Jenkins parameters:
 - `IMAGE_PULL_SECRET_NAME=...`
 - `IMAGE_PULL_SECRET_SERVER=https://index.docker.io/v1/`
 - `IMAGE_PULL_SECRET_EMAIL=...`
+- `IMAGE_NAMESPACE` (optional; defaults to registry username when using Jenkins creds)
 
 The Jenkins job uses the `docker-registry-creds` credential to populate the secret.
 
@@ -32,8 +33,45 @@ scripts/ci/deploy-helm.sh
 Default: Helm-managed secrets (`secrets.enabled=true`, `secrets.external.enabled=false`).
 
 External secret store:
+
 - Set `SECRETS_EXTERNAL_ENABLED=true` (or Jenkins `USE_EXTERNAL_SECRETS=true`).
 - Provide ExternalSecret/SecretStore manifests via `secrets.external.manifests`.
+
+Pre-created secrets (no secret manager):
+
+- Set `secrets.enabled=false` and create secrets in your pipeline.
+- Use `envFrom` in `values.yaml` to reference those secret names.
+- In Jenkins, enable `APPLY_SECRETS_MANIFESTS=true`. It defaults to `infra/k8s/<env>/secrets` and can be overridden with `SECRETS_MANIFEST_DIR`.
+
+## Jenkins Secrets (Demo vs Production)
+
+Demo (low risk, non-production):
+- Mount pre-created Secret manifests into Jenkins via a ConfigMap.
+- Configure `infra/helm/jenkins/values-*.yaml`:
+
+```yaml
+secretsManifests:
+  enabled: true
+  mountPath: /var/jenkins_home/secrets
+  files:
+    staging.yaml: |
+      apiVersion: v1
+      kind: Secret
+      metadata:
+        name: rabbitmq-secret
+        namespace: recipe
+      type: Opaque
+      stringData:
+        RABBITMQ_URL: "amqp://changeme:changeme@rabbitmq-service:5672"
+```
+
+- Jenkins parameter: `APPLY_SECRETS_MANIFESTS=true`
+- Jenkins parameter: `SECRETS_MANIFEST_DIR=/var/jenkins_home/secrets/staging.yaml`
+
+Production:
+- Do not mount secret manifests into Jenkins.
+- Use ExternalSecrets/Secrets Store CSI and set `secrets.external.enabled=true`.
+- Jenkins deploys Helm only; secrets are managed outside CI/CD.
 
 Example values snippet:
 
@@ -82,4 +120,32 @@ scripts/ci/smoke-test.sh
 export HELM_VALUES_FILE=infra/helm/food-app/values-dev.yaml
 export IMAGE_TAG=$(git rev-parse --short HEAD)
 scripts/ci/deploy-helm.sh
+```
+
+## Staging Deploy (manual)
+
+1) Build + push images with the current SHA:
+
+```bash
+export IMAGE_TAG=$(git rev-parse --short HEAD)
+export IMAGE_NAMESPACE=<your-docker-namespace>
+scripts/ci/build-images.sh
+scripts/ci/push-images.sh
+```
+
+2) Deploy to staging (installs Gateway API CRDs if needed):
+
+```bash
+export HELM_VALUES_FILE=infra/helm/food-app/values-staging.yaml
+export INSTALL_GATEWAY_CRDS=true
+export SECRETS_EXTERNAL_ENABLED=false
+scripts/ci/deploy-helm.sh
+```
+
+3) Smoke test:
+
+```bash
+export SMOKE_TEST_URL="http://recipe.staging/"
+export SMOKE_TEST_ENDPOINTS="/,/api/1/recipes"
+scripts/ci/smoke-test.sh
 ```

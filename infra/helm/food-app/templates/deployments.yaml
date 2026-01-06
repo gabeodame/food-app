@@ -29,6 +29,10 @@ spec:
           imagePullPolicy: {{ .image.pullPolicy | default "IfNotPresent" }}
           ports:
             - containerPort: {{ .containerPort }}
+          {{- if .envFrom }}
+          envFrom:
+            {{- toYaml .envFrom | nindent 12 }}
+          {{- end }}
           {{- if .env }}
           env:
             {{- toYaml .env | nindent 12 }}

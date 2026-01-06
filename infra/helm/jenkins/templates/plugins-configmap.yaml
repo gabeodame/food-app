@@ -1,0 +1,14 @@
+{{- if .Values.plugins.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-plugins
+  namespace: {{ .Values.namespace }}
+  labels:
+    {{- include "jenkins.labels" . | nindent 4 }}
+data:
+  plugins.txt: |
+    {{- range .Values.plugins.list }}
+    {{ . }}
+    {{- end }}
+{{- end }}

@@ -31,11 +31,26 @@ spec:
           env:
             - name: JENKINS_OPTS
               value: {{ .Values.jenkinsOpts | quote }}
+            {{- if .Values.plugins.enabled }}
+            - name: JENKINS_INSTALL_PLUGINS
+              value: /usr/share/jenkins/ref/plugins.txt
+            {{- end }}
           securityContext:
             {{- toYaml .Values.containerSecurityContext | nindent 12 }}
           volumeMounts:
             - name: jenkins-home
               mountPath: /var/jenkins_home
+            {{- if .Values.plugins.enabled }}
+            - name: jenkins-plugins
+              mountPath: /usr/share/jenkins/ref/plugins.txt
+              subPath: plugins.txt
+              readOnly: true
+            {{- end }}
+            {{- if .Values.secretsManifests.enabled }}
+            - name: jenkins-secrets-manifests
+              mountPath: {{ .Values.secretsManifests.mountPath }}
+              readOnly: true
+            {{- end }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
           livenessProbe:
@@ -46,3 +61,13 @@ spec:
         - name: jenkins-home
           persistentVolumeClaim:
             claimName: {{ .Release.Name }}-jenkins-home
+        {{- if .Values.plugins.enabled }}
+        - name: jenkins-plugins
+          configMap:
+            name: {{ .Release.Name }}-plugins
+        {{- end }}
+        {{- if .Values.secretsManifests.enabled }}
+        - name: jenkins-secrets-manifests
+          configMap:
+            name: {{ .Release.Name }}-secrets-manifests
+        {{- end }}

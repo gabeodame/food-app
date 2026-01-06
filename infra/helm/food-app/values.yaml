@@ -11,58 +11,58 @@ db:
   secretKey: DATABASE_URL
 
 secrets:
-  enabled: true
+  enabled: false
   external:
     enabled: false
     manifests: ""
   recipeSecret:
     name: recipe-secret
     data:
-      NEXT_PUBLIC_API_URL: "https://example.com"
+      NEXT_PUBLIC_API_URL: ""
   mongoSecret:
     name: mongo-secret
     data:
-      MONGO_URI: "mongodb://user:pass@mongo:27017/auth"
+      MONGO_URI: ""
   rabbitmqSecret:
     name: rabbitmq-secret
     data:
-      RABBITMQ_URL: "amqp://user:pass@rabbitmq-service:5672"
+      RABBITMQ_URL: ""
   jwtSecret:
     name: jwt-secret
     data:
-      JWT_KEY: "change-me"
+      JWT_KEY: ""
   recipePostgresSecret:
     name: recipe-postgres-secret
     data:
-      DATABASE_URL: "postgresql://user:pass@recipe-postgres-headless:5432/recipe"
-      POSTGRES_USER: "recipe"
-      POSTGRES_PASSWORD: "change-me"
-      POSTGRES_DB: "recipe"
+      DATABASE_URL: ""
+      POSTGRES_USER: ""
+      POSTGRES_PASSWORD: ""
+      POSTGRES_DB: ""
   ingredientPostgresSecret:
     name: ingredient-postgres-secret
     data:
-      DATABASE_URL: "postgresql://user:pass@ingredient-postgres-headless:5432/ingredient"
-      DB_HOST: "ingredient-postgres-headless"
-      POSTGRES_USER: "ingredient"
-      POSTGRES_PASSWORD: "change-me"
-      POSTGRES_DB: "ingredient"
-      NODE_ENV: "development"
-      DB_SYNCHRONIZE: "true"
+      DATABASE_URL: ""
+      DB_HOST: ""
+      POSTGRES_USER: ""
+      POSTGRES_PASSWORD: ""
+      POSTGRES_DB: ""
+      NODE_ENV: ""
+      DB_SYNCHRONIZE: ""
   userprofilePostgresSecret:
     name: userprofile-postgres-secret
     data:
-      DATABASE_URL: "postgresql://user:pass@userprofile-postgres-headless:5432/userprofile"
-      DB_HOST: "userprofile-postgres-headless"
-      POSTGRES_USER: "userprofile"
-      POSTGRES_PASSWORD: "change-me"
-      POSTGRES_DB: "userprofile"
+      DATABASE_URL: ""
+      DB_HOST: ""
+      POSTGRES_USER: ""
+      POSTGRES_PASSWORD: ""
+      POSTGRES_DB: ""
   s3Secret:
     name: s3-secret
     data:
-      AWS_REGION: "us-east-1"
-      AWS_ACCESS_KEY_ID: "change-me"
-      AWS_SECRET_ACCESS_KEY: "change-me"
-      AWS_S3_BUCKET: "change-me"
+      AWS_REGION: ""
+      AWS_ACCESS_KEY_ID: ""
+      AWS_SECRET_ACCESS_KEY: ""
+      AWS_S3_BUCKET: ""
   imagePullSecret:
     enabled: false
     name: docker-registry-creds
@@ -79,6 +79,9 @@ services:
       containerName: recipe-client
       replicas: 1
       containerPort: 3000
+      envFrom:
+        - secretRef:
+            name: recipe-secret
       image:
         repository: gabeodame/recipe-client
         pullPolicy: IfNotPresent
@@ -101,6 +104,13 @@ services:
       containerName: auth-service
       replicas: 1
       containerPort: 3000
+      envFrom:
+        - secretRef:
+            name: mongo-secret
+        - secretRef:
+            name: rabbitmq-secret
+        - secretRef:
+            name: jwt-secret
       image:
         repository: gabeodame/auth-service
         pullPolicy: IfNotPresent
@@ -145,6 +155,13 @@ services:
       containerName: recipe
       replicas: 1
       containerPort: 3000
+      envFrom:
+        - secretRef:
+            name: recipe-postgres-secret
+        - secretRef:
+            name: rabbitmq-secret
+        - secretRef:
+            name: jwt-secret
       image:
         repository: gabeodame/recipe-backend
         pullPolicy: IfNotPresent
@@ -184,6 +201,13 @@ services:
       containerName: ingredient
       replicas: 1
       containerPort: 3000
+      envFrom:
+        - secretRef:
+            name: ingredient-postgres-secret
+        - secretRef:
+            name: rabbitmq-secret
+        - secretRef:
+            name: jwt-secret
       image:
         repository: gabeodame/ingredient-backend
         pullPolicy: IfNotPresent
@@ -253,6 +277,13 @@ services:
       containerName: userprofile
       replicas: 1
       containerPort: 3000
+      envFrom:
+        - secretRef:
+            name: userprofile-postgres-secret
+        - secretRef:
+            name: rabbitmq-secret
+        - secretRef:
+            name: s3-secret
       image:
         repository: gabeodame/userprofile-backend
         pullPolicy: IfNotPresent
@@ -329,6 +360,9 @@ services:
       containerName: uploads-service
       replicas: 1
       containerPort: 3000
+      envFrom:
+        - secretRef:
+            name: s3-secret
       image:
         repository: gabeodame/uploads-backend
         pullPolicy: IfNotPresent

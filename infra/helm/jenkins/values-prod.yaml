@@ -2,6 +2,21 @@ ingress:
   enabled: true
   host: jenkins.prod
 
+# Demo-only: mount secret manifests into Jenkins.
+# secretsManifests:
+#   enabled: true
+#   mountPath: /var/jenkins_home/secrets
+#   files:
+#     prod.yaml: |
+#       apiVersion: v1
+#       kind: Secret
+#       metadata:
+#         name: rabbitmq-secret
+#         namespace: recipe
+#       type: Opaque
+#       stringData:
+#         RABBITMQ_URL: "amqp://changeme:changeme@rabbitmq-service:5672"
+
 resources:
   requests:
     cpu: "1"

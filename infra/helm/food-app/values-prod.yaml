@@ -5,6 +5,15 @@ global:
 seed:
   enabled: false
 
+# Use external or pre-created secrets in production.
+# secrets:
+#   enabled: false
+#   external:
+#     enabled: true
+#     manifests: |
+#       # ExternalSecret/SecretStore manifests for production
+secrets:
+  enabled: false
 # secrets:
 #   external:
 #     enabled: true

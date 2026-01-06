@@ -5,6 +5,22 @@ global:
 seed:
   enabled: false
 
+# Use external or pre-created secrets in staging.
+# secrets:
+#   enabled: false
+#   external:
+#     enabled: true
+#     manifests: |
+#       # ExternalSecret/SecretStore manifests for staging
+secrets:
+  enabled: false
+# Use external or pre-created secrets in staging.
+# secrets:
+#   enabled: false
+#   external:
+#     enabled: true
+#     manifests: |
+#       # ExternalSecret/SecretStore manifests for staging
 # secrets:
 #   external:
 #     enabled: true
