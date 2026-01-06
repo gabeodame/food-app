@@ -156,6 +156,7 @@ HELM_VALUES_FILE=infra/helm/food-app/values-dev.yaml scripts/ci/deploy-helm.sh
 
 - **Image tags:** CI builds and pushes `:SHA` images. Deploys override `global.imageTag` with the same SHA to avoid pull errors.
 - **Secrets (default):** Helm renders Kubernetes Secrets from `values.yaml`. Override with `SECRETS_EXTERNAL_ENABLED=true` to rely on an external secret store.
+- **Registry pull secret (optional):** Set `IMAGE_PULL_SECRET_*` env vars or Jenkins parameters to create an image pull secret during deploy.
 - **Gateway CRDs:** `scripts/ci/deploy-helm.sh` can install Gateway API CRDs when `INSTALL_GATEWAY_CRDS=true`.
 
 ### Check Status

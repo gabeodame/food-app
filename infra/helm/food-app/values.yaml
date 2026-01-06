@@ -14,6 +14,7 @@ secrets:
   enabled: true
   external:
     enabled: false
+    manifests: ""
   recipeSecret:
     name: recipe-secret
     data:
@@ -62,6 +63,13 @@ secrets:
       AWS_ACCESS_KEY_ID: "change-me"
       AWS_SECRET_ACCESS_KEY: "change-me"
       AWS_S3_BUCKET: "change-me"
+  imagePullSecret:
+    enabled: false
+    name: docker-registry-creds
+    registry: "https://index.docker.io/v1/"
+    username: ""
+    password: ""
+    email: ""
 
 services:
   deployments:

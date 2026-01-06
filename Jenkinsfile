@@ -5,6 +5,10 @@ pipeline {
     choice(name: "DEPLOY_ENV_OVERRIDE", choices: ["", "dev", "staging", "prod"], description: "Override environment selection (optional).")
     booleanParam(name: "INSTALL_GATEWAY_CRDS", defaultValue: true, description: "Install Gateway API CRDs before Helm deploy.")
     booleanParam(name: "USE_EXTERNAL_SECRETS", defaultValue: false, description: "Disable Helm-managed secrets and rely on an external secret store.")
+    booleanParam(name: "CREATE_IMAGE_PULL_SECRET", defaultValue: false, description: "Create imagePullSecret during Helm deploy.")
+    string(name: "IMAGE_PULL_SECRET_NAME", defaultValue: "docker-registry-creds", description: "Name for the image pull secret.")
+    string(name: "IMAGE_PULL_SECRET_SERVER", defaultValue: "https://index.docker.io/v1/", description: "Registry server for image pull secret.")
+    string(name: "IMAGE_PULL_SECRET_EMAIL", defaultValue: "", description: "Email for image pull secret (optional).")
   }
 
   options {
@@ -55,6 +59,10 @@ pipeline {
           env.INSTALL_GATEWAY_CRDS = params.INSTALL_GATEWAY_CRDS ? "true" : "false"
           env.SECRETS_EXTERNAL_ENABLED = params.USE_EXTERNAL_SECRETS ? "true" : "false"
           env.SECRETS_ENABLED = params.USE_EXTERNAL_SECRETS ? "false" : "true"
+          env.IMAGE_PULL_SECRET_ENABLED = params.CREATE_IMAGE_PULL_SECRET ? "true" : "false"
+          env.IMAGE_PULL_SECRET_NAME = params.IMAGE_PULL_SECRET_NAME
+          env.IMAGE_PULL_SECRET_SERVER = params.IMAGE_PULL_SECRET_SERVER
+          env.IMAGE_PULL_SECRET_EMAIL = params.IMAGE_PULL_SECRET_EMAIL
 
           if (env.DEPLOY_ENV == "prod") {
             env.SMOKE_TEST_URL = "http://recipe.prod/"
@@ -107,7 +115,19 @@ pipeline {
         }
       }
       steps {
-        sh "scripts/ci/deploy-helm.sh"
+        script {
+          if (params.CREATE_IMAGE_PULL_SECRET) {
+            withCredentials([usernamePassword(credentialsId: "docker-registry-creds", usernameVariable: "REGISTRY_USER", passwordVariable: "REGISTRY_PASSWORD")]) {
+              sh """
+                IMAGE_PULL_SECRET_USERNAME=${REGISTRY_USER} \
+                IMAGE_PULL_SECRET_PASSWORD=${REGISTRY_PASSWORD} \
+                scripts/ci/deploy-helm.sh
+              """
+            }
+          } else {
+            sh "scripts/ci/deploy-helm.sh"
+          }
+        }
       }
     }
 
