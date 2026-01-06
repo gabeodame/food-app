@@ -10,6 +10,59 @@ db:
   secretName: recipe-postgres-secret
   secretKey: DATABASE_URL
 
+secrets:
+  enabled: true
+  external:
+    enabled: false
+  recipeSecret:
+    name: recipe-secret
+    data:
+      NEXT_PUBLIC_API_URL: "https://example.com"
+  mongoSecret:
+    name: mongo-secret
+    data:
+      MONGO_URI: "mongodb://user:pass@mongo:27017/auth"
+  rabbitmqSecret:
+    name: rabbitmq-secret
+    data:
+      RABBITMQ_URL: "amqp://user:pass@rabbitmq-service:5672"
+  jwtSecret:
+    name: jwt-secret
+    data:
+      JWT_KEY: "change-me"
+  recipePostgresSecret:
+    name: recipe-postgres-secret
+    data:
+      DATABASE_URL: "postgresql://user:pass@recipe-postgres-headless:5432/recipe"
+      POSTGRES_USER: "recipe"
+      POSTGRES_PASSWORD: "change-me"
+      POSTGRES_DB: "recipe"
+  ingredientPostgresSecret:
+    name: ingredient-postgres-secret
+    data:
+      DATABASE_URL: "postgresql://user:pass@ingredient-postgres-headless:5432/ingredient"
+      DB_HOST: "ingredient-postgres-headless"
+      POSTGRES_USER: "ingredient"
+      POSTGRES_PASSWORD: "change-me"
+      POSTGRES_DB: "ingredient"
+      NODE_ENV: "development"
+      DB_SYNCHRONIZE: "true"
+  userprofilePostgresSecret:
+    name: userprofile-postgres-secret
+    data:
+      DATABASE_URL: "postgresql://user:pass@userprofile-postgres-headless:5432/userprofile"
+      DB_HOST: "userprofile-postgres-headless"
+      POSTGRES_USER: "userprofile"
+      POSTGRES_PASSWORD: "change-me"
+      POSTGRES_DB: "userprofile"
+  s3Secret:
+    name: s3-secret
+    data:
+      AWS_REGION: "us-east-1"
+      AWS_ACCESS_KEY_ID: "change-me"
+      AWS_SECRET_ACCESS_KEY: "change-me"
+      AWS_S3_BUCKET: "change-me"
+
 services:
   deployments:
     - name: recipe-client

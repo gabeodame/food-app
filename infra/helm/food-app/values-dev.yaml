@@ -4,7 +4,11 @@ global:
 
 seed:
   enabled: true
+  confirm: true
   allowInProd: false
+
+secrets:
+  enabled: true
 
 ingress:
   enabled: false

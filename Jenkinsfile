@@ -1,6 +1,12 @@
 pipeline {
   agent any
 
+  parameters {
+    choice(name: "DEPLOY_ENV_OVERRIDE", choices: ["", "dev", "staging", "prod"], description: "Override environment selection (optional).")
+    booleanParam(name: "INSTALL_GATEWAY_CRDS", defaultValue: true, description: "Install Gateway API CRDs before Helm deploy.")
+    booleanParam(name: "USE_EXTERNAL_SECRETS", defaultValue: false, description: "Disable Helm-managed secrets and rely on an external secret store.")
+  }
+
   options {
     timestamps()
     disableConcurrentBuilds()
@@ -34,7 +40,9 @@ pipeline {
       steps {
         script {
           def branch = env.BRANCH_NAME ?: "dev"
-          if (branch == "main") {
+          if (params.DEPLOY_ENV_OVERRIDE) {
+            env.DEPLOY_ENV = params.DEPLOY_ENV_OVERRIDE
+          } else if (branch == "main") {
             env.DEPLOY_ENV = "staging"
           } else if (branch.startsWith("release/")) {
             env.DEPLOY_ENV = "prod"
@@ -44,6 +52,9 @@ pipeline {
 
           env.IMAGE_TAG = env.GIT_COMMIT ? env.GIT_COMMIT.take(7) : "local"
           env.HELM_VALUES_FILE = "infra/helm/food-app/values-${env.DEPLOY_ENV}.yaml"
+          env.INSTALL_GATEWAY_CRDS = params.INSTALL_GATEWAY_CRDS ? "true" : "false"
+          env.SECRETS_EXTERNAL_ENABLED = params.USE_EXTERNAL_SECRETS ? "true" : "false"
+          env.SECRETS_ENABLED = params.USE_EXTERNAL_SECRETS ? "false" : "true"
 
           if (env.DEPLOY_ENV == "prod") {
             env.SMOKE_TEST_URL = "http://recipe.prod/"
