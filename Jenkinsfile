@@ -71,6 +71,7 @@ pipeline {
           } else {
             env.SMOKE_TEST_URL = "http://recipe.dev/"
           }
+          env.SMOKE_TEST_ENDPOINTS = "/,/api/1/recipes"
         }
       }
     }

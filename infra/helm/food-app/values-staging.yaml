@@ -5,6 +5,12 @@ global:
 seed:
   enabled: false
 
+# secrets:
+#   external:
+#     enabled: true
+#     manifests: |
+#       # ExternalSecret/SecretStore manifests for staging
+
 ingress:
   enabled: false
   host: recipe.staging

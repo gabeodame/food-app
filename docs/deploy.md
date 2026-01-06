@@ -64,6 +64,18 @@ secrets:
 
 Enable `INSTALL_GATEWAY_CRDS=true` to install the Gateway API CRDs before Helm deploys.
 
+## Smoke Tests
+
+Configure endpoints with `SMOKE_TEST_ENDPOINTS` (comma-separated).
+
+Example:
+
+```bash
+export SMOKE_TEST_URL="http://recipe.dev/"
+export SMOKE_TEST_ENDPOINTS="/,/api/1/recipes"
+scripts/ci/smoke-test.sh
+```
+
 ## Local Deploy
 
 ```bash
