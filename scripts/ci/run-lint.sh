@@ -11,7 +11,13 @@ services=(
 for service in "${services[@]}"; do
   if [[ -f "${service}/package.json" ]]; then
     echo "Linting ${service}"
-    (cd "${service}" && npm run lint)
+    (
+      cd "${service}"
+      if [[ ! -d node_modules ]]; then
+        npm ci
+      fi
+      npm run lint
+    )
   else
     echo "Skipping ${service}: no package.json"
   fi

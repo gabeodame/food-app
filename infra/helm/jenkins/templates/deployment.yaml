@@ -23,7 +23,7 @@ spec:
         supplementalGroups:
           - {{ .Values.dockerSocket.groupId }}
         {{- end }}
-      {{- if or (and .Values.plugins.enabled .Values.plugins.installOnStartup) .Values.dockerCli.enabled .Values.kubectlCli.enabled }}
+      {{- if or (and .Values.plugins.enabled .Values.plugins.installOnStartup) .Values.dockerCli.enabled .Values.kubectlCli.enabled .Values.nodeCli.enabled }}
       initContainers:
         {{- if and .Values.plugins.enabled .Values.plugins.installOnStartup }}
         - name: install-jenkins-plugins
@@ -94,6 +94,22 @@ spec:
             - name: kubectl-cli
               mountPath: /kubectl-cli
         {{- end }}
+        {{- if .Values.nodeCli.enabled }}
+        - name: install-node-cli
+          image: curlimages/curl:8.9.1
+          imagePullPolicy: IfNotPresent
+          command:
+            - sh
+            - -c
+            - |
+              set -euo pipefail
+              mkdir -p /node-cli
+              curl -fsSL "{{ .Values.nodeCli.downloadUrl }}" -o /node-cli/node.tar.xz
+              tar -xJf /node-cli/node.tar.xz -C /node-cli --strip-components=1
+          volumeMounts:
+            - name: node-cli
+              mountPath: /node-cli
+        {{- end }}
       {{- end }}
       containers:
         - name: jenkins
@@ -110,6 +126,10 @@ spec:
             {{- if .Values.kubeconfig.enabled }}
             - name: KUBECONFIG
               value: {{ .Values.kubeconfig.mountPath | quote }}
+            {{- end }}
+            {{- if .Values.nodeCli.enabled }}
+            - name: PATH
+              value: "{{ .Values.nodeCli.binDir }}:/opt/java/openjdk/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
             {{- end }}
             {{- if .Values.plugins.enabled }}
             - name: JENKINS_INSTALL_PLUGINS
@@ -150,6 +170,10 @@ spec:
               subPath: config
               readOnly: true
             {{- end }}
+            {{- if .Values.nodeCli.enabled }}
+            - name: node-cli
+              mountPath: {{ .Values.nodeCli.installDir }}
+            {{- end }}
             {{- if .Values.secretsManifests.enabled }}
             - name: jenkins-secrets-manifests
               mountPath: {{ .Values.secretsManifests.mountPath }}
@@ -187,6 +211,10 @@ spec:
         - name: kubeconfig
           secret:
             secretName: {{ .Values.kubeconfig.secretName }}
+        {{- end }}
+        {{- if .Values.nodeCli.enabled }}
+        - name: node-cli
+          emptyDir: {}
         {{- end }}
         {{- if .Values.secretsManifests.enabled }}
         - name: jenkins-secrets-manifests
