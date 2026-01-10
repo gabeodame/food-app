@@ -1,4 +1,5 @@
 namespace: jenkins
+namespaceCreate: false
 
 image:
   repository: jenkins/jenkins
@@ -40,6 +41,9 @@ secretsManifests:
 
 plugins:
   enabled: true
+  installOnStartup: true
+  updateCenterUrl: "https://updates.jenkins.io/update-center.json"
+  updateCenterDownloadUrl: "https://updates.jenkins.io/download"
   list:
     - configuration-as-code
     - credentials
@@ -70,6 +74,28 @@ serviceAccount:
 
 rbac:
   create: false
+
+dockerSocket:
+  enabled: true
+  path: /var/run/docker.sock
+  groupId: 0
+
+kubeconfig:
+  enabled: true
+  secretName: jenkins-kubeconfig
+  mountPath: /var/jenkins_home/.kube/config
+
+dockerCli:
+  enabled: true
+  version: "27.1.2"
+  downloadUrl: "https://download.docker.com/linux/static/stable/x86_64/docker-27.1.2.tgz"
+  binPath: /usr/local/bin/docker
+
+kubectlCli:
+  enabled: true
+  version: "1.30.6"
+  downloadUrl: "https://dl.k8s.io/release/v1.30.6/bin/linux/amd64/kubectl"
+  binPath: /usr/local/bin/kubectl
 
 jenkinsOpts: "--prefix=/jenkins"
 

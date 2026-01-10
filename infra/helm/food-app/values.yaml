@@ -717,6 +717,7 @@ networkPolicies:
             - protocol: TCP
               port: 5432
 
+
 migrations:
   enabled: true
   jobs:
@@ -732,6 +733,11 @@ migrations:
       initContainers:
         - name: wait-for-recipe-postgres
           image: busybox:1.36
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 65532
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
           command:
             - sh
             - -c
@@ -744,7 +750,7 @@ migrations:
       command:
         - sh
         - -c
-        - npx prisma migrate deploy --config=prisma.config.ts
+        - ./node_modules/.bin/prisma migrate deploy --config=prisma.config.ts
       env:
         - name: DATABASE_URL
           valueFrom:

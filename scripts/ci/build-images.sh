@@ -3,7 +3,12 @@ set -euo pipefail
 
 image_tag=${IMAGE_TAG:-local}
 registry=${DOCKER_REGISTRY:-docker.io}
-namespace=${IMAGE_NAMESPACE:-gabeodame}
+namespace=${IMAGE_NAMESPACE:-}
+
+if [[ -z "${namespace}" ]]; then
+  echo "IMAGE_NAMESPACE is required (e.g., your DockerHub org/user)." >&2
+  exit 1
+fi
 
 declare -A images=(
   [recipe-client]="services/client"

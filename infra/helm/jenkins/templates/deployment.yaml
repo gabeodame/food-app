@@ -19,6 +19,82 @@ spec:
       serviceAccountName: {{ default (printf "%s-sa" .Release.Name) .Values.serviceAccount.name }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
+        {{- if and .Values.dockerSocket.enabled .Values.dockerSocket.groupId }}
+        supplementalGroups:
+          - {{ .Values.dockerSocket.groupId }}
+        {{- end }}
+      {{- if or (and .Values.plugins.enabled .Values.plugins.installOnStartup) .Values.dockerCli.enabled .Values.kubectlCli.enabled }}
+      initContainers:
+        {{- if and .Values.plugins.enabled .Values.plugins.installOnStartup }}
+        - name: install-jenkins-plugins
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+            - name: JENKINS_UC
+              value: {{ .Values.plugins.updateCenterUrl | quote }}
+            - name: JENKINS_UC_DOWNLOAD
+              value: {{ .Values.plugins.updateCenterDownloadUrl | quote }}
+          command:
+            - sh
+            - -c
+            - |
+              set -euo pipefail
+              if [ ! -f /usr/share/jenkins/ref/plugins.txt ]; then
+                echo "plugins.txt not found; skipping install" >&2
+                exit 0
+              fi
+              export JENKINS_HOME=/var/jenkins_home
+              mkdir -p /var/jenkins_home/plugins
+              echo "Using update center: ${JENKINS_UC}"
+              if command -v curl >/dev/null 2>&1; then
+                curl -fsSL "${JENKINS_UC}" | head -n 5 || true
+              elif command -v wget >/dev/null 2>&1; then
+                wget -qO- "${JENKINS_UC}" | head -n 5 || true
+              else
+                echo "No curl/wget available for update center check."
+              fi
+              jenkins-plugin-cli --plugin-file /usr/share/jenkins/ref/plugins.txt --plugin-download-directory /var/jenkins_home/plugins --verbose
+          volumeMounts:
+            - name: jenkins-home
+              mountPath: /var/jenkins_home
+            - name: jenkins-plugins
+              mountPath: /usr/share/jenkins/ref/plugins.txt
+              subPath: plugins.txt
+              readOnly: true
+        {{- end }}
+        {{- if .Values.dockerCli.enabled }}
+        - name: install-docker-cli
+          image: curlimages/curl:8.9.1
+          imagePullPolicy: IfNotPresent
+          command:
+            - sh
+            - -c
+            - |
+              set -euo pipefail
+              mkdir -p /docker-cli
+              curl -fsSL "{{ .Values.dockerCli.downloadUrl }}" | tar -xz -C /docker-cli --strip-components=1 docker/docker
+              chmod +x /docker-cli/docker
+          volumeMounts:
+            - name: docker-cli
+              mountPath: /docker-cli
+        {{- end }}
+        {{- if .Values.kubectlCli.enabled }}
+        - name: install-kubectl-cli
+          image: curlimages/curl:8.9.1
+          imagePullPolicy: IfNotPresent
+          command:
+            - sh
+            - -c
+            - |
+              set -euo pipefail
+              mkdir -p /kubectl-cli
+              curl -fsSL "{{ .Values.kubectlCli.downloadUrl }}" -o /kubectl-cli/kubectl
+              chmod +x /kubectl-cli/kubectl
+          volumeMounts:
+            - name: kubectl-cli
+              mountPath: /kubectl-cli
+        {{- end }}
+      {{- end }}
       containers:
         - name: jenkins
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
@@ -31,9 +107,17 @@ spec:
           env:
             - name: JENKINS_OPTS
               value: {{ .Values.jenkinsOpts | quote }}
+            {{- if .Values.kubeconfig.enabled }}
+            - name: KUBECONFIG
+              value: {{ .Values.kubeconfig.mountPath | quote }}
+            {{- end }}
             {{- if .Values.plugins.enabled }}
             - name: JENKINS_INSTALL_PLUGINS
-              value: /usr/share/jenkins/ref/plugins.txt
+              value: {{ join " " .Values.plugins.list | quote }}
+            - name: JENKINS_UC
+              value: {{ .Values.plugins.updateCenterUrl | quote }}
+            - name: JENKINS_UC_DOWNLOAD
+              value: {{ .Values.plugins.updateCenterDownloadUrl | quote }}
             {{- end }}
           securityContext:
             {{- toYaml .Values.containerSecurityContext | nindent 12 }}
@@ -44,6 +128,26 @@ spec:
             - name: jenkins-plugins
               mountPath: /usr/share/jenkins/ref/plugins.txt
               subPath: plugins.txt
+              readOnly: true
+            {{- end }}
+            {{- if .Values.dockerSocket.enabled }}
+            - name: docker-socket
+              mountPath: {{ .Values.dockerSocket.path }}
+            {{- end }}
+            {{- if .Values.dockerCli.enabled }}
+            - name: docker-cli
+              mountPath: {{ .Values.dockerCli.binPath }}
+              subPath: docker
+            {{- end }}
+            {{- if .Values.kubectlCli.enabled }}
+            - name: kubectl-cli
+              mountPath: {{ .Values.kubectlCli.binPath }}
+              subPath: kubectl
+            {{- end }}
+            {{- if .Values.kubeconfig.enabled }}
+            - name: kubeconfig
+              mountPath: {{ .Values.kubeconfig.mountPath }}
+              subPath: config
               readOnly: true
             {{- end }}
             {{- if .Values.secretsManifests.enabled }}
@@ -65,6 +169,24 @@ spec:
         - name: jenkins-plugins
           configMap:
             name: {{ .Release.Name }}-plugins
+        {{- end }}
+        {{- if .Values.dockerSocket.enabled }}
+        - name: docker-socket
+          hostPath:
+            path: {{ .Values.dockerSocket.path }}
+        {{- end }}
+        {{- if .Values.dockerCli.enabled }}
+        - name: docker-cli
+          emptyDir: {}
+        {{- end }}
+        {{- if .Values.kubectlCli.enabled }}
+        - name: kubectl-cli
+          emptyDir: {}
+        {{- end }}
+        {{- if .Values.kubeconfig.enabled }}
+        - name: kubeconfig
+          secret:
+            secretName: {{ .Values.kubeconfig.secretName }}
         {{- end }}
         {{- if .Values.secretsManifests.enabled }}
         - name: jenkins-secrets-manifests
