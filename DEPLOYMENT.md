@@ -95,7 +95,7 @@ Requirements for Phase 1 values:
 - `gateway.enabled=false`
 - `certManager.enabled=false`
 - `dockerSocket.enabled=false`
- - `kubeconfig.enabled=true` (default; Jenkins mounts a kubeconfig secret)
+- `kubeconfig.enabled=true` (default; Jenkins mounts a kubeconfig secret)
 
 Install (adjust values file path to match repo):
 ```bash
@@ -166,7 +166,24 @@ Manage Jenkins → System → Jenkins Location
 
 ---
 
-## 6) Jenkins Credentials (Phase 1)
+## 6) Apply Secrets (Phase 1)
+
+If you are **not** using an external secret manager, apply secrets manually for the target environment.
+Use the examples under `infra/k8s/<env>/secrets.example` as templates, and keep real secrets in `infra/k8s/<env>/secrets` (not committed).
+
+Staging example:
+```bash
+kubectl -n recipe apply -f infra/k8s/staging/secrets
+```
+
+Verify:
+```bash
+kubectl -n recipe get secret
+```
+
+---
+
+## 7) Jenkins Credentials (Phase 1)
 
 ### 6.1 GitHub PAT (for repo scanning)
 Since we’re not using webhooks, Jenkins will scan branches periodically.
@@ -186,7 +203,7 @@ Add in Jenkins Credentials:
 
 ---
 
-## 7) Multibranch Pipeline Setup (Phase 1)
+## 8) Multibranch Pipeline Setup (Phase 1)
 
 ### 7.1 Create Multibranch Job
 Jenkins → New Item → Multibranch Pipeline
@@ -206,7 +223,7 @@ Phase 1 intentionally does NOT use webhooks.
 
 ---
 
-## 8) Kaniko Build Requirements (Phase 1)
+## 9) Kaniko Build Requirements (Phase 1)
 
 ### 8.1 Secret created in cluster
 The pipeline should create:
@@ -230,7 +247,7 @@ If agent pods fail:
 
 ---
 
-## 9) End-to-End Deployment Test (Phase 1)
+## 10) End-to-End Deployment Test (Phase 1)
 
 ### 9.1 Confirm no Ingress resources exist
 ```bash
@@ -300,7 +317,7 @@ Expected:
 
 ---
 
-## 10) Branch Gating Expectations (Phase 1)
+## 11) Branch Gating Expectations (Phase 1)
 
 Recommended gating:
 - feature/* and PRs: build/test only, no deploy
@@ -309,7 +326,7 @@ Recommended gating:
 
 ---
 
-## 11) Troubleshooting Cheatsheet (Phase 1)
+## 12) Troubleshooting Cheatsheet (Phase 1)
 
 Jenkins UI not reachable:
 ```bash
@@ -348,7 +365,7 @@ kubectl -n recipe get role,rolebinding
 
 ---
 
-## 12) Clean Teardown (Phase 1)
+## 13) Clean Teardown (Phase 1)
 
 Remove app releases (adjust release name):
 ```bash
