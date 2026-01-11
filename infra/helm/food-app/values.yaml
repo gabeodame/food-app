@@ -775,12 +775,11 @@ gateway:
     name: http
     protocol: HTTP
     port: 80
-    hostname: recipe-dev.dishsharing.com
+    hostname: ""
   tls:
     enabled: false
     secretName: ""
-  hostnames:
-    - recipe-dev.dishsharing.com
+  hostnames: []
   routes:
     - path: /api/users
       backend:

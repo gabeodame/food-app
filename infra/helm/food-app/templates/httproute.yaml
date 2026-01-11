@@ -9,10 +9,10 @@ metadata:
 spec:
   parentRefs:
     - name: {{ .Values.gateway.name }}
-  {{- if .Values.gateway.hostnames }}
+  {{- if and .Values.gateway.hostnames (gt (len .Values.gateway.hostnames) 0) }}
   hostnames:
     {{- range .Values.gateway.hostnames }}
-    - {{ . }}
+    - {{ . | quote }}
     {{- end }}
   {{- end }}
   rules:

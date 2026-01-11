@@ -95,6 +95,7 @@ Requirements for Phase 1 values:
 - `gateway.enabled=false`
 - `certManager.enabled=false`
 - `dockerSocket.enabled=false`
+ - `kubeconfig.enabled=true` (default; Jenkins mounts a kubeconfig secret)
 
 Install (adjust values file path to match repo):
 ```bash
@@ -116,6 +117,29 @@ Rollback:
 ```bash
 helm uninstall jenkins -n jenkins
 ```
+
+### 4.4 Create Jenkins kubeconfig secret (required)
+Jenkins expects a kubeconfig secret named `jenkins-kubeconfig` in the `jenkins` namespace.
+This script reads **your local kubeconfig file** (default: `~/.kube/config`) and creates the secret.
+
+1) Export kubeconfig path:
+```bash
+export KUBECONFIG="$HOME/.kube/config"
+```
+
+2) Optional: create a scoped service account and **limited RBAC** in the target namespace (`recipe`) so Jenkins can deploy only what it needs (namespace-scoped permissions instead of cluster-admin):
+```bash
+export ENSURE_JENKINS_RBAC=true
+export TARGET_NAMESPACE=recipe
+export JENKINS_SERVICE_ACCOUNT=jenkins-deployer
+```
+
+3) Run the script (creates the secret, and RBAC if enabled):
+```bash
+scripts/ci/create-jenkins-kubeconfig-secret.sh
+kubectl -n jenkins get secret jenkins-kubeconfig
+```
+
 
 ---
 
@@ -254,6 +278,11 @@ Option B: Port-forward Gateway service (exercise Gateway API locally)
 kubectl -n envoy-gateway-system get svc
 kubectl -n envoy-gateway-system port-forward svc/<envoy-service> 8081:80
 curl -I http://localhost:8081/
+```
+
+If HTTPRoute `spec.hostnames` is set, include a Host header when curling (Phase 1 omits hostnames):
+```bash
+curl -I -H "Host: recipe-staging.dishsharing.com" http://localhost:8081/
 ```
 
 Phase 1 does not require external DNS. You’re proving deploy correctness and routing behavior.

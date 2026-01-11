@@ -30,6 +30,5 @@ secrets:
 gateway:
   enabled: true
   listener:
-    hostname: recipe-staging.dishsharing.com
-  hostnames:
-    - recipe-staging.dishsharing.com
+    hostname: ""
+  hostnames: []
