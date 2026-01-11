@@ -91,8 +91,38 @@ pipeline {
     }
 
     stage("Unit & Integration Tests") {
+      agent {
+        kubernetes {
+          yaml """
+apiVersion: v1
+kind: Pod
+spec:
+  containers:
+    - name: node
+      image: node:20-bookworm
+      command:
+        - cat
+      tty: true
+      env:
+        - name: MONGO_URI
+          value: mongodb://localhost:27017/auth-test
+        - name: CI
+          value: "true"
+    - name: mongo
+      image: mongo:7.0
+      ports:
+        - containerPort: 27017
+"""
+        }
+      }
+      options {
+        skipDefaultCheckout(true)
+      }
       steps {
-        sh "scripts/ci/run-tests.sh"
+        unstash "source"
+        container("node") {
+          sh "scripts/ci/run-tests.sh"
+        }
       }
     }
 
