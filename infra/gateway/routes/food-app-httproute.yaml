@@ -6,10 +6,6 @@ metadata:
 spec:
   parentRefs:
     - name: food-app-gateway
-  hostnames:
-    - recipe-dev.dishsharing.com
-    - recipe-staging.dishsharing.com
-    - recipe.dishsharing.com
   rules:
     - matches:
         - path:
