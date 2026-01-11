@@ -39,7 +39,7 @@ pipeline {
     stage("Checkout") {
       steps {
         checkout scm
-        stash name: "source", includes: "**/*"
+        stash name: "source", includes: "**/*", useDefaultExcludes: false
       }
     }
 
@@ -97,6 +97,7 @@ pipeline {
 apiVersion: v1
 kind: Pod
 spec:
+  restartPolicy: Never
   containers:
     - name: node
       image: node:20-bookworm
@@ -110,6 +111,8 @@ spec:
           value: "true"
     - name: mongo
       image: mongo:7.0
+      args:
+        - "--bind_ip_all"
       ports:
         - containerPort: 27017
 """
@@ -144,6 +147,7 @@ spec:
 apiVersion: v1
 kind: Pod
 spec:
+  restartPolicy: Never
   containers:
     - name: kaniko
       image: gcr.io/kaniko-project/executor:debug

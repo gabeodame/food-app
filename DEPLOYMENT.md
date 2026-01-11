@@ -185,7 +185,7 @@ kubectl -n recipe get secret
 
 ## 7) Jenkins Credentials (Phase 1)
 
-### 6.1 GitHub PAT (for repo scanning)
+### 7.1 GitHub PAT (for repo scanning)
 Since we’re not using webhooks, Jenkins will scan branches periodically.
 
 Create a GitHub PAT with minimum permissions needed to read the repo:
@@ -196,16 +196,42 @@ Add in Jenkins Credentials:
 - Type: Username with password
 - ID: `github-pat` (or match your Jenkinsfile expectation)
 
-### 6.2 Registry credentials (for Kaniko push)
+### 7.2 Registry credentials (for Kaniko push)
 Add in Jenkins Credentials:
 - ID: `docker-registry-creds` (recommended)
 - Used by pipeline to create `kaniko-registry` secret in `jenkins` namespace
 
 ---
 
-## 8) Multibranch Pipeline Setup (Phase 1)
+## 8) Jenkins Kubernetes Cloud (Phase 1)
 
-### 7.1 Create Multibranch Job
+This enables Kubernetes agent pods for tests and Kaniko builds.
+
+1) Create a Kubernetes Service Account credential:
+```bash
+kubectl -n jenkins create token jenkins-sa
+```
+
+In Jenkins → Manage Jenkins → Credentials:
+- Kind: **Kubernetes Service Account**
+- Scope: **Global**
+- Token: paste the token from above
+
+2) Configure the Kubernetes cloud:
+Manage Jenkins → System → Cloud → Kubernetes
+- Kubernetes URL: `https://kubernetes.default`
+- Namespace: `jenkins`
+- Credentials: select the Kubernetes Service Account credential
+- Jenkins URL: `http://jenkins.jenkins.svc.cluster.local:8080/jenkins/`
+- If TLS verification fails in Phase 1, enable **Skip TLS verification**
+
+Test Connection, then Save.
+
+---
+
+## 9) Multibranch Pipeline Setup (Phase 1)
+
+### 9.1 Create Multibranch Job
 Jenkins → New Item → Multibranch Pipeline
 
 Branch source: GitHub  
@@ -223,9 +249,9 @@ Phase 1 intentionally does NOT use webhooks.
 
 ---
 
-## 9) Kaniko Build Requirements (Phase 1)
+## 10) Kaniko Build Requirements (Phase 1)
 
-### 8.1 Secret created in cluster
+### 10.1 Secret created in cluster
 The pipeline should create:
 - `kaniko-registry` secret in namespace `jenkins`
 
@@ -234,7 +260,7 @@ Verify:
 kubectl -n jenkins get secret kaniko-registry
 ```
 
-### 8.2 Agent pods
+### 10.2 Agent pods
 During builds, you should see Jenkins agent pods spinning up in the `jenkins` namespace:
 ```bash
 kubectl -n jenkins get pods -w
@@ -247,14 +273,14 @@ If agent pods fail:
 
 ---
 
-## 10) End-to-End Deployment Test (Phase 1)
+## 11) End-to-End Deployment Test (Phase 1)
 
-### 9.1 Confirm no Ingress resources exist
+### 11.1 Confirm no Ingress resources exist
 ```bash
 kubectl get ingress -A
 ```
 
-### 9.2 Trigger a staging pipeline run (poll-based)
+### 11.2 Trigger a staging pipeline run (poll-based)
 Make a commit to `staging` (or whichever branch deploys staging in your Jenkinsfile):
 ```bash
 git checkout staging
@@ -264,7 +290,7 @@ git push origin staging
 
 Wait for the Multibranch periodic scan to discover changes and start a build.
 
-### 9.3 Watch pipeline
+### 11.3 Watch pipeline
 In Jenkins:
 Multibranch job → staging branch → build should run:
 - lint/tests
@@ -272,7 +298,7 @@ Multibranch job → staging branch → build should run:
 - deploy via Helm
 - smoke test (Phase 1 targets internal access)
 
-### 9.4 Validate Kubernetes rollout
+### 11.4 Validate Kubernetes rollout
 (Adjust namespace/resource names to match your repo.)
 ```bash
 kubectl -n recipe get deploy,po,svc
@@ -281,7 +307,7 @@ kubectl -n recipe describe deploy/<deployment-name>
 kubectl -n recipe logs deploy/<deployment-name> --tail=150
 ```
 
-### 9.5 Validate service reachability (Phase 1)
+### 11.5 Validate service reachability (Phase 1)
 Pick one method:
 
 Option A: Port-forward app service
@@ -304,7 +330,7 @@ curl -I -H "Host: recipe-staging.dishsharing.com" http://localhost:8081/
 
 Phase 1 does not require external DNS. You’re proving deploy correctness and routing behavior.
 
-### 9.6 Negative test (feature branch must not deploy)
+### 11.6 Negative test (feature branch must not deploy)
 ```bash
 git checkout -b feature/no-deploy-test
 git commit --allow-empty -m "phase1: feature branch build only"
@@ -317,7 +343,7 @@ Expected:
 
 ---
 
-## 11) Branch Gating Expectations (Phase 1)
+## 12) Branch Gating Expectations (Phase 1)
 
 Recommended gating:
 - feature/* and PRs: build/test only, no deploy
@@ -326,7 +352,7 @@ Recommended gating:
 
 ---
 
-## 12) Troubleshooting Cheatsheet (Phase 1)
+## 13) Troubleshooting Cheatsheet (Phase 1)
 
 Jenkins UI not reachable:
 ```bash
@@ -365,7 +391,7 @@ kubectl -n recipe get role,rolebinding
 
 ---
 
-## 13) Clean Teardown (Phase 1)
+## 14) Clean Teardown (Phase 1)
 
 Remove app releases (adjust release name):
 ```bash
