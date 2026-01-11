@@ -2,6 +2,19 @@ import { MongoMemoryServer } from "mongodb-memory-server";
 import mongoose from "mongoose";
 import request from "supertest";
 
+process.env.JWT_KEY = "dfdfdfadfdfdff";
+process.env.RABBITMQ_URL = process.env.RABBITMQ_URL || "amqp://localhost";
+
+jest.mock("@anchordiv/rabbitmq-broker", () => ({
+  RabbitMQBroker: {
+    getInstance: () => ({
+      init: async () => {},
+      publishToExchange: async () => {},
+      publish: async () => {},
+    }),
+  },
+}));
+
 const bufferModule = require("buffer") as {
   Buffer: typeof Buffer;
   SlowBuffer?: typeof Buffer;
@@ -20,8 +33,6 @@ declare global {
 let mongo: MongoMemoryServer | null = null;
 
 beforeAll(async () => {
-  process.env.JWT_KEY = "dfdfdfadfdfdff";
-
   if (process.env.MONGO_URI) {
     await mongoose.connect(process.env.MONGO_URI, {});
     return;
@@ -59,6 +70,7 @@ global.signin = async () => {
     .send({
       email,
       password,
+      username: "testuser",
     })
     .expect(201);
 

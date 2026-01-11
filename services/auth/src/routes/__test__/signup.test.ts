@@ -7,6 +7,7 @@ it("returns 201 after successfull signup", async () => {
     .send({
       email: "test@test.com",
       password: "password",
+      username: "testuser",
     })
     .expect(201);
 });
