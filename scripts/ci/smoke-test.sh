@@ -1,10 +1,18 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-url=${SMOKE_TEST_URL:-"https://recipe-staging.dishsharing.com/"}
+scheme=${SMOKE_TEST_SCHEME:-"http"}
+service=${SMOKE_TEST_SERVICE:-"recipe-client-service"}
+namespace=${SMOKE_TEST_NAMESPACE:-"recipe"}
+port=${SMOKE_TEST_PORT:-"3000"}
+basepath=${SMOKE_TEST_BASEPATH:-""}
+url=${SMOKE_TEST_URL:-"${scheme}://${service}.${namespace}.svc.cluster.local:${port}${basepath}"}
 expected=${SMOKE_TEST_EXPECT:-"200"}
 endpoints=${SMOKE_TEST_ENDPOINTS:-"/,/api/1/recipes"}
 insecure=${SMOKE_TEST_INSECURE:-false}
+
+echo "Smoke test base URL: ${url}"
+echo "Smoke test endpoints: ${endpoints}"
 
 IFS=',' read -r -a checks <<< "${endpoints}"
 

@@ -19,18 +19,15 @@ pipeline {
     buildDiscarder(logRotator(numToKeepStr: "20"))
   }
 
-  triggers {
-    githubPush()
-  }
-
   environment {
     HELM_RELEASE    = "food-app"
     HELM_NAMESPACE  = "recipe"
     HELM_CHART_PATH = "infra/helm/food-app"
     DEPLOY_ENV      = "dev"
     HELM_VALUES_FILE = "infra/helm/food-app/values-dev.yaml"
-    SMOKE_TEST_URL  = "https://recipe-staging.dishsharing.com/"
-    SMOKE_TEST_INSECURE = "false"
+    SMOKE_TEST_SCHEME = "http"
+    SMOKE_TEST_NAMESPACE = "recipe"
+    SMOKE_TEST_PORT = "3000"
     IMAGE_TAG       = ""
     DOCKER_REGISTRY = "docker.io"
     IMAGE_NAMESPACE = "gabeodame"
@@ -82,14 +79,6 @@ pipeline {
             }
           }
 
-          if (env.DEPLOY_ENV == "prod") {
-            env.SMOKE_TEST_URL = "https://recipe.dishsharing.com/"
-          } else if (env.DEPLOY_ENV == "staging") {
-            env.SMOKE_TEST_URL = "https://recipe-staging.dishsharing.com/"
-          } else {
-            env.SMOKE_TEST_URL = "http://recipe-dev.dishsharing.com/"
-            env.SMOKE_TEST_INSECURE = "true"
-          }
           env.SMOKE_TEST_ENDPOINTS = "/,/api/1/recipes"
         }
       }
