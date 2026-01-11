@@ -21,7 +21,6 @@ Non-goals (explicitly out of scope for Phase 1):
 - GitHub webhooks
 - cert-manager / Let’s Encrypt
 - WAF / Cloudflare / internet hardening
-- Recruiter/demo polish
 
 ---
 
