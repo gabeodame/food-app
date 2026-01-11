@@ -1,96 +1,91 @@
-# DEPLOYMENT.md — Gateway API + Envoy Gateway + Jenkins (Multibranch) + Kaniko
+# DEPLOYMENT.md — Phase 1 (CKA Practice Mode)
+> Scope lock: This document covers **Phase 1 only** (practice + certification prep).
+> No public DNS, no GitHub webhooks, no cert-manager/Let’s Encrypt, no recruiter demo exposure.
 
-This repo deploys via **Jenkins Multibranch Pipeline** to Kubernetes using **Envoy Gateway + Gateway API** as the **only edge**.
-Jenkins is exposed under the path prefix **`/jenkins`** (Jenkins runs with `--prefix=/jenkins`) and receives GitHub webhooks at:
-- `https://jenkins.dishsharing.com/jenkins/github-webhook/`
+This repo is configured to practice real-world Kubernetes/DevOps workflows:
+- **Gateway API + Envoy Gateway** (single edge model)
+- **Jenkins in-cluster (private)** for Multibranch pipelines
+- **Kaniko builds in Kubernetes agent pods** (no docker.sock)
+- Deploy via Helm (and existing overlays if present)
+- Access via **kubectl port-forward** (or LAN-only NodePort if you choose)
 
 ---
 
-## 0) Architecture Summary
+## 1) Goals (Phase 1)
 
-### Edge / Routing (Only)
-- **Envoy Gateway controller** (GatewayClass: `envoy-gateway`)
-- **Gateway + HTTPRoute** resources per service/environment
-- **TLS** via **cert-manager** + Let’s Encrypt (ACME)
+- Practice cluster management and troubleshooting (CKA style)
+- Practice CI/CD pipeline flows end-to-end
+- Keep infrastructure private and safe (no internet exposure)
+- Repeatable setup / teardown
+
+Non-goals (explicitly out of scope for Phase 1):
+- Public DNS (dishsharing.com)
+- GitHub webhooks
+- cert-manager / Let’s Encrypt
+- WAF / Cloudflare / internet hardening
+- Recruiter/demo polish
+
+---
+
+## 2) High-Level Architecture (Phase 1)
+
+### Edge / Routing
+- Envoy Gateway controller installed in `envoy-gateway-system`
+- Gateway API CRDs installed once
+- App routing exercised via Gateway/HTTPRoute using local access (port-forward or NodePort)
 
 ### CI/CD
-- Jenkins runs in-cluster (`namespace: jenkins`)
-- Multibranch indexing via **GitHub Webhooks**
-- Images built in Kubernetes using **Kaniko** in **ephemeral Jenkins agent pods**
-- No `docker.sock` mounts
+- Jenkins runs in `jenkins` namespace as **ClusterIP**
+- Multibranch indexing driven by **periodic scanning** (polling), not webhooks
+- Images built/pushed using **Kaniko** in ephemeral Kubernetes agent pods
 
-### Environments + FQDNs
-Jenkins:
-- `jenkins.dishsharing.com`
-
-App:
-- `recipe-dev.dishsharing.com`
-- `recipe-staging.dishsharing.com`
-- `recipe.dishsharing.com` (prod)
+### Namespaces (recommended)
+- `envoy-gateway-system` — Envoy Gateway controller
+- `jenkins` — Jenkins controller + agent pods
+- `recipe` — app workloads
 
 ---
 
-## 1) Requirements (Hard)
+## 3) Prerequisites
 
-### External Reachability
-For GitHub webhooks + Let’s Encrypt issuance to work:
-- DNS must resolve publicly to Envoy Gateway’s external address
-- Port **80** and **443** must be reachable at the edge
-- HTTP must be available for **ACME HTTP-01** unless you switch to DNS-01
+### Tools on your workstation
+- `kubectl`
+- `helm`
+- `git`
 
-### Jenkins URL Prefix
-- Jenkins is served under `/jenkins`
-- Any edge routing must forward `/jenkins` to the Jenkins service
-
----
-
-## 2) Repo Conventions / Knobs
-
-### Jenkins Helm Values (Expected)
-Your Jenkins chart values must enforce:
-- `dockerSocket.enabled: false`
-- `jenkinsOpts: "--prefix=/jenkins"`
-- `gateway.enabled: true` (for real exposure)
-- `certManager.enabled: true` (for real TLS)
-
-### Gateway Route Values (Expected)
-The HTTPRoute should match:
-- `gatewayRoute.path: /jenkins`
-- `gatewayRoute.pathType: PathPrefix`
-
----
-
-## 3) Phase 0 — Manual Bootstrap (No Webhooks Required)
-
-This phase must be run manually once per cluster to avoid bootstrap deadlocks.
-
-> **Prereqs:** You have `kubectl` + `helm`, and cluster access.
-
-### 3.1 Verify cluster access
+Verify:
 ```bash
 kubectl cluster-info
 kubectl get nodes -o wide
 helm version
 ```
 
-### 3.2 Install Gateway API CRDs (one-time)
+Registry access (required for Kaniko):
+- You need credentials to push images to your container registry.
+- These credentials are stored in Jenkins Credentials and used to create a K8s secret for Kaniko.
+
+---
+
+## 4) Phase 1 Bootstrap (Manual)
+
+### 4.1 Install Gateway API CRDs (one-time per cluster)
 ```bash
 kubectl apply -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.1.0/standard-install.yaml
 kubectl get crd | rg gateway
 ```
 
-Rollback:
+Rollback (rare):
 ```bash
 kubectl delete -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.1.0/standard-install.yaml
 ```
 
-### 3.3 Install Envoy Gateway controller
+### 4.2 Install Envoy Gateway controller
 ```bash
 helm upgrade --install envoy-gateway oci://docker.io/envoyproxy/gateway-helm \
   -n envoy-gateway-system --create-namespace
 
 kubectl -n envoy-gateway-system wait --for=condition=Available deploy/envoy-gateway --timeout=5m
-kubectl -n envoy-gateway-system get svc -o wide
+kubectl -n envoy-gateway-system get deploy,po,svc
 ```
 
 Rollback:
@@ -98,209 +93,178 @@ Rollback:
 helm uninstall envoy-gateway -n envoy-gateway-system
 ```
 
-### 3.4 Install cert-manager (Helm)
-```bash
-helm repo add jetstack https://charts.jetstack.io
-helm repo update
+### 4.3 Install Jenkins (private, no edge exposure)
+Requirements for Phase 1 values:
+- `gateway.enabled=false`
+- `certManager.enabled=false`
+- `dockerSocket.enabled=false`
 
-helm upgrade --install cert-manager jetstack/cert-manager \
-  -n cert-manager --create-namespace \
-  --set crds.enabled=true
-
-kubectl -n cert-manager get pods
-```
-
-Apply ACME issuer:
-
-IMPORTANT: Update the email in `infra/cert-manager/clusterissuer-letsencrypt.yaml` before applying.
-
-```bash
-kubectl apply -f infra/cert-manager/clusterissuer-letsencrypt.yaml
-kubectl get clusterissuer
-```
-
-Rollback:
-```bash
-kubectl delete -f infra/cert-manager/clusterissuer-letsencrypt.yaml
-helm uninstall cert-manager -n cert-manager
-```
-
-### 3.5 Configure DNS (Required)
-Find Envoy Gateway’s external address:
-```bash
-kubectl -n envoy-gateway-system get svc -o wide
-```
-
-Create DNS records (A or CNAME depending on external address):
-- `jenkins.dishsharing.com`
-- `recipe-dev.dishsharing.com`
-- `recipe-staging.dishsharing.com`
-- `recipe.dishsharing.com`
-
-Verify DNS resolution:
-```bash
-dig +short jenkins.dishsharing.com
-dig +short recipe-staging.dishsharing.com
-```
-
-ACME HTTP-01 requirement: Port 80 must be reachable at the hostname for certificate issuance. Ensure your Jenkins Gateway has an HTTP listener on 80.
-
-### 3.6 Install Jenkins (Gateway + TLS enabled)
+Install (adjust values file path to match repo):
 ```bash
 helm upgrade --install jenkins infra/helm/jenkins \
   -n jenkins --create-namespace \
-  -f infra/helm/jenkins/values-staging.yaml
+  -f infra/helm/jenkins/values-staging.yaml \
+  --set gateway.enabled=false \
+  --set certManager.enabled=false \
+  --set dockerSocket.enabled=false
 ```
 
-Verify Jenkins routing and TLS:
+Verify:
 ```bash
-kubectl -n jenkins get gateway,httproute
-kubectl -n jenkins get certificate
-kubectl -n jenkins get secret jenkins-tls
+kubectl -n jenkins get deploy,po,svc
+kubectl -n jenkins get pods -w
 ```
-
-If cert is not Ready:
-```bash
-kubectl -n jenkins describe certificate jenkins-tls
-kubectl -n jenkins get order,challenge
-kubectl -n jenkins describe challenge <challenge-name>
-```
-
-Verify externally:
-```bash
-curl -I https://jenkins.dishsharing.com/jenkins/login
-curl -I https://jenkins.dishsharing.com/jenkins/github-webhook/
-```
-
-Expected:
-- `/jenkins/login` -> 200/302
-- `/jenkins/github-webhook/` -> 200/403 (must not be 404)
 
 Rollback:
 ```bash
 helm uninstall jenkins -n jenkins
 ```
 
-### 3.7 Jenkins UI Configuration (Critical)
-In Jenkins:
-Manage Jenkins → System → Jenkins Location
+---
 
-Jenkins URL: `https://jenkins.dishsharing.com/jenkins/`
+## 5) Access Jenkins (Phase 1)
+
+### 5.1 Port-forward Jenkins UI
+```bash
+kubectl -n jenkins port-forward svc/jenkins 8080:8080
+```
+
+Open in browser:
+```
+http://localhost:8080/jenkins/
+```
+
+### 5.2 Jenkins Location URL (Phase 1)
+Set Jenkins URL to:
+```
+http://localhost:8080/jenkins/
+```
+
+Path:
+Manage Jenkins → System → Jenkins Location
 
 ---
 
-## 4) Phase 1 — Jenkins Multibranch + Webhooks + Deploy
+## 6) Jenkins Credentials (Phase 1)
 
-### 4.1 Create Jenkins Credentials
-GitHub PAT (Multibranch + private branches)
-Recommended credential type: Username with password
-- username: your GitHub username
-- password: PAT
+### 6.1 GitHub PAT (for repo scanning)
+Since we’re not using webhooks, Jenkins will scan branches periodically.
 
-PAT scopes:
-- Private repo: `repo` (classic) or fine-grained equivalent
-- If Jenkins will manage webhooks automatically: include repo hook admin permissions
-- If you create webhooks manually: you can avoid hook admin scope
+Create a GitHub PAT with minimum permissions needed to read the repo:
+- For public repo: read-only is enough
+- For private branches/repo: repo read permissions required
 
-Registry creds (Kaniko push)
-Create credential in Jenkins:
-- ID: `docker-registry-creds` (or match pipeline expectation)
-- Use token/password for your registry
+Add in Jenkins Credentials:
+- Type: Username with password
+- ID: `github-pat` (or match your Jenkinsfile expectation)
 
-### 4.2 Create Multibranch Pipeline Job
+### 6.2 Registry credentials (for Kaniko push)
+Add in Jenkins Credentials:
+- ID: `docker-registry-creds` (recommended)
+- Used by pipeline to create `kaniko-registry` secret in `jenkins` namespace
+
+---
+
+## 7) Multibranch Pipeline Setup (Phase 1)
+
+### 7.1 Create Multibranch Job
 Jenkins → New Item → Multibranch Pipeline
 
-Branch source: GitHub
-Credentials: GitHub PAT credential
-Repo: `gabeodame/food-app` (or your fork)
+Branch source: GitHub  
+Credentials: your GitHub PAT  
+Repo: `gabeodame/food-app`
 
 Behaviors:
 - Discover branches
-- Discover PRs
+- Discover PRs (optional for Phase 1)
 
-Triggers:
-- Enable webhook-based indexing
-- Optional periodic scan fallback (e.g. every 1 hour)
+Triggering:
+- Enable Periodic scan (recommended during practice): every 1–5 minutes
 
-### 4.3 Create GitHub Webhook (Manual Recommended)
-GitHub repo → Settings → Webhooks → Add webhook
-
-Payload URL: `https://jenkins.dishsharing.com/jenkins/github-webhook/`
-Content type: `application/json`
-Events: Push + Pull Request
-Secret: recommended
-
-Verify webhook deliveries show HTTP 200.
-
-### 4.4 Branch Gating (Expected Pipeline Behavior)
-- feature/* and PRs: lint/test/build (optional), NO deploy
-- staging: deploy staging + smoke test
-- main or tags: deploy prod + smoke test (if enabled)
+Phase 1 intentionally does NOT use webhooks.
 
 ---
 
-## 5) Kaniko Build (No Docker Socket)
+## 8) Kaniko Build Requirements (Phase 1)
 
-### 5.1 Registry Secret
-The pipeline creates a K8s secret (in namespace jenkins) used by Kaniko build pods:
-- Secret name: `kaniko-registry`
+### 8.1 Secret created in cluster
+The pipeline should create:
+- `kaniko-registry` secret in namespace `jenkins`
 
 Verify:
 ```bash
 kubectl -n jenkins get secret kaniko-registry
 ```
 
-Kaniko expects docker config at:
-`/kaniko/.docker/config.json`
+### 8.2 Agent pods
+During builds, you should see Jenkins agent pods spinning up in the `jenkins` namespace:
+```bash
+kubectl -n jenkins get pods -w
+```
 
-### 5.2 Agent Pod Expectations
-Kaniko runs in ephemeral Jenkins Kubernetes agents. Ensure:
-- Jenkins Kubernetes plugin is configured
-- Agent pods can run in the target namespace
-- Workspace is available to the Kaniko container
-- Network egress to your image registry is allowed
+If agent pods fail:
+- Check Jenkins Kubernetes plugin config
+- Check RBAC for Jenkins service account
+- Check registry secret contents/type
 
 ---
 
-## 6) End-to-End Deployment Test Procedure
+## 9) End-to-End Deployment Test (Phase 1)
 
-### 6.1 Verify no Ingress resources exist
+### 9.1 Confirm no Ingress resources exist
 ```bash
 kubectl get ingress -A
 ```
 
-Expected: none related to this repo.
-
-### 6.2 Trigger staging deployment (webhook test)
+### 9.2 Trigger a staging pipeline run (poll-based)
+Make a commit to `staging` (or whichever branch deploys staging in your Jenkinsfile):
 ```bash
 git checkout staging
-git commit --allow-empty -m "e2e: trigger staging deploy"
+git commit --allow-empty -m "phase1: trigger staging pipeline"
 git push origin staging
 ```
 
-### 6.3 Watch Jenkins
-Multibranch job -> staging branch build should start automatically
+Wait for the Multibranch periodic scan to discover changes and start a build.
 
-### 6.4 Watch cluster rollout
-(Adjust namespace/release names to your repo structure.)
+### 9.3 Watch pipeline
+In Jenkins:
+Multibranch job → staging branch → build should run:
+- lint/tests
+- Kaniko build + push
+- deploy via Helm
+- smoke test (Phase 1 targets internal access)
 
+### 9.4 Validate Kubernetes rollout
+(Adjust namespace/resource names to match your repo.)
 ```bash
-kubectl get ns
 kubectl -n recipe get deploy,po,svc
-kubectl -n recipe get gateway,httproute
 kubectl -n recipe rollout status deploy/<deployment-name>
+kubectl -n recipe describe deploy/<deployment-name>
+kubectl -n recipe logs deploy/<deployment-name> --tail=150
 ```
 
-### 6.5 Validate external endpoints
+### 9.5 Validate service reachability (Phase 1)
+Pick one method:
+
+Option A: Port-forward app service
 ```bash
-curl -I https://recipe-staging.dishsharing.com/
-curl -i https://recipe-staging.dishsharing.com/api/1/recipes
+kubectl -n recipe port-forward svc/<service-name> 3000:3000
+curl -I http://localhost:3000/
 ```
 
-### 6.6 Negative test (feature branch must not deploy)
+Option B: Port-forward Gateway service (exercise Gateway API locally)
+```bash
+kubectl -n envoy-gateway-system get svc
+kubectl -n envoy-gateway-system port-forward svc/<envoy-service> 8081:80
+curl -I http://localhost:8081/
+```
+
+Phase 1 does not require external DNS. You’re proving deploy correctness and routing behavior.
+
+### 9.6 Negative test (feature branch must not deploy)
 ```bash
 git checkout -b feature/no-deploy-test
-git commit --allow-empty -m "e2e: feature branch build only"
+git commit --allow-empty -m "phase1: feature branch build only"
 git push origin feature/no-deploy-test
 ```
 
@@ -310,46 +274,57 @@ Expected:
 
 ---
 
-## 7) Troubleshooting (Fast)
+## 10) Branch Gating Expectations (Phase 1)
 
-Jenkins webhook returns 404
-- Wrong URL path: must include `/jenkins/`
-- HTTPRoute path mismatch: ensure `/jenkins` is routed
-- Jenkins prefix missing: ensure `--prefix=/jenkins` is set
+Recommended gating:
+- feature/* and PRs: build/test only, no deploy
+- staging: deploy staging
+- main: optional (can be disabled in Phase 1)
 
-Certificate stuck Pending/Failed
-- DNS not pointing to Envoy LB
-- Port 80 not reachable (HTTP listener missing or blocked)
-- Issuer solver parentRefs wrong (name/namespace mismatch)
+---
 
-Debug:
+## 11) Troubleshooting Cheatsheet (Phase 1)
+
+Jenkins UI not reachable:
 ```bash
-kubectl -n jenkins get order,challenge
-kubectl -n jenkins describe challenge <name>
-kubectl -n jenkins describe certificate jenkins-tls
+kubectl -n jenkins get svc,po
+kubectl -n jenkins logs deploy/jenkins --tail=200
 ```
 
-Kaniko build fails
+Multibranch not scanning:
+- Confirm periodic scan is configured
+- Check GitHub credentials in branch source config
+
+Kaniko build fails:
 Common causes:
-- registry secret missing/incorrect type
-- Dockerfile path/context incorrect
-- workspace not mounted into Kaniko container
-- registry egress blocked
+- Registry credentials missing / wrong secret type
+- Workspace not mounted into Kaniko container
+- Dockerfile path incorrect
+- Registry egress blocked
+
+Verify:
+```bash
+kubectl -n jenkins get pods
+kubectl -n jenkins logs <agent-pod> -c kaniko --tail=200
+kubectl -n jenkins get secret kaniko-registry -o yaml
+```
+
+Deploy fails (RBAC):
+If Helm/kubectl fail in pipeline:
+- Jenkins SA lacks permission in target namespace
+
+Check:
+```bash
+kubectl -n jenkins get sa
+kubectl -n jenkins get role,rolebinding
+kubectl -n recipe get role,rolebinding
+```
 
 ---
 
-## 8) Security Notes (Do Not Ignore)
+## 12) Clean Teardown (Phase 1)
 
-- Never mount `/var/run/docker.sock` into Jenkins.
-- Keep Jenkins edge protected (auth enabled, TLS enforced).
-- Keep Jenkins deploy RBAC least-privilege (namespace-scoped Roles).
-- Store secrets in Jenkins Credentials / K8s Secrets only — never in repo.
-
----
-
-## 9) Rollback / Cleanup
-
-Remove app releases:
+Remove app releases (adjust release name):
 ```bash
 helm -n recipe uninstall <release-name>
 ```
@@ -357,20 +332,25 @@ helm -n recipe uninstall <release-name>
 Remove Jenkins:
 ```bash
 helm -n jenkins uninstall jenkins
-```
-
-Remove cert-manager:
-```bash
-kubectl delete -f infra/cert-manager/clusterissuer-letsencrypt.yaml
-helm -n cert-manager uninstall cert-manager
+kubectl delete ns jenkins
 ```
 
 Remove Envoy Gateway:
 ```bash
 helm -n envoy-gateway-system uninstall envoy-gateway
+kubectl delete ns envoy-gateway-system
 ```
 
-Remove Gateway API CRDs (last resort):
+Gateway API CRDs (optional last resort):
 ```bash
 kubectl delete -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.1.0/standard-install.yaml
 ```
+
+---
+
+One key note: In Phase 1, smoke tests should not assume public FQDNs. They should target either:
+- Port-forwarded local URL, or
+- Cluster-internal service URL, or
+- LAN-only NodePort.
+
+If your current `scripts/ci/smoke-test.sh` still defaults to public DNS, change it now (Phase 1 assumes it doesn’t).
