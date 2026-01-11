@@ -26,6 +26,7 @@ for service in "${services[@]}"; do
         trap 'scripts/ci/stop-mongo-test.sh' EXIT
         (
           cd "${service}" \
+          && if [[ ! -d node_modules ]]; then npm ci; fi \
           && MONGO_URI="mongodb://localhost:${MONGO_TEST_PORT:-27018}/auth-test" npm test -- --watchAll=false
         )
         scripts/ci/stop-mongo-test.sh
@@ -40,7 +41,13 @@ for service in "${services[@]}"; do
     fi
 
     echo "Testing ${service}"
-    (cd "${service}" && npm test -- --watchAll=false)
+    (
+      cd "${service}"
+      if [[ ! -d node_modules ]]; then
+        npm ci
+      fi
+      npm test -- --watchAll=false
+    )
   else
     echo "Skipping ${service}: no package.json"
   fi
