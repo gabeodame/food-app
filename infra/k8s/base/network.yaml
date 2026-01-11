@@ -43,7 +43,7 @@ spec:
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
-  name: allow-ingress-to-auth
+  name: allow-gateway-to-auth
   namespace: recipe
 spec:
   podSelector:
@@ -53,9 +53,9 @@ spec:
     - Ingress
   ingress:
     - from:
-        - podSelector:
+        - namespaceSelector:
             matchLabels:
-              app: ingress-nginx  # Replace with your ingress controller's app label
+              kubernetes.io/metadata.name: envoy-gateway-system
       ports:
         - protocol: TCP
           port: 3000

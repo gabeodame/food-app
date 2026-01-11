@@ -9,7 +9,7 @@ spec:
     - name: http
       protocol: HTTP
       port: 80
-      hostname: recipe.staging
+      hostname: recipe-staging.dishsharing.com
       allowedRoutes:
         namespaces:
           from: Same

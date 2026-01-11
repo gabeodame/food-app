@@ -20,24 +20,9 @@ secrets:
 #     manifests: |
 #       # ExternalSecret/SecretStore manifests for production
 
-ingress:
-  enabled: false
-  host: recipe.prod
-  paths:
-    - path: /api/auth/?(.*)
-      pathType: ImplementationSpecific
-      serviceName: auth-service
-      servicePort: 3000
-    - path: /api/1/recipes/?(.*)
-      pathType: ImplementationSpecific
-      serviceName: recipe-service
-      servicePort: 3000
-    - path: /?(.*)
-      pathType: ImplementationSpecific
-      serviceName: recipe-client-service
-      servicePort: 3000
-
 gateway:
   enabled: true
+  listener:
+    hostname: recipe.dishsharing.com
   hostnames:
-    - recipe.prod
+    - recipe.dishsharing.com

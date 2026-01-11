@@ -1,20 +1,6 @@
-# Gateway API Migration Plan (Envoy Gateway)
+# Gateway API (Envoy Gateway) Architecture
 
-## Inventory
-
-Current Ingress resources and settings:
-
-- `infra/k8s/dev/ingress/ingress-srv-dev.yaml`
-  - Host: `recipe.dev`
-  - Paths: `/api/users`, `/api/1/recipes`, `/api/1/profile`, `/api/1/ingredient`, `/api/1/uploads`, `/`
-  - Annotation: `nginx.ingress.kubernetes.io/use-regex: "true"`
-- `infra/k8s/prod/ingress/ingress-srv-prod.yaml`
-  - Host: `recipe.dev`
-  - Paths: `/api/auth`, `/api/1/recipes`, `/`
-  - Annotation: `nginx.ingress.kubernetes.io/use-regex: "true"`
-- `infra/k8s/azure/ingress-srv-prod.yaml`
-  - Host: `dishsharing.com`
-  - Annotations: App Gateway settings (cookie affinity, SSL redirect, timeout)
+Ingress resources are fully removed. Envoy Gateway + Gateway API are the only edge.
 
 ## Target Architecture
 
@@ -24,18 +10,16 @@ Current Ingress resources and settings:
 - Per-environment `Gateway` in `recipe` namespace.
 - Shared `HTTPRoute` mapping host/path to services.
 
-## Migration Steps
+## Setup Steps
 
 1) Install Envoy Gateway (staging first).
 2) Apply `GatewayClass`, `Gateway`, and `HTTPRoute` manifests.
 3) Run routing tests (host/path, TLS, timeouts).
-4) Cut over DNS to Envoy Gateway LB.
-5) Remove Ingress-NGINX resources once stable.
+4) Point DNS to the Envoy Gateway LB.
 
 ## Rollback
 
-- Keep Ingress resources and controller until Envoy Gateway is verified.
-- Revert DNS to previous LB if issues arise.
+- Revert DNS to the previous LB if issues arise.
 
 ## Tests
 

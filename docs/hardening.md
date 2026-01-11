@@ -4,7 +4,7 @@ This checklist focuses on low-risk, high-signal hardening steps suitable for a p
 
 ## A) Demo-Safe Security Controls
 
-- **Rate limiting**: Apply per-IP limits at the ingress controller (nginx/Envoy) and per-service for write endpoints.
+- **Rate limiting**: Apply per-IP limits at the gateway and per-service for write endpoints.
 - **Pagination caps**: Enforce a max page size (e.g., 50-100) on public list endpoints.
 - **CORS rules**: Restrict allowed origins to known demo domains; avoid `*` for authenticated endpoints.
 - **Public GET only**: Keep read-only endpoints public; require auth for all creates/updates/deletes.
@@ -37,7 +37,7 @@ This checklist focuses on low-risk, high-signal hardening steps suitable for a p
 kubectl get pods -n <ns>
 kubectl get svc -n <ns>
 kubectl get jobs -n <ns>
-kubectl get ingress -n <ns>
+kubectl get gateway -n <ns>
 kubectl logs -n <ns> deploy/<service> --tail=100
 ```
 
@@ -46,7 +46,7 @@ kubectl logs -n <ns> deploy/<service> --tail=100
 - **ImagePullBackOff**: Check image tag, registry access, and `imagePullSecrets`.
 - **CrashLoopBackOff**: Review container logs; confirm required env vars and DB/RabbitMQ reachability.
 - **Migration Job Failed**: Inspect Job logs; verify DB is reachable and schema is compatible.
-- **Ingress 404/502**: Validate ingress class, host/path rules, and service selectors.
+- **Gateway 404/502**: Validate GatewayClass, listener hostnames, HTTPRoute parentRefs, and service selectors.
 - **DB connectivity**: Confirm secrets, network policies, and that DB pods are Ready.
 
 ## Related ADRs

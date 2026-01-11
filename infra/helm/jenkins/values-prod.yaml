@@ -1,6 +1,21 @@
-ingress:
+gateway:
   enabled: true
-  host: jenkins.prod
+  hostnames:
+    - jenkins.dishsharing.com
+  http:
+    enabled: true
+    hostname: jenkins.dishsharing.com
+  tls:
+    enabled: true
+    secretName: jenkins-tls
+
+certManager:
+  enabled: true
+  issuerRef:
+    name: letsencrypt-prod
+    kind: ClusterIssuer
+  dnsNames:
+    - jenkins.dishsharing.com
 
 # Demo-only: mount secret manifests into Jenkins.
 # secretsManifests:

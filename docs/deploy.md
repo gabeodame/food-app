@@ -112,7 +112,6 @@ rules:
       - statefulsets
       - jobs
       - cronjobs
-      - ingresses
       - networkpolicies
       - persistentvolumeclaims
       - gateways
@@ -208,7 +207,7 @@ scripts/ci/deploy-helm.sh
 
 4) Smoke test:
 ```bash
-export SMOKE_TEST_URL="http://recipe.staging/"
+export SMOKE_TEST_URL="https://recipe-staging.dishsharing.com/"
 export SMOKE_TEST_ENDPOINTS="/,/api/1/recipes"
 scripts/ci/smoke-test.sh
 ```

@@ -6,7 +6,7 @@ A production-style, microservices recipe platform designed to showcase auth, eve
 
 - Microservices with clear service boundaries and shared libraries
 - AuthN/AuthZ with public reads and protected writes
-- Helm-based Kubernetes deployment (Jobs, ingress/gateway, NetworkPolicy)
+- Helm-based Kubernetes deployment (Jobs, Gateway API, NetworkPolicy)
 - Git SHA image tagging (Skaffold + CI scripts)
 - Migration strategy via Helm Job hooks
 - API documentation via Swagger/Swagger UI
@@ -23,7 +23,7 @@ A production-style, microservices recipe platform designed to showcase auth, eve
                           |
                           v
                 +--------------------+
-                | Ingress / Gateway  |
+                |    Gateway API     |
                 +--+----+----+----+--+
                    |    |    |    |
                    v    v    v    v
@@ -165,7 +165,7 @@ HELM_VALUES_FILE=infra/helm/food-app/values-dev.yaml scripts/ci/deploy-helm.sh
 ```bash
 kubectl get pods -n recipe
 kubectl get jobs -n recipe
-kubectl get ingress -n recipe
+kubectl get gateway -n recipe
 kubectl get svc -n recipe
 ```
 
@@ -193,10 +193,9 @@ Optional image scanning (requires `trivy`):
 scripts/ci/scan-images.sh
 ```
 
-### Gateway / Ingress
+### Gateway API
 
 - Gateway is enabled by default in `values-*.yaml` and defines hostnames and optional TLS secrets.
-- Ingress is present but disabled in values; enable if you prefer nginx ingress over Envoy Gateway.
 - Example TLS secret names: `recipe-dev-tls` (dev) and hostnames like `recipe.dev`, `recipe.staging`, `recipe.prod`.
 
 ## CI/CD (Jenkins)
@@ -241,9 +240,9 @@ kubectl get events -n <ns> --sort-by=.metadata.creationTimestamp
 - Inspect Job logs and ensure DB is reachable.
 - Re-run with `helm upgrade` after fixing the migration/DB issue.
 
-### Ingress 404/502
+### Gateway 404/502
 
-- Confirm ingress controller class and service selectors.
+- Confirm GatewayClass, Gateway listeners, and HTTPRoute parentRefs/hostnames.
 - Validate routes and service ports in `infra/helm/food-app/values.yaml`.
 
 ### DB Connectivity

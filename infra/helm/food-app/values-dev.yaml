@@ -10,17 +10,12 @@ seed:
 secrets:
   enabled: true
 
-ingress:
-  enabled: false
-  host: recipe.dev
-
 gateway:
   enabled: true
   listener:
-    hostname: ""
+    hostname: recipe-dev.dishsharing.com
   tls:
     enabled: true
     secretName: recipe-dev-tls
   hostnames:
-    - recipe.dev
-    - envoy-gateway-food-app.envoy-gateway-system.svc.cluster.local
+    - recipe-dev.dishsharing.com

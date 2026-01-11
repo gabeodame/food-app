@@ -11,14 +11,6 @@ service:
   port: 8080
   agentPort: 50000
 
-ingress:
-  enabled: false
-  className: nginx
-  annotations: {}
-  host: jenkins.example.com
-  path: /jenkins
-  pathType: Prefix
-
 persistence:
   enabled: true
   storageClassName: ""
@@ -77,9 +69,35 @@ rbac:
   create: false
 
 dockerSocket:
-  enabled: true
+  enabled: false
   path: /var/run/docker.sock
   groupId: 0
+
+gateway:
+  enabled: false
+  className: envoy-gateway
+  name: jenkins-gateway
+  hostnames:
+    - jenkins.dishsharing.com
+  http:
+    enabled: true
+    port: 80
+    hostname: jenkins.dishsharing.com
+  tls:
+    enabled: true
+    secretName: jenkins-tls
+
+gatewayRoute:
+  path: /jenkins
+  pathType: PathPrefix
+
+certManager:
+  enabled: false
+  issuerRef:
+    name: letsencrypt-prod
+    kind: ClusterIssuer
+  dnsNames:
+    - jenkins.dishsharing.com
 
 kubeconfig:
   enabled: true

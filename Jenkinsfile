@@ -3,7 +3,7 @@ pipeline {
 
   parameters {
     choice(name: "DEPLOY_ENV_OVERRIDE", choices: ["", "dev", "staging", "prod"], description: "Override environment selection (optional).")
-    booleanParam(name: "INSTALL_GATEWAY_CRDS", defaultValue: true, description: "Install Gateway API CRDs before Helm deploy.")
+    booleanParam(name: "INSTALL_GATEWAY_CRDS", defaultValue: false, description: "Install Gateway API CRDs before Helm deploy (bootstrap only).")
     booleanParam(name: "USE_EXTERNAL_SECRETS", defaultValue: false, description: "Disable Helm-managed secrets and rely on an external secret store.")
     booleanParam(name: "APPLY_SECRETS_MANIFESTS", defaultValue: false, description: "Apply pre-created Secret manifests before Helm deploy.")
     string(name: "SECRETS_MANIFEST_DIR", defaultValue: "", description: "Directory containing Secret manifests to apply (optional).")
@@ -29,16 +29,20 @@ pipeline {
     HELM_CHART_PATH = "infra/helm/food-app"
     DEPLOY_ENV      = "dev"
     HELM_VALUES_FILE = "infra/helm/food-app/values-dev.yaml"
-    SMOKE_TEST_URL  = "http://recipe.dev/"
+    SMOKE_TEST_URL  = "https://recipe-staging.dishsharing.com/"
+    SMOKE_TEST_INSECURE = "false"
     IMAGE_TAG       = ""
     DOCKER_REGISTRY = "docker.io"
     IMAGE_NAMESPACE = "gabeodame"
+    KANIKO_ENABLED  = "true"
+    REGISTRY_SECRET_NAME = "kaniko-registry"
   }
 
   stages {
     stage("Checkout") {
       steps {
         checkout scm
+        stash name: "source", includes: "**/*"
       }
     }
 
@@ -46,11 +50,12 @@ pipeline {
       steps {
         script {
           def branch = env.BRANCH_NAME ?: "dev"
+          def tagName = env.TAG_NAME ?: ""
           if (params.DEPLOY_ENV_OVERRIDE) {
             env.DEPLOY_ENV = params.DEPLOY_ENV_OVERRIDE
-          } else if (branch == "main") {
+          } else if (branch == "staging") {
             env.DEPLOY_ENV = "staging"
-          } else if (branch.startsWith("release/")) {
+          } else if (branch == "main" || tagName) {
             env.DEPLOY_ENV = "prod"
           } else {
             env.DEPLOY_ENV = "dev"
@@ -78,11 +83,12 @@ pipeline {
           }
 
           if (env.DEPLOY_ENV == "prod") {
-            env.SMOKE_TEST_URL = "http://recipe.prod/"
+            env.SMOKE_TEST_URL = "https://recipe.dishsharing.com/"
           } else if (env.DEPLOY_ENV == "staging") {
-            env.SMOKE_TEST_URL = "http://recipe.staging/"
+            env.SMOKE_TEST_URL = "https://recipe-staging.dishsharing.com/"
           } else {
-            env.SMOKE_TEST_URL = "http://recipe.dev/"
+            env.SMOKE_TEST_URL = "http://recipe-dev.dishsharing.com/"
+            env.SMOKE_TEST_INSECURE = "true"
           }
           env.SMOKE_TEST_ENDPOINTS = "/,/api/1/recipes"
         }
@@ -101,9 +107,48 @@ pipeline {
       }
     }
 
-    stage("Build Images") {
+    stage("Prepare Registry Secret") {
+      when {
+        expression { return env.KANIKO_ENABLED == "true" }
+      }
       steps {
-        sh "scripts/ci/build-images.sh"
+        withCredentials([usernamePassword(credentialsId: "docker-registry-creds", usernameVariable: "REGISTRY_USER", passwordVariable: "REGISTRY_PASSWORD")]) {
+          sh "scripts/ci/create-registry-secret.sh"
+        }
+      }
+    }
+
+    stage("Build Images") {
+      agent {
+        kubernetes {
+          yaml """
+apiVersion: v1
+kind: Pod
+spec:
+  containers:
+    - name: kaniko
+      image: gcr.io/kaniko-project/executor:debug
+      command:
+        - /busybox/cat
+      tty: true
+      volumeMounts:
+        - name: docker-config
+          mountPath: /kaniko/.docker
+  volumes:
+    - name: docker-config
+      secret:
+        secretName: ${REGISTRY_SECRET_NAME}
+"""
+        }
+      }
+      options {
+        skipDefaultCheckout(true)
+      }
+      steps {
+        unstash "source"
+        container("kaniko") {
+          sh "scripts/ci/build-images.sh"
+        }
       }
     }
 
@@ -138,8 +183,9 @@ pipeline {
     stage("Deploy via Helm") {
       when {
         anyOf {
+          branch "staging"
           branch "main"
-          branch "release/*"
+          buildingTag()
         }
       }
       steps {
@@ -162,8 +208,9 @@ pipeline {
     stage("Smoke Tests") {
       when {
         anyOf {
+          branch "staging"
           branch "main"
-          branch "release/*"
+          buildingTag()
         }
       }
       steps {

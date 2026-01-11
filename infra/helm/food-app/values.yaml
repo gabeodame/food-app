@@ -683,7 +683,7 @@ networkPolicies:
           ports:
             - protocol: TCP
               port: 3000
-  - name: allow-ingress-to-auth
+  - name: allow-gateway-to-auth
     spec:
       podSelector:
         matchLabels:
@@ -692,12 +692,9 @@ networkPolicies:
         - Ingress
       ingress:
         - from:
-            - podSelector:
-                matchLabels:
-                  app: ingress-nginx
             - namespaceSelector:
                 matchLabels:
-                  kubernetes.io/metadata.name: envoy-gateway
+                  kubernetes.io/metadata.name: envoy-gateway-system
           ports:
             - protocol: TCP
               port: 3000
@@ -770,38 +767,6 @@ seed:
     repository: gabeodame/recipe-backend
     pullPolicy: IfNotPresent
 
-ingress:
-  enabled: false
-  className: nginx
-  annotations:
-    nginx.ingress.kubernetes.io/use-regex: "true"
-  host: recipe.dev
-  paths:
-    - path: /api/users/?(.*)
-      pathType: ImplementationSpecific
-      serviceName: auth-service
-      servicePort: 3000
-    - path: /api/1/recipes/?(.*)
-      pathType: ImplementationSpecific
-      serviceName: recipe-service
-      servicePort: 3000
-    - path: /api/1/profile/?(.*)
-      pathType: ImplementationSpecific
-      serviceName: userprofile-service
-      servicePort: 3000
-    - path: /api/1/ingredient/?(.*)
-      pathType: ImplementationSpecific
-      serviceName: ingredient-service
-      servicePort: 3000
-    - path: /api/1/uploads/?(.*)
-      pathType: ImplementationSpecific
-      serviceName: uploads-service
-      servicePort: 3000
-    - path: /?(.*)
-      pathType: ImplementationSpecific
-      serviceName: recipe-client-service
-      servicePort: 3000
-
 gateway:
   enabled: true
   className: envoy-gateway
@@ -810,12 +775,12 @@ gateway:
     name: http
     protocol: HTTP
     port: 80
-    hostname: ""
+    hostname: recipe-dev.dishsharing.com
   tls:
     enabled: false
     secretName: ""
   hostnames:
-    - recipe.dev
+    - recipe-dev.dishsharing.com
   routes:
     - path: /api/users
       backend:

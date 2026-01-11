@@ -27,11 +27,9 @@ secrets:
 #     manifests: |
 #       # ExternalSecret/SecretStore manifests for staging
 
-ingress:
-  enabled: false
-  host: recipe.staging
-
 gateway:
   enabled: true
+  listener:
+    hostname: recipe-staging.dishsharing.com
   hostnames:
-    - recipe.staging
+    - recipe-staging.dishsharing.com

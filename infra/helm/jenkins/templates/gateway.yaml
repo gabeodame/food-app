@@ -1,0 +1,39 @@
+{{- if .Values.gateway.enabled }}
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: {{ .Values.gateway.name }}
+  namespace: {{ .Values.namespace }}
+  labels:
+    {{- include "jenkins.labels" . | nindent 4 }}
+spec:
+  gatewayClassName: {{ .Values.gateway.className }}
+  listeners:
+    {{- if .Values.gateway.http.enabled }}
+    - name: http
+      protocol: HTTP
+      port: {{ .Values.gateway.http.port }}
+      {{- if .Values.gateway.http.hostname }}
+      hostname: {{ .Values.gateway.http.hostname }}
+      {{- end }}
+      allowedRoutes:
+        namespaces:
+          from: Same
+    {{- end }}
+    {{- if .Values.gateway.tls.enabled }}
+    - name: https
+      protocol: HTTPS
+      port: 443
+      {{- if .Values.gateway.http.hostname }}
+      hostname: {{ .Values.gateway.http.hostname }}
+      {{- end }}
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - name: {{ .Values.gateway.tls.secretName }}
+            kind: Secret
+      allowedRoutes:
+        namespaces:
+          from: Same
+    {{- end }}
+{{- end }}

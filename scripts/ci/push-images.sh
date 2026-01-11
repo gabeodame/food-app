@@ -4,6 +4,7 @@ set -euo pipefail
 image_tag=${IMAGE_TAG:-local}
 registry=${DOCKER_REGISTRY:-docker.io}
 namespace=${IMAGE_NAMESPACE:-gabeodame}
+kaniko_enabled=${KANIKO_ENABLED:-false}
 
 # Default images (can be overridden by setting IMAGES env var as a space-separated list)
 default_images=(
@@ -22,6 +23,11 @@ if [[ -n "${IMAGES:-}" ]]; then
   images=(${IMAGES})
 else
   images=("${default_images[@]}")
+fi
+
+if [[ "${kaniko_enabled}" == "true" ]]; then
+  echo "KANIKO_ENABLED=true; images were pushed during build."
+  exit 0
 fi
 
 # If either is set, require both.

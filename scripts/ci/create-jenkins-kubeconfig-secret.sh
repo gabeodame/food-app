@@ -71,7 +71,6 @@ rules:
       - statefulsets
       - jobs
       - cronjobs
-      - ingresses
       - networkpolicies
       - persistentvolumeclaims
       - gateways
