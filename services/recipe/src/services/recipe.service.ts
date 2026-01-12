@@ -9,6 +9,14 @@ import {
 } from "@gogittix/common";
 import slugify from "slugify";
 import { formatRecipeResponse } from "../utils/formatRecipeRespons";
+import { Prisma } from "@prisma/client";
+
+type RecipeWithFavorites = Prisma.RecipeGetPayload<{
+  include: {
+    favoritedBy: { select: { userId: true } };
+    views: true;
+  };
+}>;
 
 class RecipeService {
   async createRecipe(req: Request) {
@@ -244,14 +252,14 @@ class RecipeService {
       const currentUserId = req?.currentUser?.id || "0";
       console.log("Current User ID from recipe service:", currentUserId);
 
-      const recipes = await prisma.recipe.findMany({
+      const recipes = (await prisma.recipe.findMany({
         include: {
           favoritedBy: { select: { userId: true } },
           views: true,
         },
-      });
+      })) as RecipeWithFavorites[];
 
-      return recipes.map((recipe) => ({
+      return recipes.map((recipe: RecipeWithFavorites) => ({
         id: recipe.id,
         title: recipe.title,
         slug: recipe.slug,
@@ -261,7 +269,7 @@ class RecipeService {
         views: recipe.views.length,
         favoritesCount: recipe.favoritedBy.length,
         isFavoritedByCurrentUser: recipe.favoritedBy.some(
-          (fav) => fav.userId === currentUserId
+          (fav: { userId: string }) => fav.userId === currentUserId
         ),
         createdAt: recipe.createdAt,
         updatedAt: recipe.updatedAt,
