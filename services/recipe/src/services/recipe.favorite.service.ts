@@ -1,4 +1,3 @@
-import { Ingredient } from "@prisma/client";
 import recipeService from "./recipe.service";
 import { prisma } from "../lib/prisma";
 import { BadRequestError, NotAuthorizedError } from "@gogittix/common";
