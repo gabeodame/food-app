@@ -124,6 +124,8 @@ spec:
       steps {
         unstash "source"
         container("node") {
+          sh "git rev-parse HEAD"
+          sh "sed -n '240,270p' services/recipe/src/services/recipe.service.ts"
           sh "scripts/ci/run-tests.sh"
         }
       }
