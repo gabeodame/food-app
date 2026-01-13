@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+unset KUBECONFIG
+
 namespace=${REGISTRY_SECRET_NAMESPACE:-jenkins}
 secret_name=${REGISTRY_SECRET_NAME:-kaniko-registry}
 registry=${DOCKER_REGISTRY:-docker.io}

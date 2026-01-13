@@ -65,6 +65,8 @@ serviceAccount:
   create: true
   name: ""
 
+deployNamespace: recipe
+
 rbac:
   create: false
 
@@ -100,7 +102,7 @@ certManager:
     - jenkins.dishsharing.com
 
 kubeconfig:
-  enabled: true
+  enabled: false
   secretName: jenkins-kubeconfig
   mountPath: /var/jenkins_home/.kube/config
 

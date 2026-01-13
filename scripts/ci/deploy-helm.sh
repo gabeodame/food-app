@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+unset KUBECONFIG
+
 release=${HELM_RELEASE:-food-app}
 namespace=${HELM_NAMESPACE:-recipe}
 chart_path=${HELM_CHART_PATH:-infra/helm/food-app}

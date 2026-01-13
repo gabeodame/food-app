@@ -17,6 +17,12 @@ certManager:
   dnsNames:
     - jenkins.dishsharing.com
 
+rbac:
+  create: true
+
+kubeconfig:
+  enabled: false
+
 # Demo-only: mount secret manifests into Jenkins.
 # secretsManifests:
 #   enabled: true
