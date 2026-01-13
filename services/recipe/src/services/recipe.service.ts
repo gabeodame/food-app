@@ -9,14 +9,18 @@ import {
 } from "@gogittix/common";
 import slugify from "slugify";
 import { formatRecipeResponse } from "../utils/formatRecipeRespons";
-import { Prisma } from "@prisma/client";
-
-type RecipeWithFavorites = Prisma.RecipeGetPayload<{
-  include: {
-    favoritedBy: { select: { userId: true } };
-    views: true;
-  };
-}>;
+type RecipeWithFavorites = {
+  id: number;
+  title: string;
+  slug: string;
+  imageUrl: string;
+  description: string;
+  userId: string;
+  views: unknown[];
+  favoritedBy: Array<{ userId: string }>;
+  createdAt: Date;
+  updatedAt: Date;
+};
 
 class RecipeService {
   async createRecipe(req: Request) {
