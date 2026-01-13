@@ -1,8 +1,7 @@
-const bufferModule = require("buffer") as {
-  Buffer: typeof Buffer;
-  SlowBuffer?: typeof Buffer;
-};
+import * as buffer from "buffer";
+
+const bufferModule = buffer as typeof buffer & { SlowBuffer?: typeof Buffer };
 
 if (!bufferModule.SlowBuffer) {
-  bufferModule.SlowBuffer = bufferModule.Buffer;
+  bufferModule.SlowBuffer = bufferModule.Buffer as typeof Buffer;
 }
