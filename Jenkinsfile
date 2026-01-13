@@ -137,7 +137,7 @@ spec:
       }
       steps {
         withCredentials([usernamePassword(credentialsId: "docker-registry-creds", usernameVariable: "REGISTRY_USER", passwordVariable: "REGISTRY_PASSWORD")]) {
-          sh "scripts/ci/create-registry-secret.sh"
+          sh "bash scripts/ci/create-registry-secret.sh"
         }
       }
     }
